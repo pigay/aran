@@ -1,0 +1,214 @@
+<!-- ##### SECTION Title ##### -->
+aransphericalseriesd
+
+<!-- ##### SECTION Short_Description ##### -->
+3D potential expansions using powers of radius and spherical harmonics.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+<link linkend="AranSphericalSeriesd">AranSphericalSeriesd</link> provides a
+multipole or local expansion series suitable for some potentials (currently
+only tested Newton/Coulomb 1/r potential). The series are based on combination
+of powers of the radius and spherical harmonics. This combination comes from
+the <ulink url="http://mathworld.wolfram.com/SphericalHarmonicAdditionTheorem.html">Legendre addition theorem</ulink>.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT AranSphericalSeriesd ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_new ##### -->
+<para>
+
+</para>
+
+@posdeg: 
+@negdeg: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_free ##### -->
+<para>
+
+</para>
+
+@ass: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_copy ##### -->
+<para>
+
+</para>
+
+@src: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_clone ##### -->
+<para>
+
+</para>
+
+@src: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_get_term ##### -->
+<para>
+
+</para>
+
+@ass: 
+@i: 
+@j: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_get_posdeg ##### -->
+<para>
+
+</para>
+
+@ass: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_get_negdeg ##### -->
+<para>
+
+</para>
+
+@ass: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_set_zero ##### -->
+<para>
+
+</para>
+
+@ass: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_write ##### -->
+<para>
+
+</para>
+
+@ass: 
+@file: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_evaluate_internal ##### -->
+<para>
+
+</para>
+
+@ass: 
+@r: 
+@cost: 
+@sint: 
+@cosp: 
+@sinp: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_evaluate ##### -->
+<para>
+
+</para>
+
+@ass: 
+@x: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_local_gradient_evaluate_internal ##### -->
+<para>
+
+</para>
+
+@ass: 
+@r: 
+@cost: 
+@sint: 
+@cosp: 
+@sinp: 
+@dr: 
+@dt: 
+@dp: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_local_gradient_evaluate ##### -->
+<para>
+
+</para>
+
+@ass: 
+@x: 
+@grad: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_translate ##### -->
+<para>
+
+</para>
+
+@src: 
+@xsrc: 
+@dst: 
+@xdst: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_to_local ##### -->
+<para>
+
+</para>
+
+@src: 
+@xsrc: 
+@dst: 
+@xdst: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_translate_kkylin ##### -->
+<para>
+
+</para>
+
+@src: 
+@xsrc: 
+@dst: 
+@xdst: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_to_local_kkylin ##### -->
+<para>
+
+</para>
+
+@src: 
+@xsrc: 
+@dst: 
+@xdst: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_rotate ##### -->
+<para>
+
+</para>
+
+@src: 
+@alpha: 
+@beta: 
+@gamma: 
+@dst: 
+
+

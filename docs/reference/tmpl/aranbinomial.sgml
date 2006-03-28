@@ -1,0 +1,56 @@
+<!-- ##### SECTION Title ##### -->
+aranbinomial
+
+<!-- ##### SECTION Short_Description ##### -->
+Binomial coefficients.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+Provides various functions for computing binomial coefficients. A fast function
+needs for coefficients to be precomputed with a call to
+aran_binomial_require(). On the contrary, aran_slow_binomial() does not require
+such preprocessing but is <emphasis>really</emphasis> slow.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION aran_slow_binomial ##### -->
+<para>
+
+</para>
+
+@n: 
+@p: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_fast_binomial ##### -->
+<para>
+
+</para>
+
+@n: 
+@p: 
+@Returns: 
+
+
+<!-- ##### MACRO aran_binomial ##### -->
+<para>
+
+</para>
+
+@n: 
+@p: 
+
+
+<!-- ##### FUNCTION aran_binomial_require ##### -->
+<para>
+
+</para>
+
+@max: 
+
+

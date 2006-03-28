@@ -1,0 +1,35 @@
+# -*- autoconf -*-
+# Process this file with autom4te to create testsuite. -*- Autotest -*-
+
+# Test suite for LIBARAN - Fast Multipole Method library
+# Copyright (C) 2006 Pierre Gay
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+
+AT_TESTED([dummypot])
+
+AT_SETUP(Dummy potential addition solver)
+
+AT_CHECK(dummypot, 0)
+AT_CHECK(dummypot -np 2400 -pr 20, 0)
+AT_CHECK(dummypot -np 240 -pr 40 -err 1.E-8, 0)
+AT_CHECK(dummypot -np 240 -dist random, 0)
+
+AT_CHECK(dummypot -np 240 -pr 20 -s 10 -err 1.E-8, 0)
+AT_CHECK(dummypot -np 2400 -pr 20 -s 10, 0)
+
+
+AT_CLEANUP

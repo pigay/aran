@@ -1,0 +1,36 @@
+<!-- ##### SECTION Title ##### -->
+arancomplex
+
+<!-- ##### SECTION Short_Description ##### -->
+Complex number types.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+Libaran intensively uses ISO C99 complex numbers. It also expects a support
+for complex mathematical functions (creal, cimag, clog, ccos, etc.).
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### TYPEDEF gcomplex64 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF gcomplex128 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO G_I ##### -->
+<para>
+
+</para>
+
+
+

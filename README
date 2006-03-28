@@ -1,0 +1,26 @@
+General Information
+===================
+
+LibAran is a 2D/3D Fast Multipole Method software library. Distributed under
+the GNU LGPL, it provides a C API to allow developers to use such algorithms
+in their own applications.
+
+
+Currently supported features include:
+
+ - 2D FMM algorithms through Laurent Series.
+ - 3D FMM algorithms through complex spherical harmonics series. These series
+   can handle Newton/Coulomb potentials. Sparse translation operators (O(p^3)
+   complexity) are included.
+ - Dynamic QTree/OcTree LibVsg (http://www.libvsg.org) VsgPRTree2d and
+   VsgPRTree3d) particles filtering.
+
+Installation
+============
+
+See the file 'INSTALL'
+
+Documentation
+=============
+
+See the doc/reference directory of the distribution.

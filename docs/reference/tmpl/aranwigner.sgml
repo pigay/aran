@@ -1,0 +1,69 @@
+<!-- ##### SECTION Title ##### -->
+aranwigner
+
+<!-- ##### SECTION Short_Description ##### -->
+Wigner D-function coefficients.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+Wigner D-function provides operators for rotating spherical harmonics.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+</para>
+
+<!-- ##### STRUCT AranWigner ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION aran_wigner_new ##### -->
+<para>
+
+</para>
+
+@beta: 
+@l: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_wigner_free ##### -->
+<para>
+
+</para>
+
+@aw: 
+
+
+<!-- ##### FUNCTION aran_wigner_require ##### -->
+<para>
+
+</para>
+
+@aw: 
+@l: 
+
+
+<!-- ##### FUNCTION aran_wigner_term ##### -->
+<para>
+
+</para>
+
+@aw: 
+@l: 
+@m1: 
+@m2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_wigner_write ##### -->
+<para>
+
+</para>
+
+@aw: 
+@file: 
+
+

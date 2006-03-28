@@ -1,0 +1,112 @@
+<!-- ##### SECTION Title ##### -->
+aransphericalharmonic
+
+<!-- ##### SECTION Short_Description ##### -->
+Complex Spherical harmonics.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+See:
+<ulink url="http://en.wikipedia.org/wiki/Spherical_harmonic">http://en.wikipedia.org/wiki/Spherical_harmonic</ulink> or
+<ulink url="http://mathworld.wolfram.com/SphericalHarmonic.html">http://mathworld.wolfram.com/SphericalHarmonic.html</ulink> for a definition.
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+</para>
+
+<!-- ##### FUNCTION aran_spherical_harmonic_evaluate_internal ##### -->
+<para>
+
+</para>
+
+@l: 
+@m: 
+@cost: 
+@sint: 
+@expmp: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_harmonic_evaluate ##### -->
+<para>
+
+</para>
+
+@l: 
+@m: 
+@theta: 
+@phi: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_harmonic_evaluate_multiple_internal ##### -->
+<para>
+
+</para>
+
+@l: 
+@cost: 
+@sint: 
+@expp: 
+@result: 
+
+
+<!-- ##### FUNCTION aran_spherical_harmonic_evaluate_multiple ##### -->
+<para>
+
+</para>
+
+@l: 
+@theta: 
+@phi: 
+@result: 
+
+
+<!-- ##### FUNCTION aran_spherical_harmonic_pre_gradient_multiple_internal ##### -->
+<para>
+
+</para>
+
+@l: 
+@cost: 
+@sint: 
+@expp: 
+@harmonics: 
+@special: 
+
+
+<!-- ##### FUNCTION aran_spherical_harmonic_pre_gradient_multiple ##### -->
+<para>
+
+</para>
+
+@l: 
+@theta: 
+@phi: 
+@harmonics: 
+@special: 
+
+
+<!-- ##### FUNCTION aran_spherical_harmonic_multiple_get_term ##### -->
+<para>
+
+</para>
+
+@l: 
+@m: 
+@result: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_spherical_harmonic_require ##### -->
+<para>
+
+</para>
+
+@degree: 
+<!-- # Unused Parameters # -->
+@order: 
+
+

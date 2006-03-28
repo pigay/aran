@@ -1,0 +1,60 @@
+# -*- autoconf -*-
+# Process this file with autom4te to create testsuite. -*- Autotest -*-
+
+# Test suite for LIBARAN - Fast Multipole Method library
+# Copyright (C) 2006 Pierre Gay
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+
+
+AT_INIT([aran_test])
+
+m4_include([taylor.at])
+
+m4_include([laurent.at])
+
+m4_include([legendre.at])
+
+m4_include([special_legendre.at])
+
+m4_include([sphericalharmonic.at])
+
+m4_include([sphericalharmonic_pregradient.at])
+
+m4_include([wigner.at])
+
+m4_include([sphericalseriesd.at])
+
+m4_include([multipole3.at])
+
+m4_include([taylor3.at])
+
+m4_include([gradient3.at])
+
+m4_include([m2l3.at])
+
+m4_include([rotation.at])
+
+m4_include([dev3.at])
+
+m4_include([dummypot.at])
+
+m4_include([newtonpot3.at])
+
+m4_include([newtonfield3.at])
+
+
+

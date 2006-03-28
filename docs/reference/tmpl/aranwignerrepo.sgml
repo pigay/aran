@@ -1,0 +1,52 @@
+<!-- ##### SECTION Title ##### -->
+aranwignerrepo
+
+<!-- ##### SECTION Short_Description ##### -->
+Storing and sharing <link linkend="AranWigner">AranWigner</link> structures.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+Since the FMM only uses rotation on a very limited number of angles, it is
+handy to compute <link linkend="AranWigner">AranWigner</link> structures only
+once and to store in a repository. Any subsequent rotation of same angle
+will occur without additional computation.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION aran_wigner_repo_lookup ##### -->
+<para>
+
+</para>
+
+@beta: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_wigner_repo_steal ##### -->
+<para>
+
+</para>
+
+@beta: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_wigner_repo_forget ##### -->
+<para>
+
+</para>
+
+@beta: 
+
+
+<!-- ##### FUNCTION aran_wigner_repo_forget_all ##### -->
+<para>
+
+</para>
+
+
+

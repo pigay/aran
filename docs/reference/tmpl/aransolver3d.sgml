@@ -1,0 +1,260 @@
+<!-- ##### SECTION Title ##### -->
+aransolver3d
+
+<!-- ##### SECTION Short_Description ##### -->
+3D FMM solver.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+AranSolver3d is used to solve a particular FMM problem. Given a development
+#GType and the appropriate set of functions (see:
+<link linkend="AranParticle2ParticleFunc3d">AranParticle2ParticleFunc3d</link>,
+etc.), one can solve a FMM problem in the associated VsgPRTree3d filled with
+particles.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT AranSolver3d ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION AranParticle2ParticleFunc3d ##### -->
+<para>
+
+</para>
+
+@src: 
+@dst: 
+
+
+<!-- ##### USER_FUNCTION AranParticle2MultipoleFunc3d ##### -->
+<para>
+
+</para>
+
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### USER_FUNCTION AranMultipole2MultipoleFunc3d ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### USER_FUNCTION AranMultipole2LocalFunc3d ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### USER_FUNCTION AranLocal2LocalFunc3d ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### USER_FUNCTION AranLocal2ParticleFunc3d ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst: 
+<!-- # Unused Parameters # -->
+@local: 
+
+
+<!-- ##### FUNCTION aran_solver3d_new ##### -->
+<para>
+
+</para>
+
+@prtree: 
+@devel_type: 
+@devel: 
+@zero: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_solver3d_free ##### -->
+<para>
+
+</para>
+
+@solver: 
+
+
+<!-- ##### FUNCTION aran_solver3d_set_development ##### -->
+<para>
+
+</para>
+
+@solver: 
+@devel_type: 
+@devel: 
+@zero: 
+
+
+<!-- ##### FUNCTION aran_solver3d_set_functions ##### -->
+<para>
+
+</para>
+
+@solver: 
+@p2p: 
+@p2m: 
+@m2m: 
+@m2l: 
+@l2l: 
+@l2p: 
+
+
+<!-- ##### FUNCTION aran_solver3d_get_tolerance ##### -->
+<para>
+
+</para>
+
+@solver: 
+@Returns: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_set_tolerance ##### -->
+<para>
+
+</para>
+
+@solver: 
+@tolerance: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_get_bounds ##### -->
+<para>
+
+</para>
+
+@solver: 
+@lbound: 
+@ubound: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_depth ##### -->
+<para>
+
+</para>
+
+@solver: 
+@Returns: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_point_count ##### -->
+<para>
+
+</para>
+
+@solver: 
+@Returns: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_insert_point ##### -->
+<para>
+
+</para>
+
+@solver: 
+@point: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_remove_point ##### -->
+<para>
+
+</para>
+
+@solver: 
+@point: 
+@Returns: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_find_point ##### -->
+<para>
+
+</para>
+
+@solver: 
+@selector: 
+@Returns: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_foreach_point ##### -->
+<para>
+
+</para>
+
+@solver: 
+@func: 
+@user_data: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_foreach_point_custom ##### -->
+<para>
+
+</para>
+
+@solver: 
+@selector: 
+@locfunc: 
+@func: 
+@user_data: 
+<!-- # Unused Parameters # -->
+@solver3d: 
+
+
+<!-- ##### FUNCTION aran_solver3d_solve ##### -->
+<para>
+
+</para>
+
+@solver: 
+
+

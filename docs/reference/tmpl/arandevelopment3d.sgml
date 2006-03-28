@@ -1,0 +1,187 @@
+<!-- ##### SECTION Title ##### -->
+arandevelopment3d
+
+<!-- ##### SECTION Short_Description ##### -->
+3D development stored in each OcTree (VsgPRTree3d) node of a FMM solver.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+AranDevelopment3d uses
+<link linkend="AranSphericalSeriesd">AranSphericalSeriesd</link> to keep
+multipole and local expansions of a potential at a VsgPRTree3d node. It can
+in turn be used in an <link linkend="AranSolver3d">Aransolver3d</link> for
+solving a FMM problem.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO ARAN_TYPE_DEVELOPMENT3D ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT AranDevelopment3d ##### -->
+<para>
+
+</para>
+
+@multipole: 
+@local: 
+
+<!-- ##### FUNCTION aran_development3d_new ##### -->
+<para>
+
+</para>
+
+@posdeg: 
+@negdeg: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_development3d_free ##### -->
+<para>
+
+</para>
+
+@ad: 
+
+
+<!-- ##### FUNCTION aran_development3d_copy ##### -->
+<para>
+
+</para>
+
+@src: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development3d_clone ##### -->
+<para>
+
+</para>
+
+@src: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_development3d_set_zero ##### -->
+<para>
+
+</para>
+
+@ad: 
+
+
+<!-- ##### FUNCTION aran_development3d_write ##### -->
+<para>
+
+</para>
+
+@ad: 
+@file: 
+
+
+<!-- ##### FUNCTION aran_development3d_m2m ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development3d_m2l ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development3d_l2l ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development3d_multipole_evaluate ##### -->
+<para>
+
+</para>
+
+@devel_center: 
+@devel: 
+@pos: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_development3d_local_evaluate ##### -->
+<para>
+
+</para>
+
+@devel_center: 
+@devel: 
+@pos: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_development3d_local_gradient_evaluate ##### -->
+<para>
+
+</para>
+
+@devel_center: 
+@devel: 
+@pos: 
+@grad: 
+
+
+<!-- ##### FUNCTION aran_development3d_m2m_kkylin ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development3d_m2l_kkylin ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development3d_l2l_kkylin ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+

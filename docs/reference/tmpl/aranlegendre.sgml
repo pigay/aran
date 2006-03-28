@@ -1,0 +1,93 @@
+<!-- ##### SECTION Title ##### -->
+aranlegendre
+
+<!-- ##### SECTION Short_Description ##### -->
+Legendre polynomials and Associated Lengendre polynomials.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION aran_legendre_associated_evaluate_internal ##### -->
+<para>
+
+</para>
+
+@l: 
+@m: 
+@x: 
+@sqrt_1_m_x2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_legendre_associated_evaluate ##### -->
+<para>
+
+</para>
+
+@l: 
+@m: 
+@x: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_legendre_evaluate ##### -->
+<para>
+
+</para>
+
+@l: 
+@x: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_legendre_associated_evaluate_multiple_internal ##### -->
+<para>
+
+</para>
+
+@l: 
+@x: 
+@sqrt_1_m_x2: 
+@result: 
+
+
+<!-- ##### FUNCTION aran_legendre_associated_evaluate_multiple ##### -->
+<para>
+
+</para>
+
+@l: 
+@x: 
+@result: 
+
+
+<!-- ##### FUNCTION aran_legendre_associated_evaluate_special_internal ##### -->
+<para>
+
+</para>
+
+@l: 
+@x: 
+@sqrt_1_m_x2: 
+@legendre: 
+@special_result: 
+
+
+<!-- ##### FUNCTION aran_legendre_associated_multiple_get_term ##### -->
+<para>
+
+</para>
+
+@l: 
+@m: 
+@result: 
+@Returns: 
+
+

@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <bookinfo>
+    <title>LibAran Reference Manual</title>
+    <xi:include href="version.xml"/>
+  </bookinfo>
+
+  <chapter>
+    <title>Introduction</title>
+    <para>
+      LibAran is a 2D/3D
+<ulink url="http://www-theor.ch.cam.ac.uk/people/ross/thesis/node97.html">Fast Multipole Method</ulink> software library. Distributed under the GNU LGPL, it
+      provides a C API to allow developers to use such algorithms in their
+      own applications.
+    </para>
+    <para>
+      Currently supported features include:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>2D FMM algorithms through
+ <ulink url="http://en.wikipedia.org/wiki/Laurent_series">Laurent Series</ulink>.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          3D FMM algorithms through complex spherical harmonics series. These
+          series can handle Newton/Coulomb potentials. Sparse translation
+          operators (O(p^3) complexity) are included.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Dynamic QTree/OcTree (from <ulink url="http://www.libvsg.org">LibVsg</ulink> VsgPRTree2d and VsgPRTree3d) particles filtering.
+        </para>
+      </listitem>
+    </itemizedlist>
+
+    <para>
+      Features from the following list may be implemented in the future:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          Rotation (3D) based sparse translation operators.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Diagonal (3D) translation operators based on Plane Wave
+          Approximation algorithm.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          More 2D/3D kernels support (wave equation, etc.).
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Parallel version...
+        </para>
+      </listitem>
+    </itemizedlist>
+
+    <simplesect>
+      <title>Software prerequisites</title>
+
+      <para>Aran depends on the following software:</para>
+    <itemizedlist>
+      <listitem>
+        An ISO C99 compliant C compiler (and libc) that support
+        complex number types and variable sized arrays.
+      </listitem>
+      <listitem>
+        <ulink url="http://www.gtk.org" >glib-2.0</ulink>.
+      </listitem>
+      <listitem>
+        <ulink url="http://www.libvsg.org">Vsg</ulink> geometric library.
+      </listitem>
+      <listitem>
+        Optionally <ulink url="http://www.gtk.org/gtk-doc" >gtk-doc</ulink> for
+        reference documentation. 
+      </listitem>
+    </itemizedlist>
+       
+    </simplesect>
+  </chapter>
+
+
+  <chapter>
+    <title>Initialization</title>
+    <xi:include href="xml/aran.xml"/>
+  </chapter>
+
+  <chapter>
+    <title>Utilities</title>
+    <xi:include href="xml/arancomplex.xml"/>
+    <xi:include href="xml/aranbinomial.xml"/>
+
+    <xi:include href="xml/arancoefficientbufferd.xml"/>
+    <xi:include href="xml/arancoefficientbufferf.xml"/>
+    <xi:include href="xml/arancoefficientbufferl.xml"/>
+    <xi:include href="xml/arancoefficientbufferc64.xml"/>
+    <xi:include href="xml/arancoefficientbufferc128.xml"/>
+
+    <xi:include href="xml/aranbinomialbufferd.xml"/>
+    <xi:include href="xml/aranbinomialbufferf.xml"/>
+    <xi:include href="xml/aranbinomialbufferl.xml"/>
+    <xi:include href="xml/aranbinomialbufferc64.xml"/>
+    <xi:include href="xml/aranbinomialbufferc128.xml"/>
+
+    <xi:include href="xml/aranlegendre.xml"/>
+    <xi:include href="xml/aransphericalharmonic.xml"/>
+    <xi:include href="xml/aranwigner.xml"/>
+    <xi:include href="xml/aranwignerrepo.xml"/>
+  </chapter>
+
+  <chapter>
+    <title>2D API</title>
+    <xi:include href="xml/aranlaurentseriesd.xml"/>
+    <xi:include href="xml/arandevelopment2d.xml"/>
+    <xi:include href="xml/aransolver2d.xml"/>
+  </chapter>
+
+  <chapter>
+    <title>3D API</title>
+    <xi:include href="xml/aransphericalseriesd.xml"/>
+    <xi:include href="xml/arandevelopment3d.xml"/>
+    <xi:include href="xml/aransolver3d.xml"/>
+  </chapter>
+</book>

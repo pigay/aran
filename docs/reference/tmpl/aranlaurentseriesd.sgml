@@ -1,0 +1,137 @@
+<!-- ##### SECTION Title ##### -->
+aranlaurentseriesd
+
+<!-- ##### SECTION Short_Description ##### -->
+2D potential expansions using Laurent Series.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+<link linkend="AranLaurentSeriesd">AranLaurentSeriesd</link> provides potential
+expansion with the analogy of 2D geometric space to complex plane. For any
+analytic potential, one will be able to write its Laurent series expansion.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT AranLaurentSeriesd ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_new ##### -->
+<para>
+
+</para>
+
+@posdeg: 
+@negdeg: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_free ##### -->
+<para>
+
+</para>
+
+@als: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_copy ##### -->
+<para>
+
+</para>
+
+@src: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_clone ##### -->
+<para>
+
+</para>
+
+@src: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_get_term ##### -->
+<para>
+
+</para>
+
+@als: 
+@i: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_get_posdeg ##### -->
+<para>
+
+</para>
+
+@als: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_get_negdeg ##### -->
+<para>
+
+</para>
+
+@als: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_set_zero ##### -->
+<para>
+
+</para>
+
+@als: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_write ##### -->
+<para>
+
+</para>
+
+@als: 
+@file: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_evaluate ##### -->
+<para>
+
+</para>
+
+@als: 
+@z: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_translate ##### -->
+<para>
+
+</para>
+
+@src: 
+@zsrc: 
+@dst: 
+@zdst: 
+
+
+<!-- ##### FUNCTION aran_laurent_seriesd_to_taylor ##### -->
+<para>
+
+</para>
+
+@src: 
+@zsrc: 
+@dst: 
+@zdst: 
+
+

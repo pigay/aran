@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
+  <!-- short description -->
+  <para>
+    <phrase>
+      <link linkend="@type@"><type>@type@</type></link>-based buffers.
+    </phrase>
+  </para>
+
+  <!-- long description -->
+  <para>
+    Coefficient buffers are precomputed single dimension arrays of
+    coefficients. One has to provide a function
+    (<link linkend="AranCoefficientBuffer@t@Generator">AranCoefficientBuffer@t@Generator</link>) for processing every term in the
+    buffer. Calling <link linkend="aran-coefficient-buffer@t@-get">aran_coefficient_buffer@t@_get ()</link> will do call the
+    generator as many times as necessary and return the result.
+    On the contrary, <link linkend="aran-coefficient-buffer@t@-get-unsafe">aran_coefficient_buffer@t@_get_unsafe ()</link> assumes that
+    the necessary calls to <link linkend="aran-coefficient-buffer@t@-require">aran_coefficient_buffer@t@_require ()</link> have been done
+    previously.
+  </para>
+</book>

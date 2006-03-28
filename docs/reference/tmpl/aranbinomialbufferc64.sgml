@@ -1,0 +1,88 @@
+<!-- ##### SECTION Title ##### -->
+aranbinomialbufferc64
+
+<!-- ##### SECTION Short_Description ##### -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
+            href="../tmpl/aranbinomialbufferc64-intro.xml"
+            xpointer="/1/1/1"
+            parse="xml" />
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
+            href="../tmpl/aranbinomialbufferc64-intro.xml" xpointer="/1/2"
+            parse="xml" />
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT AranBinomialBufferc64 ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION AranBinomialBufferc64Generator ##### -->
+<para>
+
+</para>
+
+@l: 
+@m: 
+@buf: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_binomial_bufferc64_new ##### -->
+<para>
+
+</para>
+
+@generator: 
+@l: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_binomial_bufferc64_free ##### -->
+<para>
+
+</para>
+
+@buf: 
+
+
+<!-- ##### FUNCTION aran_binomial_bufferc64_require ##### -->
+<para>
+
+</para>
+
+@buf: 
+@max: 
+
+
+<!-- ##### FUNCTION aran_binomial_bufferc64_get ##### -->
+<para>
+
+</para>
+
+@buf: 
+@l: 
+@m: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_binomial_bufferc64_get_unsafe ##### -->
+<para>
+
+</para>
+
+@buf: 
+@l: 
+@m: 
+@Returns: 
+
+

@@ -1,0 +1,143 @@
+<!-- ##### SECTION Title ##### -->
+arandevelopment2d
+
+<!-- ##### SECTION Short_Description ##### -->
+2D development stored in each QTree (VsgPRTree2d) node of a FMM solver.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+AranDevelopment2d uses
+<link linkend="AranLaurentSeriesd">AranLaurentSeriesd</link> to keep multipole
+and local expansions of a potential at a VsgPRTree2d node. It can in turn be
+used in an <link linkend="AranSolver2d">Aransolver2d</link> for solving a FMM
+problem.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO ARAN_TYPE_DEVELOPMENT2D ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT AranDevelopment2d ##### -->
+<para>
+
+</para>
+
+@multipole: 
+@local: 
+
+<!-- ##### FUNCTION aran_development2d_new ##### -->
+<para>
+
+</para>
+
+@posdeg: 
+@negdeg: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_development2d_free ##### -->
+<para>
+
+</para>
+
+@ad: 
+
+
+<!-- ##### FUNCTION aran_development2d_copy ##### -->
+<para>
+
+</para>
+
+@src: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development2d_clone ##### -->
+<para>
+
+</para>
+
+@src: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_development2d_set_zero ##### -->
+<para>
+
+</para>
+
+@ad: 
+
+
+<!-- ##### FUNCTION aran_development2d_write ##### -->
+<para>
+
+</para>
+
+@ad: 
+@file: 
+
+
+<!-- ##### FUNCTION aran_development2d_m2m ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development2d_m2l ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development2d_l2l ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development2d_multipole_evaluate ##### -->
+<para>
+
+</para>
+
+@devel_center: 
+@devel: 
+@pos: 
+@Returns: 
+
+
+<!-- ##### FUNCTION aran_development2d_local_evaluate ##### -->
+<para>
+
+</para>
+
+@devel_center: 
+@devel: 
+@pos: 
+@Returns: 
+
+
