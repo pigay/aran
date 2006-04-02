@@ -11,7 +11,7 @@
 # set aran_binary_age _and_ aran_interface_age to 0.
 #
 m4_define([aran_major_version], [0])
-m4_define([aran_minor_version], [1])
+m4_define([aran_minor_version], [2])
 m4_define([aran_micro_version], [0])
 m4_define([aran_interface_age], [0])
 m4_define([aran_binary_age],
