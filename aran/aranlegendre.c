@@ -80,6 +80,31 @@ gdouble aran_legendre_associated_evaluate (guint l, guint m, gdouble x)
 }
 
 /**
+ * aran_legendre_evaluate_multiple:
+ * @l: a #guint.
+ * @x: polynomial variable.
+ * @result: result array. Must be at least of size @l+1.
+ *
+ * Computes the Legendre polynomials from P_0 to P_@l at @x.
+ */
+void aran_legendre_evaluate_multiple (guint l, gdouble x, gdouble *result)
+{
+  gint i;
+
+  result[0] = 1.;
+
+  if (l > 0)
+    {
+      result[1] = x;
+
+      for (i=2; i<=l; i ++)
+        {
+          result[i] = ((i+i-1.) * x * result[i-1] - (i-1) * result[i-2]) / i;
+        }
+    }
+}
+
+/**
  * aran_legendre_evaluate:
  * @l: a #guint.
  * @x: polynomial variable.
@@ -90,7 +115,10 @@ gdouble aran_legendre_associated_evaluate (guint l, guint m, gdouble x)
  */
 gdouble aran_legendre_evaluate (guint l, gdouble x)
 {
-  return aran_legendre_associated_evaluate_internal (l, 0, x, 0.);
+  gdouble P[l+1];
+
+  aran_legendre_evaluate_multiple (l, x, P);
+  return P[l];
 }
 
 /**

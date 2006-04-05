@@ -31,6 +31,8 @@ gdouble aran_legendre_associated_evaluate_internal (guint l, guint m,
 
 gdouble aran_legendre_associated_evaluate (guint l, guint m, gdouble x);
 
+void aran_legendre_evaluate_multiple (guint l, gdouble x, gdouble *result);
+
 gdouble aran_legendre_evaluate (guint l, gdouble x);
 
 void aran_legendre_associated_evaluate_multiple_internal (guint l,

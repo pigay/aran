@@ -20,6 +20,7 @@ aran_wigner_write
 <FILE>aranlegendre</FILE>
 aran_legendre_associated_evaluate_internal
 aran_legendre_associated_evaluate
+aran_legendre_evaluate_multiple
 aran_legendre_evaluate
 aran_legendre_associated_evaluate_multiple_internal
 aran_legendre_associated_evaluate_multiple

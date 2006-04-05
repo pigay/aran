@@ -37,6 +37,16 @@ Legendre polynomials and Associated Lengendre polynomials.
 @Returns: 
 
 
+<!-- ##### FUNCTION aran_legendre_evaluate_multiple ##### -->
+<para>
+
+</para>
+
+@l: 
+@x: 
+@result: 
+
+
 <!-- ##### FUNCTION aran_legendre_evaluate ##### -->
 <para>
 
