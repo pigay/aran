@@ -234,7 +234,7 @@ gdouble *aran_wigner_term (AranWigner * aw, guint l, guint m1, gint m2)
 
 /**
  * aran_wigner_new:
- * @beta: Rotation angle (-pi/2 < @beta < pi/2).
+ * @beta: Rotation angle (-pi < @beta < pi).
  * @l: initial degree preallocation if positive.
  *
  * Creates a new #AranWigner for angle @beta. 
