@@ -547,7 +547,7 @@ gboolean aran_solver2d_remove_point (AranSolver2d *solver,
  *
  * See vsg_prtree2d_find_point() in Vsg API docs.
  *
- * Returns: 
+ * Returns: found #VsgPoint2 or NULL.
  */
 VsgPoint2 aran_solver2d_find_point (AranSolver2d *solver,
                                     VsgPoint2 selector)

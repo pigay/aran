@@ -546,7 +546,7 @@ gboolean aran_solver3d_remove_point (AranSolver3d *solver,
  *
  * See vsg_prtree3d_find_point() in Vsg API docs.
  *
- * Returns: 
+ * Returns: found #VsgPoint3 or NULL.
  */
 VsgPoint3 aran_solver3d_find_point (AranSolver3d *solver,
                                     VsgPoint3 selector)
