@@ -18,6 +18,9 @@ the <ulink url="http://mathworld.wolfram.com/SphericalHarmonicAdditionTheorem.ht
 
 </para>
 
+<!-- ##### SECTION Stability_Level ##### -->
+
+
 <!-- ##### STRUCT AranSphericalSeriesd ##### -->
 <para>
 
@@ -200,7 +203,41 @@ the <ulink url="http://mathworld.wolfram.com/SphericalHarmonicAdditionTheorem.ht
 @xdst: 
 
 
+<!-- ##### FUNCTION aran_spherical_seriesd_translate_rotate ##### -->
+<para>
+
+</para>
+
+@src: 
+@xsrc: 
+@dst: 
+@xdst: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_to_local_rotate ##### -->
+<para>
+
+</para>
+
+@src: 
+@xsrc: 
+@dst: 
+@xdst: 
+
+
 <!-- ##### FUNCTION aran_spherical_seriesd_rotate ##### -->
+<para>
+
+</para>
+
+@src: 
+@alpha: 
+@beta: 
+@gamma: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_spherical_seriesd_rotate_inverse ##### -->
 <para>
 
 </para>

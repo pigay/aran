@@ -102,6 +102,21 @@ void aran_development3d_l2l_kkylin (const VsgVector3d *src_center,
                                     const VsgVector3d *dst_center,
                                     AranDevelopment3d *dst);
 
+void aran_development3d_m2m_rotate (const VsgVector3d *src_center,
+                                    AranDevelopment3d *src,
+                                    const VsgVector3d *dst_center,
+                                    AranDevelopment3d *dst);
+
+void aran_development3d_m2l_rotate (const VsgVector3d *src_center,
+                                    AranDevelopment3d *src,
+                                    const VsgVector3d *dst_center,
+                                    AranDevelopment3d *dst);
+
+void aran_development3d_l2l_rotate (const VsgVector3d *src_center,
+                                    AranDevelopment3d *src,
+                                    const VsgVector3d *dst_center,
+                                    AranDevelopment3d *dst);
+
 G_END_DECLS;
 
 #endif /* __ARAN_DEVELOPMENT3D_H__ */

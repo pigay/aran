@@ -23,6 +23,11 @@
 #include "aransphericalseriesd.h"
 
 #define PHASE(m) (((m)%2 == 0) ? 1. : -1.)
+#define ARAN_SPHERICAL_SERIESD_SIZE(pd, nd) ( \
+sizeof (AranSphericalSeriesd) + \
+_spherical_seriesd_size ((pd), (nd)) * \
+sizeof (gcomplex128) \
+)
 
 struct _AranSphericalSeriesd
 {
@@ -92,6 +97,13 @@ static inline gcomplex128 _sph_sym (gcomplex128 z, gint m)
 
   return z;
 }
+
+void
+aran_spherical_seriesd_translate_vertical (const AranSphericalSeriesd * src,
+                                           AranSphericalSeriesd * dst,
+                                           gdouble r,
+                                           gdouble cost,
+                                           gdouble cosp, gdouble sinp);
 
 void
 aran_spherical_seriesd_multipole_to_local_vertical

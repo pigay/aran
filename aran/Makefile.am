@@ -24,7 +24,7 @@ libaran_la_sources = aran.c aransolver2d.c aranbinomial.c \
 aranlaurentseriesd.c arandevelopment2d.c aranlegendre.c \
 aransphericalharmonic.c aransphericalseriesd.c arandevelopment3d.c \
 aransolver3d.c aranwigner.c aranwignerrepo.c aransphericalseriesd-translate.c \
-aransphericalseriesd-kkylin.c
+aransphericalseriesd-kkylin.c aransphericalseriesd-rotate.c
 
 libaran_la_headers = arancomplex.h aran.h aransolver2d.h aranbinomial.h \
 aranlaurentseriesd.h arandevelopment2d.h aranlegendre.h \

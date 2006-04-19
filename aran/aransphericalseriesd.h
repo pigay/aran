@@ -102,6 +102,21 @@ void aran_spherical_seriesd_rotate (const AranSphericalSeriesd *src,
                                     gdouble gamma,
                                     AranSphericalSeriesd *dst);
 
+void aran_spherical_seriesd_rotate_inverse (const AranSphericalSeriesd * src,
+                                            gdouble alpha, gdouble beta,
+                                            gdouble gamma,
+                                            AranSphericalSeriesd * dst);
+
+void aran_spherical_seriesd_translate_rotate (const AranSphericalSeriesd *src,
+                                              const VsgVector3d *xsrc,
+                                              AranSphericalSeriesd *dst,
+                                              const VsgVector3d *xdst);
+
+void aran_spherical_seriesd_to_local_rotate (const AranSphericalSeriesd *src,
+                                             const VsgVector3d *xsrc,
+                                             AranSphericalSeriesd *dst,
+                                             const VsgVector3d *xdst);
+
 G_END_DECLS;
 
 #endif /* __ARAN_SPHERICAL_SERIESD_H__ */

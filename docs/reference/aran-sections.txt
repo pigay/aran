@@ -88,6 +88,9 @@ aran_development3d_local_gradient_evaluate
 aran_development3d_m2m_kkylin
 aran_development3d_m2l_kkylin
 aran_development3d_l2l_kkylin
+aran_development3d_m2m_rotate
+aran_development3d_m2l_rotate
+aran_development3d_l2l_rotate
 <SUBSECTION Standard>
 aran_development3d_get_type
 </SECTION>
@@ -194,7 +197,10 @@ aran_spherical_seriesd_translate
 aran_spherical_seriesd_to_local
 aran_spherical_seriesd_translate_kkylin
 aran_spherical_seriesd_to_local_kkylin
+aran_spherical_seriesd_translate_rotate
+aran_spherical_seriesd_to_local_rotate
 aran_spherical_seriesd_rotate
+aran_spherical_seriesd_rotate_inverse
 </SECTION>
 
 <SECTION>

@@ -268,6 +268,69 @@ void aran_development3d_l2l_kkylin (const VsgVector3d *src_center,
 }
 
 /**
+ * aran_development3d_m2m_rotate:
+ * @src_center: @src center.
+ * @src: an #AranDevelopment3d.
+ * @dst_center: @dst center.
+ * @dst: an #AranDevelopment3d.
+ *
+ * Performs multipole 2 multipole translation between @src and @dst with the
+ * "Point and Shoot" technique: rotate src to dst_center direction and then
+ * translate the rotated series along the Z axis. Rotate it back and accumulate
+ * it into dst. These operations lead to a O(p^3) scheme.
+ */
+void aran_development3d_m2m_rotate (const VsgVector3d *src_center,
+                                    AranDevelopment3d *src,
+                                    const VsgVector3d *dst_center,
+                                    AranDevelopment3d *dst)
+{
+  aran_spherical_seriesd_translate_rotate (src->multipole, src_center,
+                                           dst->multipole, dst_center);
+}
+
+/**
+ * aran_development3d_m2l_rotate:
+ * @src_center: @src center.
+ * @src: an #AranDevelopment3d.
+ * @dst_center: @dst center.
+ * @dst: an #AranDevelopment3d.
+ *
+ * Performs multipole 2 local translation between @src and @dst with the
+ * "Point and Shoot" technique: rotate src to dst_center direction and then
+ * translate the rotated series along the Z axis. Rotate it back and accumulate
+ * it into dst. These operations lead to a O(p^3) scheme.
+ */
+void aran_development3d_m2l_rotate (const VsgVector3d *src_center,
+                                    AranDevelopment3d *src,
+                                    const VsgVector3d *dst_center,
+                                    AranDevelopment3d *dst)
+{
+  aran_spherical_seriesd_to_local_rotate (src->multipole, src_center,
+                                          dst->local, dst_center);
+}
+
+/**
+ * aran_development3d_l2l_rotate:
+ * @src_center: @src center.
+ * @src: an #AranDevelopment3d.
+ * @dst_center: @dst center.
+ * @dst: an #AranDevelopment3d.
+ *
+ * Performs local 2 local translation between @src and @dst with the
+ * "Point and Shoot" technique: rotate src to dst_center direction and then
+ * translate the rotated series along the Z axis. Rotate it back and accumulate
+ * it into dst. These operations lead to a O(p^3) scheme.
+ */
+void aran_development3d_l2l_rotate (const VsgVector3d *src_center,
+                                    AranDevelopment3d *src,
+                                    const VsgVector3d *dst_center,
+                                    AranDevelopment3d *dst)
+{
+  aran_spherical_seriesd_translate_rotate (src->local, src_center,
+                                           dst->local, dst_center);
+}
+
+/**
  * aran_development3d_multipole_evaluate:
  * @devel_center: center of @devel.
  * @devel: an #AranDevelopment3d.

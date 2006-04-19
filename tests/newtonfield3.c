@@ -332,6 +332,15 @@ void parse_args (int argc, char **argv)
 
               l2l = (AranLocal2LocalFunc3d) aran_development3d_l2l_kkylin;
 	    }
+	  else if (g_ascii_strcasecmp (arg, "rotate") == 0)
+	    {
+              m2m =
+                (AranMultipole2MultipoleFunc3d) aran_development3d_m2m_rotate;
+
+              m2l = (AranMultipole2LocalFunc3d) aran_development3d_m2l_rotate;
+
+              l2l = (AranLocal2LocalFunc3d) aran_development3d_l2l_rotate;
+	    }
 	  else 
 	    {
 	      g_printerr ("Invalid translation name (-translation %s)\n", arg);

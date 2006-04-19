@@ -18,6 +18,9 @@ solving a FMM problem.
 
 </para>
 
+<!-- ##### SECTION Stability_Level ##### -->
+
+
 <!-- ##### MACRO ARAN_TYPE_DEVELOPMENT3D ##### -->
 <para>
 
@@ -175,6 +178,39 @@ solving a FMM problem.
 
 
 <!-- ##### FUNCTION aran_development3d_l2l_kkylin ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development3d_m2m_rotate ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development3d_m2l_rotate ##### -->
+<para>
+
+</para>
+
+@src_center: 
+@src: 
+@dst_center: 
+@dst: 
+
+
+<!-- ##### FUNCTION aran_development3d_l2l_rotate ##### -->
 <para>
 
 </para>

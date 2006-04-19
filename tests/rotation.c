@@ -208,7 +208,7 @@ gint check (gdouble alpha, gdouble beta, gdouble gamma)
   VsgVector3d p = {3., 3., 3.};
   VsgVector3d prot = VSG_V3D_ZERO;
   VsgMatrix4d mat = VSG_M4D_ID;
-  AranSphericalSeriesd *ass, *rot, *chk;
+  AranSphericalSeriesd *ass, *rot, *chk, *back;
 
   vsg_matrix4d_rotate_euler (&mat, alpha, beta, gamma);
 
@@ -223,14 +223,19 @@ gint check (gdouble alpha, gdouble beta, gdouble gamma)
   chk = create_taylor (L, &zero, &prot);
 
   rot = aran_spherical_seriesd_new (L, 0);
+  back = aran_spherical_seriesd_new (L, 0);
 
   aran_spherical_seriesd_rotate (ass, alpha, beta, gamma, rot);
+  aran_spherical_seriesd_rotate_inverse (rot, alpha, beta, gamma, back);
 
   faults += ass_diff (chk, rot);
+
+  faults += ass_diff (back, ass);
 
   aran_spherical_seriesd_free (ass);
   aran_spherical_seriesd_free (rot);
   aran_spherical_seriesd_free (chk);
+  aran_spherical_seriesd_free (back);
 
   return faults;
 }

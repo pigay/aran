@@ -24,8 +24,6 @@
 #include "arancoefficientbufferd.h"
 #include "aranbinomialbufferd.h"
 
-#include "aranwignerrepo.h"
-
 #include <string.h>
 #include <math.h>
 
@@ -120,9 +118,7 @@ AranSphericalSeriesd *aran_spherical_seriesd_new (guint8 posdeg, guint8 negdeg)
     }
 
   ass = (AranSphericalSeriesd *)
-    g_malloc0 (sizeof (AranSphericalSeriesd) +
-               _spherical_seriesd_size (posdeg, negdeg) *
-               sizeof (gcomplex128));
+    g_malloc0 (ARAN_SPHERICAL_SERIESD_SIZE (posdeg, negdeg));
 
   ass->posdeg = posdeg;
   ass->negdeg = negdeg;
@@ -182,13 +178,10 @@ void aran_spherical_seriesd_copy (const AranSphericalSeriesd * src,
 AranSphericalSeriesd *
 aran_spherical_seriesd_clone (const AranSphericalSeriesd * src)
 {
-  guint size;
   g_return_val_if_fail (src != NULL, NULL);
 
-  size = sizeof (AranSphericalSeriesd) +
-    _spherical_seriesd_size (src->posdeg, src->negdeg) * sizeof (gcomplex128);
-
-  return g_memdup (src, size);
+  return g_memdup (src,
+                   ARAN_SPHERICAL_SERIESD_SIZE (src->posdeg, src->negdeg));
 }
 
 /**
@@ -482,86 +475,4 @@ void aran_spherical_seriesd_local_gradient_evaluate
 
   local_to_cartesian (r, cost, sint, cosp, sinp,
                       creal (dr), creal (dt), creal (dp), grad);
-}
-
-static void _buffer_rotate (AranWigner * aw, guint deg,
-                            gcomplex128 *expma, gcomplex128 *expmg,
-                            gcomplex128 * src, gcomplex128 * dst)
-{
-  gint l, m1, m2;
-
-  for (l = 0; l <= deg; l++)
-    {
-      for (m1 = 0; m1 <= l; m1++)
-        {
-          gcomplex128 sum = 0.;
-
-          for (m2 = -l; m2 < 0; m2++)
-            {
-              gdouble wigner_term = PHASE (m1 + m2) *
-                *aran_wigner_term (aw, l, m1, m2);
-              gcomplex128 src_l_m2 = src[(l * (l + 1)) / 2 + ABS (m2)];
-
-              sum += expmg[m1] / expma[ABS (m2)] * wigner_term *
-                _sph_sym (src_l_m2, ABS (m2));
-            }
-
-          for (m2 = 0; m2 <= l; m2++)
-            {
-              gdouble wigner_term = *aran_wigner_term (aw, l, m2, m1);
-              gcomplex128 src_l_m2 = src[(l * (l + 1)) / 2 + m2];
-
-              sum += expma[m2] * expmg[m1] * wigner_term * src_l_m2;
-            }
-
-          dst[(l * (l + 1)) / 2 + m1] += sum;
-        }
-    }
-}
-
-/**
- * aran_spherical_seriesd_rotate:
- * @src: source #AranSphericalSeriesd.
- * @alpha: an angle.
- * @beta: an angle.
- * @gamma: an angle.
- * @dst: destination #AranSphericalSeriesd.
- *
- * Computes the rotation of @src and accumulates the result into @dst.
- */
-void aran_spherical_seriesd_rotate (const AranSphericalSeriesd * src,
-                                    gdouble alpha, gdouble beta,
-                                    gdouble gamma, AranSphericalSeriesd * dst)
-{
-  gint l;
-  guint8 nd = MIN (dst->negdeg, src->negdeg);
-  guint8 pd = MIN (dst->posdeg, src->posdeg);
-  guint8 lmax = MAX (pd+1, nd);
-
-  gcomplex128 expma[lmax];
-  gcomplex128 expmg[lmax];
-  gcomplex128 expa = cos (alpha) - G_I * sin (alpha);
-  gcomplex128 expg = cos (gamma) - G_I * sin (gamma);
-  AranWigner *aw = aran_wigner_repo_lookup (beta);
-
-  aran_wigner_require (aw, lmax);
-
-  expma[0] = 1.;
-  expmg[0] = 1.;
-  for (l = 1; l < lmax; l++)
-    {
-      expma[l] = expma[l - 1] * expa;
-      expmg[l] = expmg[l - 1] * expg;
-    }
-
-  _buffer_rotate (aw, pd, expma, expmg,
-                  _spherical_seriesd_get_pos_term (src, 0, 0),
-                  _spherical_seriesd_get_pos_term (dst, 0, 0));
-
-  if (nd > 0)
-    {
-      _buffer_rotate (aw, nd - 1, expma, expmg,
-                      _spherical_seriesd_get_neg_term (src, 0, 0),
-                      _spherical_seriesd_get_neg_term (dst, 0, 0));
-    }
 }

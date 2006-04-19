@@ -38,5 +38,11 @@ AT_CHECK(newtonfield3 -translation kkylin -np 24 -pr 24 -dist random -err 1.e-3,
 AT_CHECK(newtonfield3 -translation kkylin -np 240 -pr 24 -s 10 -err 1.e-3, 0)
 AT_CHECK(newtonfield3 -translation kkylin -np 2400 -pr 24 -s 100 -err 1.e-3, 0)
 
+AT_CHECK(newtonfield3 -translation rotate -err 1.e-3, 0)
+AT_CHECK(newtonfield3 -translation rotate -np 24 -pr 24 -err 1.e-3, 0)
+AT_CHECK(newtonfield3 -translation rotate -np 24 -pr 24 -dist random -err 1.e-3, 0)
+
+AT_CHECK(newtonfield3 -translation rotate -np 240 -pr 24 -s 10 -err 1.e-3, 0)
+AT_CHECK(newtonfield3 -translation rotate -np 2400 -pr 24 -s 100 -err 1.e-3, 0)
 
 AT_CLEANUP

@@ -28,6 +28,67 @@
 /* functions */
 
 
+static void aran_local_translate_vertical (const AranSphericalSeriesd * src,
+                                           AranSphericalSeriesd * dst,
+                                           gdouble r,
+                                           gdouble cost,
+                                           gdouble cosp, gdouble sinp)
+{
+  gint l, m;
+  gint n;
+  gdouble rpow[src->posdeg + 1];
+  gdouble pow;
+  gcomplex128 *srcterm, *dstterm, *hterm;
+  gint d = MAX (src->posdeg, dst->posdeg);
+  gcomplex128 harmonics[((d + 1) * (d + 2)) / 2];
+  gcomplex128 expp = cosp + G_I * sinp;
+
+  if (src->posdeg > dst->posdeg)
+    g_warning ("could loose precision in \"%s\"\n", __PRETTY_FUNCTION__);
+
+  aran_spherical_seriesd_beta_require (d);
+  aran_spherical_seriesd_alpha_require (d);
+
+  aran_spherical_harmonic_evaluate_multiple_internal (src->posdeg, cost, 0.,
+                                                      expp, harmonics);
+
+  pow = 1.;
+  for (l = 0; l <= src->posdeg; l++)
+    {
+      rpow[l] = pow;
+      pow *= r;
+    }
+
+  for (l = 0; l <= dst->posdeg; l++)
+    {
+      for (m = 0; m <= l; m++)
+        {
+          dstterm = _spherical_seriesd_get_pos_term (dst, l, m);
+
+          for (n = l; n <= src->posdeg; n++)
+            {
+              gdouble normaliz = aran_spherical_seriesd_beta (n - l) *
+                aran_spherical_seriesd_beta (l) /
+                aran_spherical_seriesd_beta (n);
+              gdouble factor;
+
+              srcterm = _spherical_seriesd_get_pos_term (src, n, 0);
+              hterm = aran_spherical_harmonic_multiple_get_term (n - l, 0,
+                                                                 harmonics);
+
+              /* o-m = 0 */
+              factor =
+                aran_spherical_seriesd_alpha (n - l, 0) *
+                aran_spherical_seriesd_alpha (l, m) /
+                aran_spherical_seriesd_alpha (n, m);
+
+              *dstterm += hterm[0] * srcterm[m] * factor * normaliz *
+                rpow[n - l];
+            }
+        }
+    }
+}
+
 static void aran_local_translate (const AranSphericalSeriesd * src,
                                   AranSphericalSeriesd * dst,
                                   gdouble r,
@@ -105,6 +166,64 @@ static void aran_local_translate (const AranSphericalSeriesd * src,
     }
 }
 
+static void
+aran_multipole_translate_vertical (const AranSphericalSeriesd * src,
+                                   AranSphericalSeriesd * dst,
+                                   gdouble r,
+                                   gdouble cost,
+                                   gdouble cosp, gdouble sinp)
+{
+  gint l, m;
+  gint n;
+  gdouble rpow[dst->negdeg];
+  gdouble pow;
+  gcomplex128 *srcterm, *dstterm, *hterm;
+  gint d = MAX (src->negdeg, dst->negdeg) - 1;
+  gcomplex128 harmonics[((d + 1) * (d + 2)) / 2];
+  gcomplex128 expp = cosp + G_I * sinp;
+
+  if (src->negdeg > dst->negdeg)
+    g_warning ("could loose precision in \"%s\"\n", __PRETTY_FUNCTION__);
+
+  aran_spherical_seriesd_alpha_require (d);
+  aran_spherical_seriesd_beta_require (d);
+
+  aran_spherical_harmonic_evaluate_multiple_internal (dst->negdeg - 1, cost,
+                                                      0., expp, harmonics);
+
+  pow = 1.;
+  for (l = 0; l < dst->negdeg; l++)
+    {
+      rpow[l] = pow;
+      pow *= r;
+      for (m = 0; m <= l; m++)
+        {
+          dstterm = _spherical_seriesd_get_neg_term (dst, l, m);
+
+          for (n = m; n <= MIN (l, src->negdeg - 1); n++)
+            {
+              gdouble normaliz = aran_spherical_seriesd_beta (l - n) *
+                aran_spherical_seriesd_beta (l) /
+                aran_spherical_seriesd_beta (n);
+              gdouble factor;
+
+              srcterm = _spherical_seriesd_get_neg_term (src, n, 0);
+              hterm = aran_spherical_harmonic_multiple_get_term (l - n, 0,
+                                                                 harmonics);
+
+              /* m-o = 0 */
+              factor =
+                aran_spherical_seriesd_alpha (l - n, 0) *
+                aran_spherical_seriesd_alpha (n, m) /
+                aran_spherical_seriesd_alpha (l, m);
+
+              *dstterm += conj (hterm[0]) * srcterm[m] * factor * normaliz *
+                rpow[l - n];
+            }
+        }
+    }
+}
+
 static void aran_multipole_translate (const AranSphericalSeriesd * src,
                                       AranSphericalSeriesd * dst,
                                       gdouble r,
@@ -177,6 +296,21 @@ static void aran_multipole_translate (const AranSphericalSeriesd * src,
 }
 
 void
+aran_spherical_seriesd_translate_vertical (const AranSphericalSeriesd * src,
+                                           AranSphericalSeriesd * dst,
+                                           gdouble r,
+                                           gdouble cost,
+                                           gdouble cosp, gdouble sinp)
+{
+  aran_local_translate_vertical (src, dst, r, cost, cosp, sinp);
+
+  if (src->negdeg > 0)
+    {
+      aran_multipole_translate_vertical (src, dst, r, -cost, -cosp, -sinp);
+    }
+}
+
+void
 aran_spherical_seriesd_multipole_to_local_vertical
 (const AranSphericalSeriesd * src,
  AranSphericalSeriesd * dst,
@@ -197,7 +331,7 @@ aran_spherical_seriesd_multipole_to_local_vertical
   aran_spherical_seriesd_alpha_require (d);
   aran_spherical_seriesd_beta_require (d);
 
-  aran_spherical_harmonic_evaluate_multiple_internal (d, cost, 0, expp,
+  aran_spherical_harmonic_evaluate_multiple_internal (d, cost, 0., expp,
                                                       harmonics);
 
   inv_r = 1. / r;

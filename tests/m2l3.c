@@ -32,10 +32,12 @@
 
 static gdouble epsilon = 1.e-7;
 
-static void check (AranSphericalSeriesd *ass, gdouble radius,
+static gint check (const gchar *msg,
+                   AranSphericalSeriesd *ass, gdouble radius,
 		   VsgVector3d *center,
 		   gcomplex128 (*f) (VsgVector3d *x))
 {
+  gint faults = 0;
   guint i, j, k;
   gdouble t, p;
   gcomplex128 yres, yref, err;
@@ -75,18 +77,21 @@ static void check (AranSphericalSeriesd *ass, gdouble radius,
 
 	      if (cabs (err) > epsilon && cabs(yref) > epsilon)
 		{
-		  g_printerr ("Error (%f,%f,%f) : (%e+%ej), (%e+%ej) -> %e\n",
+		  g_printerr ("%s Error (%f,%f,%f) : (%e+%ej), "
+                              "(%e+%ej) -> %e\n",
+                              msg,
 			      r, t, p,
 			      creal (yref), cimag (yref),
 			      creal (yres), cimag (yres),
 			      cabs (err));
+                  faults = 1;
 		}
 	    }
 	}
     }
+
+  return faults;
 }
-
-
 
 static VsgVector3d p;
 
@@ -190,9 +195,30 @@ gcomplex128 newtonpot (VsgVector3d *vec)
 }
 
 static VsgVector3d zero = {0., 0., 0.};
-static VsgVector3d tr = {5., 0.5, 0.5};
+static VsgVector3d tr = {5., 5., -5.};
 
-static guint deg = 15;
+struct _Trans
+{
+  gchar *name;
+  VsgVector3d vector;
+};
+#define TRANS(x,y,z) { \
+"[" #x ", " #y ", " #z "]", \
+{(x), (y), (z)} \
+}
+
+static struct _Trans translations[] = {
+  TRANS (5., 5., 5.),
+  TRANS (5., 5., -5.),
+  TRANS (0., 0., -5.),
+  TRANS (0., 0., 5.),
+  TRANS (5., 0., 5.),
+  TRANS (0., 5., 5.),
+  TRANS (-5., -5., 5.),
+  {NULL, {0., 0., 0.}} /* sentinel */
+};
+
+static guint deg = 25;
 
 static void parse_args (int argc, char **argv)
 {
@@ -247,6 +273,8 @@ int main (int argc, char **argv)
   AranSphericalSeriesd *ass;
   AranSphericalSeriesd *ast;
   AranSphericalSeriesd *ast2;
+  AranSphericalSeriesd *ast3;
+  struct _Trans *trans = translations;
 
   parse_args (argc, argv);
 
@@ -254,33 +282,59 @@ int main (int argc, char **argv)
   p.y = 0.2;
   p.z = 0.3;
 
-  ass = create_multipole (deg);
+  ass = create_multipole (deg+1);
 
 /*   aran_spherical_seriesd_write (ass, stderr); */
 /*   g_printerr ("\n\n"); */
 
   ast = aran_spherical_seriesd_new (deg, 0);
+  ast2 = aran_spherical_seriesd_new (deg, 0);
+  ast3 = aran_spherical_seriesd_new (deg, 0);
 
-  aran_spherical_seriesd_set_zero (ast);
-  aran_spherical_seriesd_to_local (ass, &zero, ast, &tr);
+  while (trans->name != NULL)
+    {
+      gboolean err = FALSE;
+
+      aran_spherical_seriesd_set_zero (ast);
+      aran_spherical_seriesd_to_local (ass, &zero, ast, &trans->vector);
 
 /*   aran_spherical_seriesd_write (ast, stderr); */
 /*   g_printerr ("\n\n"); */
-  check (ast, 1., &tr, newtonpot);
+      err = err || check ("m2l3-normal", ast, 1., &trans->vector,
+			  newtonpot) != 0;
 
-/*   ast2 = create_local (deg, &tr); */
-  ast2 = aran_spherical_seriesd_new (deg, 0);
 
-  aran_spherical_seriesd_set_zero (ast2);
-  aran_spherical_seriesd_to_local_kkylin (ass, &zero, ast2, &tr);
+      aran_spherical_seriesd_set_zero (ast2);
+      aran_spherical_seriesd_to_local_kkylin (ass, &zero, ast2
+                                              , &trans->vector);
 
 /*   aran_spherical_seriesd_write (ast2, stderr); */
 /*   g_printerr ("\n\n"); */
-  check (ast2, 1., &tr, newtonpot);
+      err = err || check ("m2l-kkylin", ast2, 1., &trans->vector,
+			  newtonpot) != 0;
+
+      aran_spherical_seriesd_set_zero (ast3);
+      aran_spherical_seriesd_to_local_rotate (ass, &zero, ast3,
+                                              &trans->vector);
+
+/*   aran_spherical_seriesd_write (ast3, stderr); */
+/*   g_printerr ("\n\n"); */
+      err = err || check ("m2l-rotate", ast3, 1., &trans->vector,
+			  newtonpot) != 0;
+
+      if (err)
+        {
+          g_printerr ("detected error for translation: %s\n", trans->name);
+          ret ++;
+        }
+
+      trans ++;
+    }
 
   aran_spherical_seriesd_free (ass);
   aran_spherical_seriesd_free (ast);
   aran_spherical_seriesd_free (ast2);
+  aran_spherical_seriesd_free (ast3);
 
   return ret;
 }

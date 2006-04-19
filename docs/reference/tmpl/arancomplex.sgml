@@ -15,6 +15,9 @@ for complex mathematical functions (creal, cimag, clog, ccos, etc.).
 
 </para>
 
+<!-- ##### SECTION Stability_Level ##### -->
+
+
 <!-- ##### TYPEDEF gcomplex64 ##### -->
 <para>
 

@@ -239,6 +239,7 @@ int main (int argc, char **argv)
   AranSphericalSeriesd *ass;
   AranSphericalSeriesd *ast;
   AranSphericalSeriesd *ast2;
+  AranSphericalSeriesd *ast3;
 
   parse_args (argc, argv);
 
@@ -270,9 +271,19 @@ int main (int argc, char **argv)
 /*   g_printerr ("\n\n"); */
   check ("translated kkylin", ast2, 0.5, &tr, newtongrad);
 
+  ast3 = aran_spherical_seriesd_clone (ass);
+  aran_spherical_seriesd_set_zero (ast3);
+
+  aran_spherical_seriesd_translate_rotate (ass, &center, ast3, &tr);
+
+/*   aran_spherical_seriesd_write (ast3, stderr); */
+/*   g_printerr ("\n\n"); */
+  check ("translated rotate", ast3, 0.5, &tr, newtongrad);
+
   aran_spherical_seriesd_free (ass);
   aran_spherical_seriesd_free (ast);
   aran_spherical_seriesd_free (ast2);
+  aran_spherical_seriesd_free (ast3);
 
   return ret;
 }
