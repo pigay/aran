@@ -87,6 +87,14 @@
     </itemizedlist>
        
     </simplesect>
+    <simplesect>
+      <title>Using LibAran</title>
+      <para>
+        Some simple examples of developing applications that use LibAran FMM
+        facilities can be found in the tests programs of the library
+       (located in the $(srcdir)/tests/ directory of the distribution).
+      </para>
+    </simplesect>
   </chapter>
 
 
