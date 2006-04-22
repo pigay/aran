@@ -87,8 +87,6 @@ particles.
 @src_center: 
 @src: 
 @dst: 
-<!-- # Unused Parameters # -->
-@local: 
 
 
 <!-- ##### FUNCTION aran_solver2d_new ##### -->
@@ -143,8 +141,6 @@ particles.
 
 @solver: 
 @Returns: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_set_tolerance ##### -->
@@ -154,8 +150,6 @@ particles.
 
 @solver: 
 @tolerance: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_get_bounds ##### -->
@@ -166,8 +160,6 @@ particles.
 @solver: 
 @lbound: 
 @ubound: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_depth ##### -->
@@ -177,8 +169,6 @@ particles.
 
 @solver: 
 @Returns: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_point_count ##### -->
@@ -188,8 +178,6 @@ particles.
 
 @solver: 
 @Returns: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_insert_point ##### -->
@@ -199,8 +187,6 @@ particles.
 
 @solver: 
 @point: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_remove_point ##### -->
@@ -211,8 +197,6 @@ particles.
 @solver: 
 @point: 
 @Returns: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_find_point ##### -->
@@ -223,8 +207,6 @@ particles.
 @solver: 
 @selector: 
 @Returns: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_foreach_point ##### -->
@@ -235,8 +217,6 @@ particles.
 @solver: 
 @func: 
 @user_data: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_foreach_point_custom ##### -->
@@ -249,8 +229,6 @@ particles.
 @locfunc: 
 @func: 
 @user_data: 
-<!-- # Unused Parameters # -->
-@solver2d: 
 
 
 <!-- ##### FUNCTION aran_solver2d_solve ##### -->

@@ -27,8 +27,8 @@
       <listitem>
         <para>
           3D FMM algorithms through complex spherical harmonics series. These
-          series can handle Newton/Coulomb potentials. Sparse translation
-          operators (O(p^3) complexity) are included.
+          series can handle Newton/Coulomb potentials. Two flavors of sparse
+          translation operators (O(p^3) complexity) are included.
         </para>
       </listitem>
       <listitem>
@@ -42,11 +42,6 @@
       Features from the following list may be implemented in the future:
     </para>
     <itemizedlist>
-      <listitem>
-        <para>
-          Rotation (3D) based sparse translation operators.
-        </para>
-      </listitem>
       <listitem>
         <para>
           Diagonal (3D) translation operators based on Plane Wave
