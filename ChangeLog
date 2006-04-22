@@ -1,3 +1,75 @@
+2006-04-22 20:17  peyo
+
+	* README, aran/aransphericalseriesd-translate.c,
+	  docs/reference/aran-docs.xml,
+	  docs/reference/tmpl/aransolver2d.sgml,
+	  docs/reference/tmpl/aransolver3d.sgml,
+	  docs/reference/tmpl/aransphericalharmonic.sgml: Optimisation of
+	  Z axis translation operators: avoid compute unnecessary
+	  Spherical harmonics.
+
+2006-04-20 20:25  peyo
+
+	* docs/reference/aran-docs.xml: Added a paragraph for examples in
+	  the API doc.
+
+2006-04-19 19:59  peyo
+
+	* aclocal.m4, aran/Makefile.am, aran/arandevelopment3d.c,
+	  aran/arandevelopment3d.h, aran/aransphericalseriesd-private.h,
+	  aran/aransphericalseriesd-rotate.c,
+	  aran/aransphericalseriesd-translate.c,
+	  aran/aransphericalseriesd.c, aran/aransphericalseriesd.h,
+	  docs/reference/aran-sections.txt, docs/reference/tmpl/aran.sgml,
+	  docs/reference/tmpl/aranbinomial.sgml,
+	  docs/reference/tmpl/aranbinomialbufferc128.sgml,
+	  docs/reference/tmpl/aranbinomialbufferc64.sgml,
+	  docs/reference/tmpl/aranbinomialbufferd.sgml,
+	  docs/reference/tmpl/aranbinomialbufferf.sgml,
+	  docs/reference/tmpl/aranbinomialbufferl.sgml,
+	  docs/reference/tmpl/arancoefficientbufferc128.sgml,
+	  docs/reference/tmpl/arancoefficientbufferc64.sgml,
+	  docs/reference/tmpl/arancoefficientbufferd.sgml,
+	  docs/reference/tmpl/arancoefficientbufferf.sgml,
+	  docs/reference/tmpl/arancoefficientbufferl.sgml,
+	  docs/reference/tmpl/arancomplex.sgml,
+	  docs/reference/tmpl/arandevelopment2d.sgml,
+	  docs/reference/tmpl/arandevelopment3d.sgml,
+	  docs/reference/tmpl/aranlaurentseriesd.sgml,
+	  docs/reference/tmpl/aranlegendre.sgml,
+	  docs/reference/tmpl/aransolver2d.sgml,
+	  docs/reference/tmpl/aransolver3d.sgml,
+	  docs/reference/tmpl/aransphericalharmonic.sgml,
+	  docs/reference/tmpl/aransphericalseriesd.sgml,
+	  docs/reference/tmpl/aranwigner.sgml,
+	  docs/reference/tmpl/aranwignerrepo.sgml, tests/gradient3.c,
+	  tests/m2l3.c, tests/multipole3.c, tests/newtonfield3.at,
+	  tests/newtonfield3.c, tests/newtonpot3.at, tests/newtonpot3.c,
+	  tests/rotation.c, tests/taylor3.c: Introduced rotation based
+	  translation operators.
+
+2006-04-17 19:21  peyo
+
+	* aran/aranwigner.c: Api doc fix.
+
+2006-04-17 19:17  peyo
+
+	* aran/aransolver2d.c, aran/aransolver3d.c: Added Returns field in
+	  Api docs.
+
+2006-04-05 20:27  peyo
+
+	* aran/aranlegendre.c, aran/aranlegendre.h,
+	  docs/reference/aran-sections.txt,
+	  docs/reference/tmpl/aranlegendre.sgml: aran_legendre_evaluate()
+	  now uses new function
+	  aran_legendre_evaluate_multiple() instead of associated
+	  polynomials.
+
+2006-04-02 14:38  peyo
+
+	* ChangeLog, configure.ac: Bump version number.
+
 2006-03-28 07:45  peyo
 
 	* LibAran initial import
