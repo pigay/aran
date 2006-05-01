@@ -295,9 +295,7 @@ void aran_spherical_seriesd_to_local_rotate (const AranSphericalSeriesd *src,
   guint8 lmax = MAX (pd+1, nd);
 
   gcomplex128 expma[lmax];
-  gcomplex128 expmg[lmax];
   gcomplex128 expa;
-  gcomplex128 expg;
 
   AranWigner *aw;
   VsgVector3d dir;
@@ -334,14 +332,11 @@ void aran_spherical_seriesd_to_local_rotate (const AranSphericalSeriesd *src,
   aran_wigner_require (aw, lmax);
 
   expa = cos (-phi) - G_I * sin (-phi);
-  expg = 1.;
 
   expma[0] = 1.;
-  expmg[0] = 1.;
   for (l = 1; l < lmax; l++)
     {
       expma[l] = expma[l - 1] * expa;
-      expmg[l] = expmg[l - 1] * expg;
     }
 
   /* rotate src */
@@ -397,9 +392,7 @@ void aran_spherical_seriesd_translate_rotate (const AranSphericalSeriesd *src,
   guint8 lmax = MAX (pd+1, nd);
 
   gcomplex128 expma[lmax];
-  gcomplex128 expmg[lmax];
   gcomplex128 expa;
-  gcomplex128 expg;
 
   AranWigner *aw;
   VsgVector3d dir;
@@ -436,14 +429,11 @@ void aran_spherical_seriesd_translate_rotate (const AranSphericalSeriesd *src,
   aran_wigner_require (aw, lmax);
 
   expa = cos (-phi) - G_I * sin (-phi);
-  expg = 1.;
 
   expma[0] = 1.;
-  expmg[0] = 1.;
   for (l = 1; l < lmax; l++)
     {
       expma[l] = expma[l - 1] * expa;
-      expmg[l] = expmg[l - 1] * expg;
     }
 
   /* rotate src */
