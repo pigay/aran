@@ -173,31 +173,12 @@ void aran_wigner_require (AranWigner * aw, guint l)
         }
 
       /* penultimate column */
-      for (k = i - 1; k > 0; k--)
+      for (k = i - 1; k >= 2 - i; k--)
         {
-          gdouble i_cb = i * cb;
-          gdouble a = ((i_cb - k + 1.) / (i_cb - k));
+	  gdouble a = sqrt (((gdouble)i+k)/(((gdouble)i+i)*(i-k+1.)));
 
-          aw->l_terms[i][i - 1][i + k - 1] =
-            -a * sqrt ((i + k) / (i - k + 1.)) *
-            tb2 * aw->l_terms[i][i - 1][i + k];
-        }
-
-      /* we cut [i][i - 1] k loop in order to avoid problems for k==0 when
-       * beta == pi/2.
-       */
-      aw->l_terms[i][i - 1][i + 0] = -sqrt (2. * (two_i_m_1) / (i - 1.)) *
-        cb2 * sb2 * aw->l_terms[i - 1][i - 2][(i - 1) + 0];
-
-      /* remaining of penultimate column */
-      for (k = 0; k >= 2 - i; k--)
-        {
-          gdouble i_cb = i * cb;
-          gdouble a = ((i_cb - k + 1.) / (i_cb - k));
-
-          aw->l_terms[i][i - 1][i + k - 1] =
-            -a * sqrt ((i + k) / (i - k + 1.)) *
-            tb2 * aw->l_terms[i][i - 1][i + k];
+          aw->l_terms[i][i - 1][i + k - 1] = (i*cb-k+1.) * a *
+	    aw->l_terms[i][i][i + k] / d1_1_1;
         }
 
       /* extra diagonal terms (|k| > j) */

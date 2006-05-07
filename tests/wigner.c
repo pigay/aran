@@ -182,10 +182,15 @@ int main (int argc, char **argv)
 
   _lnfact = aran_coefficient_bufferd_new (_lnfact_func, L);
 
+  /* general testing */
   for (i=0; i<N; i ++)
-    ret += check (i * G_PI / N);
+    {
+      ret += check (i * G_PI / N);
+    }
 
+  /* additional values */
   ret += check (G_PI / 2.);
+  ret += check (0.84106867056793033);
 
   aran_coefficient_bufferd_free (_lnfact);
 
