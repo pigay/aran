@@ -1,3 +1,18 @@
+2006-05-07 21:17  peyo
+
+	* aran/aranwigner.c, configure.ac, tests/wigner.c: Fixed a nasty
+	  bug in wigner D-function that crippled new rotation-based
+	  operators.
+
+2006-05-01 20:50  peyo
+
+	* aran/aransphericalseriesd-rotate.c: Removed some unnecessary
+	  work arrays.
+
+2006-04-22 20:41  peyo
+
+	* .: Branching for minor release 0.2
+
 2006-04-22 20:17  peyo
 
 	* README, aran/aransphericalseriesd-translate.c,
