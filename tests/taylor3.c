@@ -74,7 +74,8 @@ static void check (const gchar *log,
 
 	      if (yref != 0.) err /= yref;
 
-	      if (cabs (err) > epsilon && cabs(yref) > epsilon)
+	      if ((cabs (err) > epsilon && cabs(yref) > epsilon )||
+		  !finite (err))
 		{
 		  g_printerr ("Error %s (%f,%f,%f) : " \
                               "(%e+%ej), (%e+%ej) -> %e\n",

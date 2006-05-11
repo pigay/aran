@@ -75,7 +75,8 @@ static gint check (const gchar *msg,
 
 	      if (yref != 0.) err /= yref;
 
-	      if (cabs (err) > epsilon && cabs(yref) > epsilon)
+	      if ((cabs (err) > epsilon && cabs(yref) > epsilon) ||
+		  !finite (cabs (err)))
 		{
 		  g_printerr ("%s Error (%f,%f,%f) : (%e+%ej), "
                               "(%e+%ej) -> %e\n",

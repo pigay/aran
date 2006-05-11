@@ -323,7 +323,7 @@ int main (int argc, char **argv)
 	  err = (points[i]->accum - sum) /
 	    MAX(cabs (points[i]->accum), cabs (sum));
 
-	  if (cabs (err) > err_lim)
+	  if (cabs (err) > err_lim || !finite (cabs (err)))
 	    {
 	      g_printerr ("Error: pt%u (%e,%e) -> ",
 			  i,

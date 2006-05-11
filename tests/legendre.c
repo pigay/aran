@@ -23,11 +23,11 @@
 
 #include <stdlib.h>
 
-#include <math.h>
-
 #include "aran/aranlegendre.h"
 
 #define N 10
+
+#include <math.h>
 
 static gdouble epsilon = 1.e-10;
 
@@ -46,7 +46,7 @@ static void check (guint order, guint diff, gdouble (*f) (gdouble x))
       err = yref-yres;
       if (yref != 0.) err /= yref;
 
-      if (fabs (err) > epsilon)
+      if (fabs (err) > epsilon || !finite (err))
 	{
 	  g_printerr ("p_%u^%u (%f) : %e, %e -> %e\n",
 		      order, diff, x, yref, yres, err);
@@ -90,7 +90,7 @@ static void multiple_check (guint order)
 	      err = yref-yres;
 	      if (yref != 0.) err /= yref;
 
-	      if (fabs (err) > epsilon && yref > epsilon)
+	      if ((fabs (err) > epsilon && yref > epsilon) || !finite (err))
 		{
 		  g_printerr ("p_%u^%u (%f) : multiple %e, %e -> %e\n",
 			      j, k, x, yref, yres, err);

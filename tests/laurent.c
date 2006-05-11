@@ -87,7 +87,7 @@ static void err (const gchar *name,
     g_printerr ("testing %s (%f,%f) : %e\n", name,
 		creal (z), cimag (z), cabs (diff));
 
-  if (cabs (diff) > tolerance)
+  if (cabs (diff) > tolerance || !finite (diff))
     g_printerr ("%s Error (%f,%f) : (%e,%e) != (%e,%e) %e\n",
 		name,
 		creal (z), cimag (z),

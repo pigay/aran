@@ -153,7 +153,7 @@ static gint buffer_diff (gint L, gcomplex128 *ref, gcomplex128 *res)
           if (cabs (ref[i]) > epsilon)
             err /= ref[i];
 
-          if (cabs (err) > epsilon)
+          if (cabs (err) > epsilon || !finite (cabs (err)))
             {
               g_printerr ("AranSphericalSeriesd error (%g,%g) != (%g,%g)\n",
                           creal (ref[i]), cimag (ref[i]),

@@ -102,7 +102,7 @@ static void check (const gchar *log,
 
               err = vsg_vector3d_norm (&verr) / vsg_vector3d_norm (&vref);
 
-	      if (fabs (err) > epsilon)
+	      if (fabs (err) > epsilon || !finite (err))
 		{
 		  g_printerr ("Error %s (%f,%f,%f) : " \
                               "(%f,%f,%f) != (%f,%f,%f) -> %e\n",

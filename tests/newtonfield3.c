@@ -547,7 +547,7 @@ int main (int argc, char **argv)
           err = vsg_vector3d_norm (&tmp);
           if (denom > 0.) err /= denom;
 
-          if (fabs (err) > err_lim)
+          if (fabs (err) > err_lim || !finite (err))
             {
               g_printerr ("Field simulation error: %d relative=(%e) "
                           "pos=(%f,%f,%f)\n"

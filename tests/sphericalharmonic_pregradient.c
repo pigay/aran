@@ -62,7 +62,8 @@ static void multiple_check (guint order)
 
 		  if (yref != 0.) err /= yref;
 
-		  if (cabs (err) > epsilon && cabs(yref) > epsilon)
+		  if ((cabs (err) > epsilon && cabs(yref) > epsilon) ||
+		      !finite (cabs (err)))
 		    {
 		      g_printerr ("Y_%u^%d (%f,%f) multiple: "
 				  "(%e,%e), (%e,%e) -> %e\n",

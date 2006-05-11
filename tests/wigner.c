@@ -155,7 +155,7 @@ static gint check (gdouble beta)
               if (fabs (ref) > epsilon)
                 err /= fabs (ref);
 
-              if (err >= epsilon)
+              if (err >= epsilon || !finite (err))
                 {
                   faults ++;
                   g_printerr ("Error wigner (l=%d, m1=%d, m2=%d, beta=%g) "\

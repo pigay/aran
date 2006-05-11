@@ -53,7 +53,8 @@ static void check (guint order, guint diff,
 
 	  if (yref != 0.) err /= yref;
 
-	  if (cabs (err) > epsilon && cabs(yref) > epsilon)
+	  if ((cabs (err) > epsilon && cabs(yref) > epsilon) ||
+	      !finite (cabs (err)))
 	    {
 	      g_printerr ("Y_%u^%d (%f,%f) : (%e,%e), (%e,%e) -> %e\n",
 			  order, diff,

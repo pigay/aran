@@ -68,7 +68,8 @@ static void check (AranSphericalSeriesd *ass, gdouble radius,
 
 	      if (yref != 0.) err /= yref;
 
-	      if (cabs (err) > epsilon && cabs(yref) > epsilon)
+	      if ((cabs (err) > epsilon && cabs(yref) > epsilon) ||
+		  !finite (cabs (err)))
 		{
 		  g_printerr ("Error (%f,%f,%f) : (%e,%e), (%e,%e) -> %e\n",
 			      r, t, p,
