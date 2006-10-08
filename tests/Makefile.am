@@ -1,4 +1,8 @@
 
+AM_CFLAGS = @CFLAGS@ -DG_LOG_DOMAIN=\"Aran-Tests\"
+
+INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/aran
+
 noinst_PROGRAMS = 
 
 noinst_PROGRAMS += dummypot taylor laurent legendre sphericalharmonic \
