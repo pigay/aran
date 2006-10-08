@@ -7615,4 +7615,5 @@ AC_SUBST([am__untar])
 
 m4_include([m4/aran_c_complex.m4])
 m4_include([m4/aran_c_variable_array.m4])
+m4_include([m4/aran_cxx_ccomplex.m4])
 m4_include([m4/vl_prog_cc_warnings.m4])

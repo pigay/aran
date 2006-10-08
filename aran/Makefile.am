@@ -10,7 +10,8 @@ arancoefficientbufferf.h arancoefficientbufferd.h \
 arancoefficientbufferc64.h arancoefficientbufferc128.h \
 aranbinomialbufferl.h \
 aranbinomialbufferf.h aranbinomialbufferd.h \
-aranbinomialbufferc64.h aranbinomialbufferc128.h
+aranbinomialbufferc64.h aranbinomialbufferc128.h \
+aranccomplex.h
 
 libaran_la_built_sources = arancoefficientbufferl.c \
 arancoefficientbufferf.c arancoefficientbufferd.c \
@@ -44,7 +45,7 @@ libaran_la_LIBADD =
 noinst_HEADERS = $(libaran_la_noinst_headers)
 
 noinst_DATA = arancoefficientbuffer@t@.h arancoefficientbuffer@t@.c \
-aranbinomialbuffer@t@.h aranbinomialbuffer@t@.c 
+aranbinomialbuffer@t@.h aranbinomialbuffer@t@.c aranccomplex.h.in
 
 EXTRA_DIST = $(noinst_DATA)
 

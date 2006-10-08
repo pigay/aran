@@ -124,6 +124,9 @@ ARAN_C_VARIABLE_ARRAY
 AC_CHECK_HEADER([complex.h])
 ARAN_C_COMPLEX
 
+# Check for CC complex numbers support
+ARAN_CXX_CCOMPLEX
+
 # Check for complex math functions
 AC_CHECK_LIB([m],[csin])
 
@@ -202,6 +205,7 @@ aran.pc
 Makefile
 gencode/Makefile
 aran/Makefile
+aran/aranccomplex.h
 m4/Makefile
 tests/Makefile
 docs/Makefile
