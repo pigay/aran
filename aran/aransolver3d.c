@@ -358,6 +358,9 @@ void aran_solver3d_free (AranSolver3d *solver)
 
   vsg_prtree3d_free (solver->prtree);
 
+  if (solver->devel != NULL)
+    g_boxed_free (solver->devel_type, solver->devel);
+
   _solver3d_dealloc (solver);
 }
 

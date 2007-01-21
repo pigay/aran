@@ -359,6 +359,9 @@ void aran_solver2d_free (AranSolver2d *solver)
 
   vsg_prtree2d_free (solver->prtree);
 
+  if (solver->devel != NULL)
+    g_boxed_free (solver->devel_type, solver->devel);
+
   _solver2d_dealloc (solver);
 }
 
