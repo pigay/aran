@@ -1,5 +1,5 @@
 /* LIBARAN - Fast Multipole Method library
- * Copyright (C) 2006 Pierre Gay
+ * Copyright (C) 2006-2007 Pierre Gay
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
