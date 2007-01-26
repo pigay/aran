@@ -1,91 +1,209 @@
-2006-05-07 21:17  peyo
+2007-01-21 21:52  Pierre Gay <peyo@berlios.de>
 
-	* aran/aranwigner.c, configure.ac, tests/wigner.c: Fixed a nasty
-	  bug in wigner D-function that crippled new rotation-based
+	* [r32] aclocal.m4, aran/aransolver2d.c, aran/aransolver3d.c:
+	  Merged rev 29:31 from trunk.
+
+2006-10-08 18:10  Pierre Gay <peyo@berlios.de>
+
+	* [r29] aran/aranccomplex.h.in: Merged rev 27:28 from trunk.
+
+2006-10-08 08:56  Pierre Gay <peyo@berlios.de>
+
+	* [r27] aclocal.m4, aran/Makefile.am, aran/aranccomplex.h.in,
+	  aran/arancomplex.h, configure.ac, m4/Makefile.am,
+	  m4/aran_cxx_ccomplex.m4: Merged rev 23:24 from trunk.
+
+2006-10-08 08:50  Pierre Gay <peyo@berlios.de>
+
+	* [r26] configure.ac: Bump version number (a bit late I should have
+	  done this just after rev 21).
+
+2006-10-08 08:23  Pierre Gay <peyo@berlios.de>
+
+	* [r25] tests/Makefile.am: Merged rev 22:23 from trunk.
+
+2006-05-07 21:25  Pierre Gay <peyo@berlios.de>
+
+	* [r19] ChangeLog: Update ChangeLog.
+
+2006-05-07 21:17  Pierre Gay <peyo@berlios.de>
+
+	* [r18] aran/aranwigner.c, configure.ac, tests/wigner.c: Fixed a
+	  nasty bug in wigner D-function that crippled new rotation-based
 	  operators.
 
-2006-05-01 20:50  peyo
+2006-05-01 20:50  Pierre Gay <peyo@berlios.de>
 
-	* aran/aransphericalseriesd-rotate.c: Removed some unnecessary
-	  work arrays.
+	* [r15] aran/aransphericalseriesd-rotate.c: Removed some
+	  unnecessary work arrays.
 
-2006-04-22 20:41  peyo
+2006-04-22 20:41  Pierre Gay <peyo@berlios.de>
 
-	* .: Branching for minor release 0.2
+	* [r13] .: Branching for minor release 0.2
 
-2006-04-22 20:17  peyo
+2006-04-22 20:37  Pierre Gay <peyo@berlios.de>
 
-	* README, aran/aransphericalseriesd-translate.c,
-	  docs/reference/aran-docs.xml,
-	  docs/reference/tmpl/aransolver2d.sgml,
-	  docs/reference/tmpl/aransolver3d.sgml,
-	  docs/reference/tmpl/aransphericalharmonic.sgml: Optimisation of
-	  Z axis translation operators: avoid compute unnecessary
+	* [r12] trunk/ChangeLog: Updated Changelog.
+
+2006-04-22 20:17  Pierre Gay <peyo@berlios.de>
+
+	* [r11] trunk/README, trunk/aran/aransphericalseriesd-translate.c,
+	  trunk/docs/reference/aran-docs.xml,
+	  trunk/docs/reference/tmpl/aransolver2d.sgml,
+	  trunk/docs/reference/tmpl/aransolver3d.sgml,
+	  trunk/docs/reference/tmpl/aransphericalharmonic.sgml:
+	  Optimisation of Z axis translation operators: avoid compute
+	  unnecessary
 	  Spherical harmonics.
 
-2006-04-20 20:25  peyo
+2006-04-20 20:25  Pierre Gay <peyo@berlios.de>
 
-	* docs/reference/aran-docs.xml: Added a paragraph for examples in
-	  the API doc.
+	* [r10] trunk/docs/reference/aran-docs.xml: Added a paragraph for
+	  examples in the API doc.
 
-2006-04-19 19:59  peyo
+2006-04-19 19:59  Pierre Gay <peyo@berlios.de>
 
-	* aclocal.m4, aran/Makefile.am, aran/arandevelopment3d.c,
-	  aran/arandevelopment3d.h, aran/aransphericalseriesd-private.h,
-	  aran/aransphericalseriesd-rotate.c,
-	  aran/aransphericalseriesd-translate.c,
-	  aran/aransphericalseriesd.c, aran/aransphericalseriesd.h,
-	  docs/reference/aran-sections.txt, docs/reference/tmpl/aran.sgml,
-	  docs/reference/tmpl/aranbinomial.sgml,
-	  docs/reference/tmpl/aranbinomialbufferc128.sgml,
-	  docs/reference/tmpl/aranbinomialbufferc64.sgml,
-	  docs/reference/tmpl/aranbinomialbufferd.sgml,
-	  docs/reference/tmpl/aranbinomialbufferf.sgml,
-	  docs/reference/tmpl/aranbinomialbufferl.sgml,
-	  docs/reference/tmpl/arancoefficientbufferc128.sgml,
-	  docs/reference/tmpl/arancoefficientbufferc64.sgml,
-	  docs/reference/tmpl/arancoefficientbufferd.sgml,
-	  docs/reference/tmpl/arancoefficientbufferf.sgml,
-	  docs/reference/tmpl/arancoefficientbufferl.sgml,
-	  docs/reference/tmpl/arancomplex.sgml,
-	  docs/reference/tmpl/arandevelopment2d.sgml,
-	  docs/reference/tmpl/arandevelopment3d.sgml,
-	  docs/reference/tmpl/aranlaurentseriesd.sgml,
-	  docs/reference/tmpl/aranlegendre.sgml,
-	  docs/reference/tmpl/aransolver2d.sgml,
-	  docs/reference/tmpl/aransolver3d.sgml,
-	  docs/reference/tmpl/aransphericalharmonic.sgml,
-	  docs/reference/tmpl/aransphericalseriesd.sgml,
-	  docs/reference/tmpl/aranwigner.sgml,
-	  docs/reference/tmpl/aranwignerrepo.sgml, tests/gradient3.c,
-	  tests/m2l3.c, tests/multipole3.c, tests/newtonfield3.at,
-	  tests/newtonfield3.c, tests/newtonpot3.at, tests/newtonpot3.c,
-	  tests/rotation.c, tests/taylor3.c: Introduced rotation based
-	  translation operators.
+	* [r9] trunk/aclocal.m4, trunk/aran/Makefile.am,
+	  trunk/aran/arandevelopment3d.c, trunk/aran/arandevelopment3d.h,
+	  trunk/aran/aransphericalseriesd-private.h,
+	  trunk/aran/aransphericalseriesd-rotate.c,
+	  trunk/aran/aransphericalseriesd-translate.c,
+	  trunk/aran/aransphericalseriesd.c,
+	  trunk/aran/aransphericalseriesd.h,
+	  trunk/docs/reference/aran-sections.txt,
+	  trunk/docs/reference/tmpl/aran.sgml,
+	  trunk/docs/reference/tmpl/aranbinomial.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferc128.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferc64.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferd.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferf.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferl.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferc128.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferc64.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferd.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferf.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferl.sgml,
+	  trunk/docs/reference/tmpl/arancomplex.sgml,
+	  trunk/docs/reference/tmpl/arandevelopment2d.sgml,
+	  trunk/docs/reference/tmpl/arandevelopment3d.sgml,
+	  trunk/docs/reference/tmpl/aranlaurentseriesd.sgml,
+	  trunk/docs/reference/tmpl/aranlegendre.sgml,
+	  trunk/docs/reference/tmpl/aransolver2d.sgml,
+	  trunk/docs/reference/tmpl/aransolver3d.sgml,
+	  trunk/docs/reference/tmpl/aransphericalharmonic.sgml,
+	  trunk/docs/reference/tmpl/aransphericalseriesd.sgml,
+	  trunk/docs/reference/tmpl/aranwigner.sgml,
+	  trunk/docs/reference/tmpl/aranwignerrepo.sgml,
+	  trunk/tests/gradient3.c, trunk/tests/m2l3.c,
+	  trunk/tests/multipole3.c, trunk/tests/newtonfield3.at,
+	  trunk/tests/newtonfield3.c, trunk/tests/newtonpot3.at,
+	  trunk/tests/newtonpot3.c, trunk/tests/rotation.c,
+	  trunk/tests/taylor3.c: Introduced rotation based translation
+	  operators.
 
-2006-04-17 19:21  peyo
+2006-04-17 19:21  Pierre Gay <peyo@berlios.de>
 
-	* aran/aranwigner.c: Api doc fix.
+	* [r8] trunk/aran/aranwigner.c: Api doc fix.
 
-2006-04-17 19:17  peyo
+2006-04-17 19:17  Pierre Gay <peyo@berlios.de>
 
-	* aran/aransolver2d.c, aran/aransolver3d.c: Added Returns field in
-	  Api docs.
+	* [r7] trunk/aran/aransolver2d.c, trunk/aran/aransolver3d.c: Added
+	  Returns field in Api docs.
 
-2006-04-05 20:27  peyo
+2006-04-05 20:27  Pierre Gay <peyo@berlios.de>
 
-	* aran/aranlegendre.c, aran/aranlegendre.h,
-	  docs/reference/aran-sections.txt,
-	  docs/reference/tmpl/aranlegendre.sgml: aran_legendre_evaluate()
-	  now uses new function
+	* [r6] trunk/aran/aranlegendre.c, trunk/aran/aranlegendre.h,
+	  trunk/docs/reference/aran-sections.txt,
+	  trunk/docs/reference/tmpl/aranlegendre.sgml:
+	  aran_legendre_evaluate() now uses new function
 	  aran_legendre_evaluate_multiple() instead of associated
 	  polynomials.
 
-2006-04-02 14:38  peyo
+2006-04-02 14:38  Pierre Gay <peyo@berlios.de>
 
-	* ChangeLog, configure.ac: Bump version number.
+	* [r5] trunk/ChangeLog, trunk/configure.ac: Bump version number.
 
-2006-03-28 07:45  peyo
+2006-03-28 07:45  Pierre Gay <peyo@berlios.de>
 
-	* LibAran initial import
+	* [r1] trunk, trunk/AUTHORS, trunk/COPYING, trunk/ChangeLog,
+	  trunk/INSTALL, trunk/Makefile.am, trunk/NEWS, trunk/README,
+	  trunk/aclocal.m4, trunk/aran, trunk/aran-config.h.in,
+	  trunk/aran.pc.in, trunk/aran/Makefile.am, trunk/aran/aran.c,
+	  trunk/aran/aran.h, trunk/aran/aranbinomial.c,
+	  trunk/aran/aranbinomial.h, trunk/aran/aranbinomialbuffer@t@.c,
+	  trunk/aran/aranbinomialbuffer@t@.h,
+	  trunk/aran/arancoefficientbuffer@t@.c,
+	  trunk/aran/arancoefficientbuffer@t@.h, trunk/aran/arancomplex.h,
+	  trunk/aran/arandevelopment2d.c, trunk/aran/arandevelopment2d.h,
+	  trunk/aran/arandevelopment3d.c, trunk/aran/arandevelopment3d.h,
+	  trunk/aran/aranlaurentseriesd.c, trunk/aran/aranlaurentseriesd.h,
+	  trunk/aran/aranlegendre.c, trunk/aran/aranlegendre.h,
+	  trunk/aran/aransolver2d.c, trunk/aran/aransolver2d.h,
+	  trunk/aran/aransolver3d.c, trunk/aran/aransolver3d.h,
+	  trunk/aran/aransphericalharmonic.c,
+	  trunk/aran/aransphericalharmonic.h,
+	  trunk/aran/aransphericalseriesd-kkylin.c,
+	  trunk/aran/aransphericalseriesd-private.h,
+	  trunk/aran/aransphericalseriesd-translate.c,
+	  trunk/aran/aransphericalseriesd.c,
+	  trunk/aran/aransphericalseriesd.h,
+	  trunk/aran/aranwigner-private.h, trunk/aran/aranwigner.c,
+	  trunk/aran/aranwigner.h, trunk/aran/aranwignerrepo.c,
+	  trunk/aran/aranwignerrepo.h, trunk/autogen.sh,
+	  trunk/configure.ac, trunk/docs, trunk/docs/Makefile.am,
+	  trunk/docs/reference, trunk/docs/reference/Makefile.am,
+	  trunk/docs/reference/aran-docs.xml,
+	  trunk/docs/reference/aran-sections.txt,
+	  trunk/docs/reference/aran.types, trunk/docs/reference/tmpl,
+	  trunk/docs/reference/tmpl/aran-unused.sgml,
+	  trunk/docs/reference/tmpl/aran.sgml,
+	  trunk/docs/reference/tmpl/aranbinomial.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbuffer@t@-intro.xml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferc128.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferc64.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferd.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferf.sgml,
+	  trunk/docs/reference/tmpl/aranbinomialbufferl.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbuffer@t@-intro.xml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferc128.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferc64.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferd.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferf.sgml,
+	  trunk/docs/reference/tmpl/arancoefficientbufferl.sgml,
+	  trunk/docs/reference/tmpl/arancomplex.sgml,
+	  trunk/docs/reference/tmpl/arandevelopment2d.sgml,
+	  trunk/docs/reference/tmpl/arandevelopment3d.sgml,
+	  trunk/docs/reference/tmpl/aranlaurentseriesd.sgml,
+	  trunk/docs/reference/tmpl/aranlegendre.sgml,
+	  trunk/docs/reference/tmpl/aransolver2d.sgml,
+	  trunk/docs/reference/tmpl/aransolver3d.sgml,
+	  trunk/docs/reference/tmpl/aransphericalharmonic.sgml,
+	  trunk/docs/reference/tmpl/aransphericalseriesd.sgml,
+	  trunk/docs/reference/tmpl/aranwigner.sgml,
+	  trunk/docs/reference/tmpl/aranwignerrepo.sgml,
+	  trunk/docs/reference/version.xml.in, trunk/gencode,
+	  trunk/gencode/Makefile.am, trunk/gencode/typegens.py, trunk/m4,
+	  trunk/m4/Makefile.am, trunk/m4/aran_c_complex.m4,
+	  trunk/m4/aran_c_variable_array.m4,
+	  trunk/m4/vl_prog_cc_warnings.m4, trunk/tests,
+	  trunk/tests/Makefile.am, trunk/tests/dev3.at, trunk/tests/dev3.c,
+	  trunk/tests/dummypot.at, trunk/tests/dummypot.c,
+	  trunk/tests/gradient3.at, trunk/tests/gradient3.c,
+	  trunk/tests/laurent.at, trunk/tests/laurent.c,
+	  trunk/tests/legendre.at, trunk/tests/legendre.c,
+	  trunk/tests/m2l3.at, trunk/tests/m2l3.c,
+	  trunk/tests/multipole3.at, trunk/tests/multipole3.c,
+	  trunk/tests/newtonfield3.at, trunk/tests/newtonfield3.c,
+	  trunk/tests/newtonpot3.at, trunk/tests/newtonpot3.c,
+	  trunk/tests/rotation.at, trunk/tests/rotation.c,
+	  trunk/tests/special_legendre.at, trunk/tests/special_legendre.c,
+	  trunk/tests/sphericalharmonic.at,
+	  trunk/tests/sphericalharmonic.c,
+	  trunk/tests/sphericalharmonic_pregradient.at,
+	  trunk/tests/sphericalharmonic_pregradient.c,
+	  trunk/tests/sphericalseriesd.at, trunk/tests/sphericalseriesd.c,
+	  trunk/tests/taylor.at, trunk/tests/taylor.c,
+	  trunk/tests/taylor3.at, trunk/tests/taylor3.c,
+	  trunk/tests/testsuite.at, trunk/tests/wigner.at,
+	  trunk/tests/wigner.c, trunk/types.list: LibAran initial import
 
