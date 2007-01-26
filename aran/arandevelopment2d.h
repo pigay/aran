@@ -56,27 +56,27 @@ void aran_development2d_set_zero (AranDevelopment2d *ad);
 
 void aran_development2d_write (AranDevelopment2d *ad, FILE *file);
 
-void aran_development2d_m2m (const VsgVector2d *src_center,
+void aran_development2d_m2m (const VsgPRTree2dNodeInfo *src_node,
 			     AranDevelopment2d *src,
-			     const VsgVector2d *dst_center,
+			     const VsgPRTree2dNodeInfo *dst_node,
 			     AranDevelopment2d *dst);
 
-void aran_development2d_m2l (const VsgVector2d *src_center,
-			     AranDevelopment2d *src,
-			     const VsgVector2d *dst_center,
-			     AranDevelopment2d *dst);
+gboolean aran_development2d_m2l (const VsgPRTree2dNodeInfo *src_node,
+				 AranDevelopment2d *src,
+				 const VsgPRTree2dNodeInfo *dst_node,
+				 AranDevelopment2d *dst);
 
-void aran_development2d_l2l (const VsgVector2d *src_center,
+void aran_development2d_l2l (const VsgPRTree2dNodeInfo *src_node,
 			     AranDevelopment2d *src,
-			     const VsgVector2d *dst_center,
+			     const VsgPRTree2dNodeInfo *dst_node,
 			     AranDevelopment2d *dst);
 
 gcomplex128
-aran_development2d_multipole_evaluate (const VsgVector2d *devel_center,
+aran_development2d_multipole_evaluate (const VsgPRTree2dNodeInfo *devel_node,
                                        AranDevelopment2d *devel,
                                        const VsgVector2d *pos);
 
-gcomplex128 aran_development2d_local_evaluate (const VsgVector2d *devel_center,
+gcomplex128 aran_development2d_local_evaluate (const VsgPRTree2dNodeInfo *devel_node,
 					       AranDevelopment2d *devel,
 					       const VsgVector2d *pos);
 

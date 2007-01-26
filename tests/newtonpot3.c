@@ -119,10 +119,11 @@ static void p2m (PointAccum *particle, const VsgVector3d *center,
 
 }
 
-static void l2p (const VsgVector3d *center, AranDevelopment3d *devel,
+static void l2p (const VsgPRTree3dNodeInfo *devel_node,
+                 AranDevelopment3d *devel,
 		 PointAccum *particle)
 {
-  particle->accum += aran_development3d_local_evaluate (center, devel,
+  particle->accum += aran_development3d_local_evaluate (devel_node, devel,
 							&particle->vector);
 }
 
@@ -312,7 +313,8 @@ void parse_args (int argc, char **argv)
     }
 }
 
-static void _one_circle_distribution (PointAccum **points, AranSolver3d *solver)
+static void _one_circle_distribution (PointAccum **points,
+				      AranSolver3d *solver)
 {
   guint i;
 
@@ -458,9 +460,9 @@ int main (int argc, char **argv)
 
   _distribution (points, solver);
 
-/*   g_printerr ("ok depth = %d size = %d\n", */
-/*               aran_solver3d_depth (solver), */
-/*               aran_solver3d_point_count (solver)); */
+/*    g_printerr ("ok depth = %d size = %d\n", */
+/*                aran_solver3d_depth (solver), */
+/*                aran_solver3d_point_count (solver)); */
 
   if (direct) _direct (points, np);
   else aran_solver3d_solve (solver);

@@ -42,7 +42,7 @@ particles.
 </para>
 
 @src: 
-@dst_center: 
+@dst_node: 
 @dst: 
 
 
@@ -51,9 +51,9 @@ particles.
 
 </para>
 
-@src_center: 
+@src_node: 
 @src: 
-@dst_center: 
+@dst_node: 
 @dst: 
 
 
@@ -62,10 +62,11 @@ particles.
 
 </para>
 
-@src_center: 
+@src_node: 
 @src: 
-@dst_center: 
+@dst_node: 
 @dst: 
+@Returns: 
 
 
 <!-- ##### USER_FUNCTION AranLocal2LocalFunc2d ##### -->
@@ -73,9 +74,9 @@ particles.
 
 </para>
 
-@src_center: 
+@src_node: 
 @src: 
-@dst_center: 
+@dst_node: 
 @dst: 
 
 
@@ -84,7 +85,7 @@ particles.
 
 </para>
 
-@src_center: 
+@src_node: 
 @src: 
 @dst: 
 

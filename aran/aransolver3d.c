@@ -60,7 +60,7 @@ struct _AranSolver3d
 /**
  * AranParticle2MultipoleFunc3d:
  * @src: source particle.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: destination development.
  *
  * Function provided to accumulate @src contribution into @dst multipole
@@ -69,9 +69,9 @@ struct _AranSolver3d
 
 /**
  * AranMultipole2MultipoleFunc3d:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: source development.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: destination development.
  *
  * Function provided to translate a multipole expansion from @src to @dst.
@@ -79,29 +79,37 @@ struct _AranSolver3d
 
 /**
  * AranMultipole2LocalFunc3d:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: source development.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: destination development.
  *
  * Function provided to translate a multipole expansion from @src to @dst local
  * expansion.
+ *
+ * If the function returns %FALSE, LibAran will consider that the translation
+ * is to be avoided. In this case, the near interaction p2p will be called for
+ * each pair of src and dst particles.
+ *
+ * WARNING: The function _must_ be symmetric. Otherwise, the behaviour of
+ * LibAran is undefined.
+ *
+ * Returns: %TRUE if the translation took place.
  */
 
 /**
  * AranLocal2LocalFunc3d:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: source development.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: destination development.
  *
- * 
  * Function provided to translate a local expansion from @src to @dst.
  */
 
 /**
  * AranLocal2ParticleFunc3d:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: source development.
  * @dst: destination particle.
  *
@@ -132,8 +140,8 @@ static AranSolver3d *_solver3d_alloc ()
   if (!aran_solver3d_mem_chunk)
     {
       aran_solver3d_mem_chunk = g_mem_chunk_create (AranSolver3d,
-						    ARAN_SOLVER3D_PREALLOC,
-						    G_ALLOC_ONLY);
+                                                    ARAN_SOLVER3D_PREALLOC,
+                                                    G_ALLOC_ONLY);
     }
 
   aran_solver3d_instances_count ++;
@@ -178,15 +186,15 @@ void aran_solver3d_init ()
 
 
 static void aran_solver3d_clear_development (AranSolver3d *solver,
-					     gpointer devel)
+                                             gpointer devel)
 {
   solver->zero (devel);
 }
 /*----------------------------------------------------*/
 
 static void near_func (const VsgPRTree3dNodeInfo *one_info,
-		       const VsgPRTree3dNodeInfo *other_info,
-		       AranSolver3d *solver)
+                       const VsgPRTree3dNodeInfo *other_info,
+                       AranSolver3d *solver)
 {
   GSList *one_list = one_info->point_list;
 
@@ -196,26 +204,28 @@ static void near_func (const VsgPRTree3dNodeInfo *one_info,
     {
       VsgPoint3 one_point = (VsgPoint3) one_list->data;
       GSList *other_list =
-	(one_info != other_info)? other_info->point_list : one_list;
+        (one_info != other_info)? other_info->point_list : one_list;
 
       while (other_list)
-	{
-	  VsgPoint3 other_point = (VsgPoint3) other_list->data;
+        {
+          VsgPoint3 other_point = (VsgPoint3) other_list->data;
 
-	  /* Particle to Particle interaction */
-	  solver->p2p (one_point, other_point);
+          /* Particle to Particle interaction */
+          solver->p2p (one_point, other_point);
 
-	  other_list = other_list->next;
-	}
+          other_list = other_list->next;
+        }
 
       one_list = one_list->next;
     }
 }
 
-static void far_func (const VsgPRTree3dNodeInfo *one_info,
-		      const VsgPRTree3dNodeInfo *other_info,
-		      AranSolver3d *solver)
+static gboolean far_func (const VsgPRTree3dNodeInfo *one_info,
+                          const VsgPRTree3dNodeInfo *other_info,
+                          AranSolver3d *solver)
 {
+  gboolean done;
+
   /* Multipole to Local transformation */
   if (solver->m2l != NULL)
     {
@@ -223,13 +233,28 @@ static void far_func (const VsgPRTree3dNodeInfo *one_info,
       gpointer other_dev = other_info->user_data;
 
       /* both ways in order to get symmetric exchange */
-      solver->m2l (&one_info->center, one_dev,
-		   &other_info->center, other_dev);
+      done = solver->m2l (one_info, one_dev,
+                          other_info, other_dev);
 
-      solver->m2l (&other_info->center, other_dev,
-		   &one_info->center, one_dev);
+      if (!done)
+        {
+          return FALSE;
+        }
+
+      done = solver->m2l (other_info, other_dev, one_info, one_dev);
+
+      if (!done)
+        {
+          /* should _NOT_ happen : user error */
+          g_error ("m2l function (0x%p) return status not symmetric.",
+                   solver->m2l);
+          return FALSE;
+        }
     }
+
+  return TRUE;
 }
+
 
 
 static void clear_func (const VsgPRTree3dNodeInfo *node_info,
@@ -241,40 +266,40 @@ static void clear_func (const VsgPRTree3dNodeInfo *node_info,
 }
 
 static void up_func (const VsgPRTree3dNodeInfo *node_info,
-		     AranSolver3d *solver)
+                     AranSolver3d *solver)
 {
   gpointer node_dev = node_info->user_data;
 
   if (node_info->isleaf)
     {
       if (solver->p2m != NULL)
-	{
-	  GSList *node_list = node_info->point_list;
+        {
+          GSList *node_list = node_info->point_list;
 
-	  while (node_list)
-	    {
-	      VsgPoint3 node_point = (VsgPoint3) node_list->data;
+          while (node_list)
+            {
+              VsgPoint3 node_point = (VsgPoint3) node_list->data;
 
-	      /* Particle to Multipole gathering */
-	      solver->p2m (node_point, &node_info->center, node_dev);
+              /* Particle to Multipole gathering */
+              solver->p2m (node_point, node_info, node_dev);
 
-	      node_list = node_list->next;
-	    }
-	}
+              node_list = node_list->next;
+            }
+        }
     }
 
   if (solver->m2m != NULL && node_info->point_count != 0 &&
       node_info->father_info)
     {
-      solver->m2m (&node_info->center,
+      solver->m2m (node_info,
                    node_dev,
-                   &(node_info->father_info->center),
+                   node_info->father_info,
                    node_info->father_info->user_data);
     }
 }
 
 static void down_func (const VsgPRTree3dNodeInfo *node_info,
-		       AranSolver3d *solver)
+                       AranSolver3d *solver)
 {
   gpointer node_dev = node_info->user_data;
 
@@ -282,28 +307,28 @@ static void down_func (const VsgPRTree3dNodeInfo *node_info,
       node_info->father_info)
     {
       /* Local to Local translation */
-      solver->l2l (&(node_info->father_info->center),
+      solver->l2l (node_info->father_info,
                    node_info->father_info->user_data,
-                   &node_info->center,
+                   node_info,
                    node_dev);
     }
 
   if ((node_info->isleaf))
     {
       if (solver->l2p != NULL)
-	{
-	  GSList *node_list = node_info->point_list;
+        {
+          GSList *node_list = node_info->point_list;
 
-	  while (node_list)
-	    {
-	      VsgPoint3 node_point = (VsgPoint3) node_list->data;
+          while (node_list)
+            {
+              VsgPoint3 node_point = (VsgPoint3) node_list->data;
 
-	      /* Local to Particle distribution */
-	      solver->l2p (&node_info->center, node_dev, node_point);
+              /* Local to Particle distribution */
+              solver->l2p (node_info, node_dev, node_point);
 
-	      node_list = node_list->next;
-	    }
-	}
+              node_list = node_list->next;
+            }
+        }
     }
 }
 
@@ -325,9 +350,9 @@ static void down_func (const VsgPRTree3dNodeInfo *node_info,
  * Returns: newly allocated structure.
  */
 AranSolver3d *aran_solver3d_new (VsgPRTree3d *prtree,
-				 GType devel_type,
-				 gpointer devel,
-				 AranZeroFunc zero)
+                                 GType devel_type,
+                                 gpointer devel,
+                                 AranZeroFunc zero)
 {
   VsgVector3d lbound = {-1., -1., -1.};
   VsgVector3d ubound = {1., 1., 1.};
@@ -374,14 +399,14 @@ void aran_solver3d_free (AranSolver3d *solver)
  * Associates @solver with a new development definition.
  */
 void aran_solver3d_set_development (AranSolver3d *solver,
-				    GType devel_type,
-				    gpointer devel,
-				    AranZeroFunc zero)
+                                    GType devel_type,
+                                    gpointer devel,
+                                    AranZeroFunc zero)
 {
   g_return_if_fail (solver != NULL);
 
   g_return_if_fail ((devel_type == G_TYPE_NONE) ||
-		    G_TYPE_IS_BOXED (devel_type));
+                    G_TYPE_IS_BOXED (devel_type));
 
   if (solver->devel != NULL)
     g_boxed_free (solver->devel_type, solver->devel);
@@ -415,12 +440,12 @@ void aran_solver3d_set_development (AranSolver3d *solver,
  * Associates @solver with a set of FMM functions.
  */
 void aran_solver3d_set_functions (AranSolver3d *solver,
-				  AranParticle2ParticleFunc3d p2p,
-				  AranParticle2MultipoleFunc3d p2m,
-				  AranMultipole2MultipoleFunc3d m2m,
-				  AranMultipole2LocalFunc3d m2l,
-				  AranLocal2LocalFunc3d l2l,
-				  AranLocal2ParticleFunc3d l2p)
+                                  AranParticle2ParticleFunc3d p2p,
+                                  AranParticle2MultipoleFunc3d p2m,
+                                  AranMultipole2MultipoleFunc3d m2m,
+                                  AranMultipole2LocalFunc3d m2l,
+                                  AranLocal2LocalFunc3d l2l,
+                                  AranLocal2ParticleFunc3d l2p)
 {
   g_return_if_fail (solver != NULL);
 
@@ -456,7 +481,7 @@ gdouble aran_solver3d_get_tolerance (AranSolver3d *solver)
  * Sets the spatial tolerance used in the associated #VsgPRTree3d.
  */
 void aran_solver3d_set_tolerance (AranSolver3d *solver,
-				  gdouble tolerance)
+                                  gdouble tolerance)
 {
   g_return_if_fail (solver != NULL);
 
@@ -472,8 +497,8 @@ void aran_solver3d_set_tolerance (AranSolver3d *solver,
  * Gets the bounding box for the associated #VsgPRTree3d.
  */
 void aran_solver3d_get_bounds (AranSolver3d *solver,
-			       VsgVector3d *lbound,
-			       VsgVector3d *ubound)
+                               VsgVector3d *lbound,
+                               VsgVector3d *ubound)
 {
   g_return_if_fail (solver != NULL);
 
@@ -622,7 +647,7 @@ void aran_solver3d_solve (AranSolver3d *solver)
 
   /* transmit info from Multipole to Local developments */
   vsg_prtree3d_near_far_traversal (solver->prtree,
-                                   (VsgPRTree3dInteractionFunc) far_func,
+                                   (VsgPRTree3dFarInteractionFunc) far_func,
                                    (VsgPRTree3dInteractionFunc) near_func,
                                    solver);
 

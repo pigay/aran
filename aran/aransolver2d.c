@@ -60,7 +60,7 @@ struct _AranSolver2d
 /**
  * AranParticle2MultipoleFunc2d:
  * @src: source particle.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: destination development.
  *
  * Function provided to accumulate @src contribution into @dst multipole
@@ -69,9 +69,9 @@ struct _AranSolver2d
 
 /**
  * AranMultipole2MultipoleFunc2d:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: source development.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: destination development.
  *
  * Function provided to translate a multipole expansion from @src to @dst.
@@ -79,20 +79,29 @@ struct _AranSolver2d
 
 /**
  * AranMultipole2LocalFunc2d:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: source development.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: destination development.
  *
  * Function provided to translate a multipole expansion from @src to @dst local
  * expansion.
+ *
+ * If the function returns %FALSE, LibAran will consider that the translation
+ * is to be avoided. In this case, the near interaction p2p will be called for
+ * each pair of src and dst particles.
+ *
+ * WARNING: The function _must_ be symmetric. Otherwise, the behaviour of
+ * LibAran is undefined.
+ *
+ * Returns: %TRUE if the translation took place.
  */
 
 /**
  * AranLocal2LocalFunc2d:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: source development.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: destination development.
  *
  * 
@@ -101,7 +110,7 @@ struct _AranSolver2d
 
 /**
  * AranLocal2ParticleFunc2d:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: source development.
  * @dst: destination particle.
  *
@@ -212,10 +221,12 @@ static void near_func (const VsgPRTree2dNodeInfo *one_info,
     }
 }
 
-static void far_func (const VsgPRTree2dNodeInfo *one_info,
-		      const VsgPRTree2dNodeInfo *other_info,
-		      AranSolver2d *solver)
+static gboolean far_func (const VsgPRTree2dNodeInfo *one_info,
+			  const VsgPRTree2dNodeInfo *other_info,
+			  AranSolver2d *solver)
 {
+  gboolean done;
+
   /* Multipole to Local transformation */
   if (solver->m2l != NULL)
     {
@@ -223,12 +234,24 @@ static void far_func (const VsgPRTree2dNodeInfo *one_info,
       gpointer other_dev = other_info->user_data;
 
       /* both ways in order to get symmetric exchange */
-      solver->m2l (&one_info->center, one_dev,
-		   &other_info->center, other_dev);
+      done = solver->m2l (one_info, one_dev,
+			  other_info, other_dev);
 
-      solver->m2l (&other_info->center, other_dev,
-		   &one_info->center, one_dev);
+      if (!done) return FALSE;
+
+      done = solver->m2l (other_info, other_dev,
+			  one_info, one_dev);
+
+      if (!done)
+	{
+	  /* should _NOT_ happen : user error */
+	  g_error ("m2l function (0x%p) return status not symmetric.",
+		   solver->m2l);
+	  return FALSE;
+	}
     }
+
+  return TRUE;
 }
 
 
@@ -256,7 +279,7 @@ static void up_func (const VsgPRTree2dNodeInfo *node_info,
 	      VsgPoint2 node_point = (VsgPoint2) node_list->data;
 
 	      /* Particle to Multipole gathering */
-	      solver->p2m (node_point, &node_info->center, node_dev);
+	      solver->p2m (node_point, node_info, node_dev);
 
 	      node_list = node_list->next;
 	    }
@@ -267,9 +290,9 @@ static void up_func (const VsgPRTree2dNodeInfo *node_info,
       node_info->father_info)
     {
       /* Multipole to Multipole translation */
-      solver->m2m (&node_info->center,
+      solver->m2m (node_info,
                    node_dev,
-                   &(node_info->father_info->center),
+                   node_info->father_info,
                    node_info->father_info->user_data);
     }
 }
@@ -283,9 +306,9 @@ static void down_func (const VsgPRTree2dNodeInfo *node_info,
       node_info->father_info)
     {
       /* Local to Local translation */
-      solver->l2l (&(node_info->father_info->center),
+      solver->l2l (node_info->father_info,
                    node_info->father_info->user_data,
-                   &node_info->center,
+                   node_info,
                    node_dev);
     }
 
@@ -300,7 +323,7 @@ static void down_func (const VsgPRTree2dNodeInfo *node_info,
 	      VsgPoint2 node_point = (VsgPoint2) node_list->data;
 
 	      /* Local to Particle distribution */
-	      solver->l2p (&node_info->center, node_dev, node_point);
+	      solver->l2p (node_info, node_dev, node_point);
 
 	      node_list = node_list->next;
 	    }
@@ -622,7 +645,7 @@ void aran_solver2d_solve (AranSolver2d *solver)
 
   /* transmit info from Multipole to Local developments */
   vsg_prtree2d_near_far_traversal (solver->prtree,
-                                   (VsgPRTree2dInteractionFunc) far_func,
+                                   (VsgPRTree2dFarInteractionFunc) far_func,
                                    (VsgPRTree2dInteractionFunc) near_func,
                                    solver);
 

@@ -43,7 +43,6 @@ struct _PointAccum
 };
 
 
-
 /* static void p2p (PointAccum *one, PointAccum *other) */
 /* { */
 /*   if (one != other) */
@@ -76,7 +75,7 @@ static gdouble kernel (PointAccum *one, PointAccum *other)
   return inv_r * one->density;
 }
 
-static void p2m (PointAccum *particle, const VsgVector3d *center,
+static void p2m (PointAccum *particle, const VsgPRTree3dNodeInfo *devel_node ,
 		 AranDevelopment3d *devel)
 {
   VsgVector3d tmp;
@@ -87,7 +86,7 @@ static void p2m (PointAccum *particle, const VsgVector3d *center,
   gcomplex128 expp;
   gdouble fact;
 
-  vsg_vector3d_sub (&particle->vector, center, &tmp);
+  vsg_vector3d_sub (&particle->vector, &devel_node->center, &tmp);
 
   vsg_vector3d_to_spherical_internal (&tmp, &r, &cost, &sint, &cosp, &sinp);
   expp = cosp + G_I * sinp;
@@ -178,6 +177,11 @@ PointAccum points[] = {
   {{1., 0., 0.},0.05, 0., 0},
   {{1., -.5, 0.},0.0, 0., 0},
 };
+VsgPRTree3dNodeInfo nodes[] = {
+  {.center = {0.75, 0.25, -0.25},},
+  {.center = {0.75, -0.75, -0.25},},
+
+};
 
 VsgVector3d centers[] = {
   {0.75, 0.25, -0.25},
@@ -200,9 +204,9 @@ int main (int argc, char **argv)
   aran_development3d_set_zero (one);
   aran_development3d_set_zero (other);
 
-  p2m (&points[0], &centers[0], one);
+  p2m (&points[0], &nodes[0], one);
 
-  zres = aran_development3d_multipole_evaluate (&centers[0],
+  zres = aran_development3d_multipole_evaluate (&nodes[0],
                                                one,
                                                &points[1].vector);
 
@@ -215,9 +219,9 @@ int main (int argc, char **argv)
                   creal(zres), cimag (zres));
     }
 
-  aran_development3d_m2l (&centers[0], one, &centers[1], other);
+  aran_development3d_m2l (&nodes[0], one, &nodes[1], other);
 
-  zres = aran_development3d_local_evaluate (&centers[1],
+  zres = aran_development3d_local_evaluate (&nodes[1],
                                             other,
                                             &points[1].vector);
 

@@ -71,7 +71,7 @@ static void p2p (PointAccum *one, PointAccum *other)
     }
 }
 
-static void p2m (PointAccum *particle, const VsgVector2d *center,
+static void p2m (PointAccum *particle, const VsgPRTree2dNodeInfo *devel_node,
 		 AranDevelopment2d *devel)
 {
   guint i;
@@ -81,7 +81,7 @@ static void p2m (PointAccum *particle, const VsgVector2d *center,
   tmp = particle->density;
 
   zp_m_zm = (particle->vector.x + G_I*particle->vector.y) -
-    (center->x + G_I*center->y);
+    (devel_node->center.x + G_I*devel_node->center.y);
 
   /* a_0 = 0 */
   multipole[0] += 0.;
@@ -94,11 +94,13 @@ static void p2m (PointAccum *particle, const VsgVector2d *center,
     }
 }
 
-static void l2p (const VsgVector2d *center, AranDevelopment2d *devel,
+static void l2p (const VsgPRTree2dNodeInfo *devel_node,
+                 AranDevelopment2d *devel,
 		 PointAccum *particle)
 {
 
-  particle->accum += aran_development2d_local_evaluate (center, devel,
+  particle->accum += aran_development2d_local_evaluate (devel_node,
+                                                        devel,
 							&particle->vector);
 }
 

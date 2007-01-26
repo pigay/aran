@@ -1,3 +1,65 @@
+<!-- ##### USER_FUNCTION AranLocal2LocalTrans2d ##### -->
+<para>
+
+</para>
+
+@src_node: 
+@src: 
+@dst_node: 
+@dst: 
+
+<!-- ##### USER_FUNCTION AranLocal2LocalTrans3d ##### -->
+<para>
+
+</para>
+
+@src_node: 
+@src: 
+@dst_node: 
+@dst: 
+
+<!-- ##### USER_FUNCTION AranMultipole2LocalTrans2d ##### -->
+<para>
+
+</para>
+
+@src_node: 
+@src: 
+@dst_node: 
+@dst: 
+@Returns: 
+
+<!-- ##### USER_FUNCTION AranMultipole2LocalTrans3d ##### -->
+<para>
+
+</para>
+
+@src_node: 
+@src: 
+@dst_node: 
+@dst: 
+@Returns: 
+
+<!-- ##### USER_FUNCTION AranMultipole2MultipoleTrans2d ##### -->
+<para>
+
+</para>
+
+@src_node: 
+@src: 
+@dst_node: 
+@dst: 
+
+<!-- ##### USER_FUNCTION AranMultipole2MultipoleTrans3d ##### -->
+<para>
+
+</para>
+
+@src_node: 
+@src: 
+@dst_node: 
+@dst: 
+
 <!-- ##### FUNCTION aran_development2d_get_type ##### -->
 <para>
 

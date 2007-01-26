@@ -32,30 +32,32 @@ G_BEGIN_DECLS;
 /* typedefs */
 typedef struct _AranSolver3d AranSolver3d;
 
+/* Particle functions */
 typedef void (*AranParticle2ParticleFunc3d) (VsgPoint3 src, VsgPoint3 dst);
 
 typedef void (*AranParticle2MultipoleFunc3d) (VsgPoint3 src,
-                                              const VsgVector3d *dst_center,
+                                              const VsgPRTree3dNodeInfo *dst_node,
                                               gpointer dst);
 
-typedef void (*AranMultipole2MultipoleFunc3d) (const VsgVector3d *src_center,
-                                               gpointer src,
-                                               const VsgVector3d *dst_center,
-                                               gpointer dst);
-
-typedef void (*AranMultipole2LocalFunc3d) (const VsgVector3d *src_center,
-                                           gpointer src,
-                                           const VsgVector3d *dst_center,
-                                           gpointer dst);
-
-typedef void (*AranLocal2LocalFunc3d) (const VsgVector3d *src_center,
-                                       gpointer src,
-                                       const VsgVector3d *dst_center,
-                                       gpointer dst);
-
-typedef void (*AranLocal2ParticleFunc3d) (const VsgVector3d *src_center,
+typedef void (*AranLocal2ParticleFunc3d) (const VsgPRTree3dNodeInfo *src_node,
                                           gpointer src,
                                           VsgPoint3 dst);
+
+/* Translation functions */
+typedef void (*AranMultipole2MultipoleFunc3d) (const VsgPRTree3dNodeInfo *src_node,
+                                                gpointer src,
+                                                const VsgPRTree3dNodeInfo *dst_node,
+                                                gpointer dst);
+
+typedef gboolean (*AranMultipole2LocalFunc3d) (const VsgPRTree3dNodeInfo *src_node,
+                                                gpointer src,
+                                                const VsgPRTree3dNodeInfo *dst_node,
+                                                gpointer dst);
+
+typedef void (*AranLocal2LocalFunc3d) (const VsgPRTree3dNodeInfo *src_node,
+                                        gpointer src,
+                                        const VsgPRTree3dNodeInfo *dst_node,
+                                        gpointer dst);
 
 /* functions */
 

@@ -157,67 +157,71 @@ void aran_development2d_write (AranDevelopment2d *ad, FILE *file)
 
 /**
  * aran_development2d_m2m:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment2d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment2d.
  *
  * Performs multipole 2 multipole translation between @src and @dst.
  */
-void aran_development2d_m2m (const VsgVector2d *src_center,
+void aran_development2d_m2m (const VsgPRTree2dNodeInfo *src_node,
 			     AranDevelopment2d *src,
-			     const VsgVector2d *dst_center,
+			     const VsgPRTree2dNodeInfo *dst_node,
 			     AranDevelopment2d *dst)
 {
-  gcomplex128 zsrc = src_center->x + G_I*src_center->y;
-  gcomplex128 zdst = dst_center->x + G_I*dst_center->y;
+  gcomplex128 zsrc = src_node->center.x + G_I*src_node->center.y;
+  gcomplex128 zdst = dst_node->center.x + G_I*dst_node->center.y;
 
   aran_laurent_seriesd_translate (src->multipole, zsrc, dst->multipole, zdst);
 }
 
 /**
  * aran_development2d_m2l:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment2d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment2d.
  *
  * Performs multipole 2 local translation between @src and @dst.
+ *
+ * Returns: %TRUE.
  */
-void aran_development2d_m2l (const VsgVector2d *src_center,
+gboolean aran_development2d_m2l (const VsgPRTree2dNodeInfo *src_node,
 			     AranDevelopment2d *src,
-			     const VsgVector2d *dst_center,
+			     const VsgPRTree2dNodeInfo *dst_node,
 			     AranDevelopment2d *dst)
 {
-  gcomplex128 zsrc = src_center->x + G_I*src_center->y;
-  gcomplex128 zdst = dst_center->x + G_I*dst_center->y;
+  gcomplex128 zsrc = src_node->center.x + G_I*src_node->center.y;
+  gcomplex128 zdst = dst_node->center.x + G_I*dst_node->center.y;
 
   aran_laurent_seriesd_to_taylor (src->multipole, zsrc, dst->local, zdst);
+
+  return TRUE;
 }
 
 /**
  * aran_development2d_l2l:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment2d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment2d.
  *
  * Performs local 2 local translation between @src and @dst.
  */
-void aran_development2d_l2l (const VsgVector2d *src_center,
+void aran_development2d_l2l (const VsgPRTree2dNodeInfo *src_node,
 			     AranDevelopment2d *src,
-			     const VsgVector2d *dst_center,
+			     const VsgPRTree2dNodeInfo *dst_node,
 			     AranDevelopment2d *dst)
 {
-  gcomplex128 zsrc = src_center->x + G_I*src_center->y;
-  gcomplex128 zdst = dst_center->x + G_I*dst_center->y;
+  gcomplex128 zsrc = src_node->center.x + G_I*src_node->center.y;
+  gcomplex128 zdst = dst_node->center.x + G_I*dst_node->center.y;
 
   aran_laurent_seriesd_translate (src->local, zsrc, dst->local, zdst);
 }
 
 /**
  * aran_development2d_multipole_evaluate:
- * @devel_center: center of @devel.
+ * @devel_node: tree node info of @devel.
  * @devel: an #AranDevelopment2d.
  * @pos: evaluation position.
  *
@@ -226,11 +230,11 @@ void aran_development2d_l2l (const VsgVector2d *src_center,
  * Returns: value of multipole part of @devel(@pos).
  */
 gcomplex128
-aran_development2d_multipole_evaluate (const VsgVector2d *devel_center,
+aran_development2d_multipole_evaluate (const VsgPRTree2dNodeInfo *devel_node,
                                        AranDevelopment2d *devel,
                                        const VsgVector2d *pos)
 {
-  gcomplex128 zl = devel_center->x + G_I*devel_center->y;
+  gcomplex128 zl = devel_node->center.x + G_I*devel_node->center.y;
   gcomplex128 zp = pos->x + G_I*pos->y;
 
   return aran_laurent_seriesd_evaluate (devel->multipole, zp-zl);
@@ -238,7 +242,7 @@ aran_development2d_multipole_evaluate (const VsgVector2d *devel_center,
 
 /**
  * aran_development2d_local_evaluate:
- * @devel_center: center of @devel.
+ * @devel_node: tree node info of @devel.
  * @devel: an #AranDevelopment2d.
  * @pos: evaluation position.
  *
@@ -246,11 +250,12 @@ aran_development2d_multipole_evaluate (const VsgVector2d *devel_center,
  *
  * Returns: value of local part of @devel(@pos).
  */
-gcomplex128 aran_development2d_local_evaluate (const VsgVector2d *devel_center,
-					       AranDevelopment2d *devel,
-					       const VsgVector2d *pos)
+gcomplex128
+aran_development2d_local_evaluate (const VsgPRTree2dNodeInfo *devel_node,
+                                   AranDevelopment2d *devel,
+                                   const VsgVector2d *pos)
 {
-  gcomplex128 zl = devel_center->x + G_I*devel_center->y;
+  gcomplex128 zl = devel_node->center.x + G_I*devel_node->center.y;
   gcomplex128 zp = pos->x + G_I*pos->y;
 
   return aran_laurent_seriesd_evaluate (devel->local, zp-zl);

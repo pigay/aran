@@ -158,181 +158,193 @@ void aran_development3d_write (AranDevelopment3d *ad, FILE *file)
 
 /**
  * aran_development3d_m2m:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment3d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment3d.
  *
  * Performs multipole 2 multipole translation between @src and @dst.
  */
-void aran_development3d_m2m (const VsgVector3d *src_center,
+void aran_development3d_m2m (const VsgPRTree3dNodeInfo *src_node,
 			     AranDevelopment3d *src,
-			     const VsgVector3d *dst_center,
+			     const VsgPRTree3dNodeInfo *dst_node,
 			     AranDevelopment3d *dst)
 {
-  aran_spherical_seriesd_translate (src->multipole, src_center,
-				    dst->multipole, dst_center);
+  aran_spherical_seriesd_translate (src->multipole, &src_node->center,
+				    dst->multipole, &dst_node->center);
 }
 
 /**
  * aran_development3d_m2l:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment3d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment3d.
  *
  * Performs multipole 2 local translation between @src and @dst.
+ *
+ * Returns: %TRUE.
  */
-void aran_development3d_m2l (const VsgVector3d *src_center,
-			     AranDevelopment3d *src,
-			     const VsgVector3d *dst_center,
-			     AranDevelopment3d *dst)
+gboolean aran_development3d_m2l (const VsgPRTree3dNodeInfo *src_node,
+				 AranDevelopment3d *src,
+				 const VsgPRTree3dNodeInfo *dst_node,
+				 AranDevelopment3d *dst)
 {
-  aran_spherical_seriesd_to_local (src->multipole, src_center,
-				   dst->local, dst_center);
+  aran_spherical_seriesd_to_local (src->multipole, &src_node->center,
+				   dst->local, &dst_node->center);
+
+  return TRUE;
 }
 
 /**
  * aran_development3d_l2l:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment3d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment3d.
  *
  * Performs local 2 local translation between @src and @dst.
  */
-void aran_development3d_l2l (const VsgVector3d *src_center,
+void aran_development3d_l2l (const VsgPRTree3dNodeInfo *src_node,
 			     AranDevelopment3d *src,
-			     const VsgVector3d *dst_center,
+			     const VsgPRTree3dNodeInfo *dst_node,
 			     AranDevelopment3d *dst)
 {
-  aran_spherical_seriesd_translate (src->local, src_center,
-				    dst->local, dst_center);
+  aran_spherical_seriesd_translate (src->local, &src_node->center,
+				    dst->local, &dst_node->center);
 }
 
 /**
  * aran_development3d_m2m_kkylin:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment3d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment3d.
  *
  * Performs multipole 2 multipole translation between @src and @dst with the
  * K. Kylin formulas.
  */
-void aran_development3d_m2m_kkylin (const VsgVector3d *src_center,
+void aran_development3d_m2m_kkylin (const VsgPRTree3dNodeInfo *src_node,
                                     AranDevelopment3d *src,
-                                    const VsgVector3d *dst_center,
+                                    const VsgPRTree3dNodeInfo *dst_node,
                                     AranDevelopment3d *dst)
 {
-  aran_spherical_seriesd_translate_kkylin (src->multipole, src_center,
-                                           dst->multipole, dst_center);
+  aran_spherical_seriesd_translate_kkylin (src->multipole, &src_node->center,
+                                           dst->multipole, &dst_node->center);
 }
 
 /**
  * aran_development3d_m2l_kkylin:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment3d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment3d.
  *
  * Performs multipole 2 local translation between @src and @dst with the
  * K. Kylin formulas.
+ *
+ * Returns: %TRUE.
  */
-void aran_development3d_m2l_kkylin (const VsgVector3d *src_center,
-                                    AranDevelopment3d *src,
-                                    const VsgVector3d *dst_center,
-                                    AranDevelopment3d *dst)
+gboolean aran_development3d_m2l_kkylin (const VsgPRTree3dNodeInfo *src_node,
+					AranDevelopment3d *src,
+					const VsgPRTree3dNodeInfo *dst_node,
+					AranDevelopment3d *dst)
 {
-  aran_spherical_seriesd_to_local_kkylin (src->multipole, src_center,
-                                          dst->local, dst_center);
+  aran_spherical_seriesd_to_local_kkylin (src->multipole, &src_node->center,
+                                          dst->local, &dst_node->center);
+
+  return TRUE;
 }
 
 /**
  * aran_development3d_l2l_kkylin:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment3d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment3d.
  *
  * Performs local 2 local translation between @src and @dst with the
  * K. Kylin formulas.
  */
-void aran_development3d_l2l_kkylin (const VsgVector3d *src_center,
+void aran_development3d_l2l_kkylin (const VsgPRTree3dNodeInfo *src_node,
                                     AranDevelopment3d *src,
-                                    const VsgVector3d *dst_center,
+                                    const VsgPRTree3dNodeInfo *dst_node,
                                     AranDevelopment3d *dst)
 {
-  aran_spherical_seriesd_translate_kkylin (src->local, src_center,
-                                           dst->local, dst_center);
+  aran_spherical_seriesd_translate_kkylin (src->local, &src_node->center,
+                                           dst->local, &dst_node->center);
 }
 
 /**
  * aran_development3d_m2m_rotate:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment3d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment3d.
  *
  * Performs multipole 2 multipole translation between @src and @dst with the
- * "Point and Shoot" technique: rotate src to dst_center direction and then
- * translate the rotated series along the Z axis. Rotate it back and accumulate
- * it into dst. These operations lead to a O(p^3) scheme.
+ * "Point and Shoot" technique: rotate @src to @dst_node->center direction and
+ * then translate the rotated series along the Z axis. Rotate it back and
+ * accumulate it into dst. These operations lead to a O(p^3) scheme.
  */
-void aran_development3d_m2m_rotate (const VsgVector3d *src_center,
+void aran_development3d_m2m_rotate (const VsgPRTree3dNodeInfo *src_node,
                                     AranDevelopment3d *src,
-                                    const VsgVector3d *dst_center,
+                                    const VsgPRTree3dNodeInfo *dst_node,
                                     AranDevelopment3d *dst)
 {
-  aran_spherical_seriesd_translate_rotate (src->multipole, src_center,
-                                           dst->multipole, dst_center);
+  aran_spherical_seriesd_translate_rotate (src->multipole, &src_node->center,
+                                           dst->multipole, &dst_node->center);
 }
 
 /**
  * aran_development3d_m2l_rotate:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment3d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment3d.
  *
  * Performs multipole 2 local translation between @src and @dst with the
- * "Point and Shoot" technique: rotate src to dst_center direction and then
- * translate the rotated series along the Z axis. Rotate it back and accumulate
- * it into dst. These operations lead to a O(p^3) scheme.
+ * "Point and Shoot" technique: rotate @src to @dst_node->center direction and
+ * then translate the rotated series along the Z axis. Rotate it back and
+ * accumulate it into dst. These operations lead to a O(p^3) scheme.
+ *
+ * Returns: %TRUE.
  */
-void aran_development3d_m2l_rotate (const VsgVector3d *src_center,
-                                    AranDevelopment3d *src,
-                                    const VsgVector3d *dst_center,
-                                    AranDevelopment3d *dst)
+gboolean aran_development3d_m2l_rotate (const VsgPRTree3dNodeInfo *src_node,
+					AranDevelopment3d *src,
+					const VsgPRTree3dNodeInfo *dst_node,
+					AranDevelopment3d *dst)
 {
-  aran_spherical_seriesd_to_local_rotate (src->multipole, src_center,
-                                          dst->local, dst_center);
+  aran_spherical_seriesd_to_local_rotate (src->multipole, &src_node->center,
+                                          dst->local, &dst_node->center);
+
+  return TRUE;
 }
 
 /**
  * aran_development3d_l2l_rotate:
- * @src_center: @src center.
+ * @src_node: @src tree node info.
  * @src: an #AranDevelopment3d.
- * @dst_center: @dst center.
+ * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment3d.
  *
  * Performs local 2 local translation between @src and @dst with the
- * "Point and Shoot" technique: rotate src to dst_center direction and then
- * translate the rotated series along the Z axis. Rotate it back and accumulate
- * it into dst. These operations lead to a O(p^3) scheme.
+ * "Point and Shoot" technique: rotate @src to @dst_node->center direction and
+ * then translate the rotated series along the Z axis. Rotate it back and
+ * accumulate it into dst. These operations lead to a O(p^3) scheme.
  */
-void aran_development3d_l2l_rotate (const VsgVector3d *src_center,
+void aran_development3d_l2l_rotate (const VsgPRTree3dNodeInfo *src_node,
                                     AranDevelopment3d *src,
-                                    const VsgVector3d *dst_center,
+                                    const VsgPRTree3dNodeInfo *dst_node,
                                     AranDevelopment3d *dst)
 {
-  aran_spherical_seriesd_translate_rotate (src->local, src_center,
-                                           dst->local, dst_center);
+  aran_spherical_seriesd_translate_rotate (src->local, &src_node->center,
+                                           dst->local, &dst_node->center);
 }
 
 /**
  * aran_development3d_multipole_evaluate:
- * @devel_center: center of @devel.
+ * @devel_node: tree node info of @devel.
  * @devel: an #AranDevelopment3d.
  * @pos: evaluation position.
  *
@@ -341,20 +353,20 @@ void aran_development3d_l2l_rotate (const VsgVector3d *src_center,
  * Returns: value of multipole part of @devel(@pos).
  */
 gcomplex128
-aran_development3d_multipole_evaluate (const VsgVector3d *devel_center,
+aran_development3d_multipole_evaluate (const VsgPRTree3dNodeInfo *devel_node,
                                        AranDevelopment3d *devel,
                                        const VsgVector3d *pos)
 {
   VsgVector3d tmp;
 
-  vsg_vector3d_sub (pos, devel_center, &tmp);
+  vsg_vector3d_sub (pos, &devel_node->center, &tmp);
 
   return aran_spherical_seriesd_evaluate (devel->multipole, &tmp);
 }
 
 /**
  * aran_development3d_local_evaluate:
- * @devel_center: center of @devel.
+ * @devel_node: tree node info of @devel.
  * @devel: an #AranDevelopment3d.
  * @pos: evaluation position.
  *
@@ -362,20 +374,20 @@ aran_development3d_multipole_evaluate (const VsgVector3d *devel_center,
  *
  * Returns: value of local part of @devel(@pos).
  */
-gcomplex128 aran_development3d_local_evaluate (const VsgVector3d *devel_center,
+gcomplex128 aran_development3d_local_evaluate (const VsgPRTree3dNodeInfo *devel_node,
 					       AranDevelopment3d *devel,
 					       const VsgVector3d *pos)
 {
   VsgVector3d tmp;
 
-  vsg_vector3d_sub (pos, devel_center, &tmp);
+  vsg_vector3d_sub (pos, &devel_node->center, &tmp);
 
   return aran_spherical_seriesd_evaluate (devel->local, &tmp);
 }
 
 /**
  * aran_development3d_local_gradient_evaluate:
- * @devel_center: center of @devel.
+ * @devel_node: tree node info of @devel.
  * @devel: an #AranDevelopment3d.
  * @pos: evaluation position.
  * @grad: result gradient.
@@ -383,14 +395,14 @@ gcomplex128 aran_development3d_local_evaluate (const VsgVector3d *devel_center,
  * Evaluates the gradient of the local part of @devel at @pos.
  */
 void
-aran_development3d_local_gradient_evaluate (const VsgVector3d *devel_center,
+aran_development3d_local_gradient_evaluate (const VsgPRTree3dNodeInfo *devel_node,
                                             AranDevelopment3d *devel,
                                             const VsgVector3d *pos,
                                             VsgVector3d *grad)
 {
   VsgVector3d tmp;
 
-  vsg_vector3d_sub (pos, devel_center, &tmp);
+  vsg_vector3d_sub (pos, &devel_node->center, &tmp);
 
   aran_spherical_seriesd_local_gradient_evaluate (devel->local, &tmp, grad);
 }

@@ -159,15 +159,12 @@ static void p2m (PointAccum *particle, const VsgVector3d *center,
 
 }
 
-static void l2p (const VsgVector3d *center, AranDevelopment3d *devel,
+static void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
 		 PointAccum *particle)
 {
   VsgVector3d tmp;
 
-/*   particle->accum += aran_development3d_local_evaluate (center, devel, */
-/* 							&particle->vector); */
-
-  aran_development3d_local_gradient_evaluate (center, devel,
+  aran_development3d_local_gradient_evaluate (devel_node, devel,
                                               &particle->vector,
                                               &tmp);
 
