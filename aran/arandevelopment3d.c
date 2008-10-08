@@ -19,6 +19,7 @@
 
 #include "arandevelopment3d.h"
 
+#include <vsg/vsgd-inline.h>
 
 /**
  * ARAN_TYPE_DEVELOPMENT3D:
