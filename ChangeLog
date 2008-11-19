@@ -1,3 +1,72 @@
+2008-10-08 13:56  Pierre Gay <peyo@libaran.org>
+
+	* [r39] aran-config.h.in, aran/arandevelopment3d.c,
+	  aran/aransolver2d.c, aran/aransolver3d.c,
+	  aran/aransphericalseriesd-kkylin.c,
+	  aran/aransphericalseriesd-rotate.c,
+	  aran/aransphericalseriesd-translate.c,
+	  aran/aransphericalseriesd.c: Internal use of Vsg inline
+	  functions.
+
+2007-01-26 17:05  Pierre Gay <peyo@libaran.org>
+
+	* [r38] aran/arandevelopment2d.c, aran/arandevelopment2d.h,
+	  aran/arandevelopment3d.c, aran/arandevelopment3d.h,
+	  aran/aransolver2d.c, aran/aransolver2d.h, aran/aransolver3d.c,
+	  aran/aransolver3d.h, configure.ac,
+	  docs/reference/tmpl/aran-unused.sgml,
+	  docs/reference/tmpl/arandevelopment2d.sgml,
+	  docs/reference/tmpl/arandevelopment3d.sgml,
+	  docs/reference/tmpl/aransolver2d.sgml,
+	  docs/reference/tmpl/aransolver3d.sgml, tests/dev3.c,
+	  tests/dummypot.c, tests/newtonfield3.c, tests/newtonpot3.c:
+	  Follows LibVsg new interface for far interactions (vsg svn: rev
+	  31).
+	  Introduces API changes to AranMultipole2LocalFunc2/3d to allow
+	  more user
+	  control.
+
+2007-01-26 13:39  Pierre Gay <peyo@libaran.org>
+
+	* [r37] ChangeLog, svn2cl-authors.xml: Updated ChangeLog. Added
+	  svn2cl authors file.
+
+2007-01-26 11:10  Pierre Gay <peyo@libaran.org>
+
+	* [r36] aran/aran.c, aran/aran.h, aran/aranbinomial.c,
+	  aran/aranbinomial.h, aran/aranbinomialbuffer@t@.c,
+	  aran/aranbinomialbuffer@t@.h, aran/aranccomplex.h.in,
+	  aran/arancoefficientbuffer@t@.c, aran/arancoefficientbuffer@t@.h,
+	  aran/arancomplex.h, aran/arandevelopment2d.c,
+	  aran/arandevelopment2d.h, aran/arandevelopment3d.c,
+	  aran/arandevelopment3d.h, aran/aranlaurentseriesd.c,
+	  aran/aranlaurentseriesd.h, aran/aranlegendre.c,
+	  aran/aranlegendre.h, aran/aransolver2d.c, aran/aransolver2d.h,
+	  aran/aransolver3d.c, aran/aransolver3d.h,
+	  aran/aransphericalharmonic.c, aran/aransphericalharmonic.h,
+	  aran/aransphericalseriesd-kkylin.c,
+	  aran/aransphericalseriesd-private.h,
+	  aran/aransphericalseriesd-rotate.c,
+	  aran/aransphericalseriesd-translate.c,
+	  aran/aransphericalseriesd.c, aran/aransphericalseriesd.h,
+	  aran/aranwigner-private.h, aran/aranwigner.c, aran/aranwigner.h,
+	  aran/aranwignerrepo.c, aran/aranwignerrepo.h, tests/dev3.at,
+	  tests/dev3.c, tests/dummypot.at, tests/dummypot.c,
+	  tests/gradient3.at, tests/gradient3.c, tests/laurent.at,
+	  tests/laurent.c, tests/legendre.at, tests/legendre.c,
+	  tests/m2l3.at, tests/m2l3.c, tests/multipole3.at,
+	  tests/multipole3.c, tests/newtonfield3.at, tests/newtonfield3.c,
+	  tests/newtonpot3.at, tests/newtonpot3.c, tests/rotation.at,
+	  tests/rotation.c, tests/special_legendre.at,
+	  tests/special_legendre.c, tests/sphericalharmonic.at,
+	  tests/sphericalharmonic.c,
+	  tests/sphericalharmonic_pregradient.at,
+	  tests/sphericalharmonic_pregradient.c, tests/sphericalseriesd.at,
+	  tests/sphericalseriesd.c, tests/taylor.at, tests/taylor.c,
+	  tests/taylor3.at, tests/taylor3.c, tests/testsuite.at,
+	  tests/wigner.at, tests/wigner.c: Added year 2007 in copyright
+	  notices.
+
 2007-01-21 21:33  Pierre Gay <peyo@libaran.org>
 
 	* [r31] aran/aransolver2d.c, aran/aransolver3d.c: Memory leak fixed
