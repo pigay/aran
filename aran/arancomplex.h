@@ -29,8 +29,8 @@ G_BEGIN_DECLS;
 /* typedefs */
 
 /* Glib lacks some things:) */
-typedef float complex gcomplex64;
-typedef double complex gcomplex128;
+typedef float _Complex gcomplex64;
+typedef double _Complex gcomplex128;
 
 #define G_I (I)
 

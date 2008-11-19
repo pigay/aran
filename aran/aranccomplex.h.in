@@ -29,12 +29,12 @@
 /* Avoid C++ STL  and ISO C99 complex.h header collision: use C99 complex
  * numbers.
  */
-#include <@ARAN_CC_COMPLEX_H_PATH@>
+@ARAN_CC_COMPLEX_H_INCLUDE@
 
-#else /* __ARAN_CCOMPLEX_H__ */
+#else
 
 #include <complex.h>
 
-#endif
+#endif /* __cplusplus */
 
 #endif /* __ARAN_CCOMPLEX_H__ */

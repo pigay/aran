@@ -89,6 +89,7 @@ AC_ISC_POSIX
 AM_PROG_LEX
 AC_PROG_YACC
 
+AC_LIBTOOL_WIN32_DLL
 AM_PROG_LIBTOOL
 
 AM_MISSING_PROG([AUTOM4TE], [autom4te])
@@ -120,15 +121,25 @@ AC_CHECK_LIB(m, cos)
 # Check for variable length array support
 ARAN_C_VARIABLE_ARRAY
 
+# We need libmingwex.a for complex numbers support on cygwin
+case $host in
+  *-*-mingw32* | *-*-cygwin*)
+    CFLAGS="$CFLAGS -I/usr/include/mingw"
+    CXXFLAGS="$CXXFLAGS -I/usr/include/mingw"
+    LDFLAGS="$LDLFAGS -L/usr/lib/mingw"
+    AC_CHECK_LIB([crtdll], [_fopen])
+    AC_CHECK_LIB([mingwex], [cexp])
+    ;;
+  *)
+    AC_CHECK_LIB([m],[cexp])
+    ;;
+esac
+
 # Check for CC complex numbers support
-AC_CHECK_HEADER([complex.h])
 ARAN_C_COMPLEX
 
-# Check for CC complex numbers support
+# Check for C complex numbers support with C++
 ARAN_CXX_CCOMPLEX
-
-# Check for complex math functions
-AC_CHECK_LIB([m],[csin])
 
 PKG_CHECK_MODULES(BASE_DEPENDENCIES, [glib-2.0 >= 2.0.0 gobject-2.0 >= 2.0.0
                                       vsgd >= 0.2.0])
