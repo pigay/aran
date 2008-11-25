@@ -11,7 +11,7 @@
     <title>Introduction</title>
     <para>
       LibAran is a 2D/3D
-<ulink url="http://www-theor.ch.cam.ac.uk/people/ross/thesis/node97.html">Fast Multipole Method</ulink> software library. Distributed under the GNU LGPL, it
+<ulink url="http://en.wikipedia.org/wiki/Fast_Multipole_Method">Fast Multipole Method</ulink> software library. Distributed under the GNU LGPL, it
       provides a C API to allow developers to use such algorithms in their
       own applications.
     </para>
@@ -97,6 +97,11 @@
 
     <simplesect>
       <title>Using LibAran</title>
+      <para>
+        Compiling a program against Libaran is usually a matter of using
+        <code>`pkg-config --cflags --libs aran vsgd gobject-2.0`</code>
+        on your command line.
+      </para>
       <para>
         Some simple examples of developing applications that use LibAran FMM
         facilities can be found in the tests programs of the library
