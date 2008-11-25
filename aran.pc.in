@@ -2,10 +2,12 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
+mingw_include=@mingw_include@
+mingw_libs=@mingw_ldflags@ @mingw_libadd@
 
 Name: LibAran
 Description: Fast Multipole Method library
 Version: @VERSION@
-Libs: -L${libdir} -laran
-Cflags: -I${includedir}
+Libs: -L${libdir} -laran ${mingw_libs}
+Cflags: -I${includedir} ${mingw_include}
 

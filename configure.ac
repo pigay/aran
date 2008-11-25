@@ -123,9 +123,12 @@ ARAN_C_VARIABLE_ARRAY
 # We need libmingwex.a for complex numbers support on cygwin
 case $host in
   *-*-mingw32* | *-*-cygwin*)
-    CFLAGS="$CFLAGS -I/usr/include/mingw"
-    CXXFLAGS="$CXXFLAGS -I/usr/include/mingw"
-    LDFLAGS="$LDLFAGS -L/usr/lib/mingw"
+    mingw_include="-I/usr/include/mingw"
+    mingw_ldflags="-L/usr/lib/mingw"
+    mingw_libadd="-lcrtdll -lmingwex"
+    CFLAGS="$CFLAGS $mingw_include"
+    CXXFLAGS="$CXXFLAGS $mingw_include"
+    LDFLAGS="$LDLFAGS $mingw_ldflags"
     AC_CHECK_LIB([crtdll], [_fopen])
     AC_CHECK_LIB([mingwex], [cexp])
     ;;
@@ -133,6 +136,10 @@ case $host in
     AC_CHECK_LIB([m],[cexp])
     ;;
 esac
+# subst for pkg-config files
+AC_SUBST(mingw_include)
+AC_SUBST(mingw_ldflags)
+AC_SUBST(mingw_libadd)
 
 # Check for CC complex numbers support
 ARAN_C_COMPLEX

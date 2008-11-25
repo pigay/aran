@@ -229,3 +229,8 @@ overridden in the site shell script).
 `configure' also accepts some other, not widely useful, options.  Run
 `configure --help' for more details.
 
+Installing on Cygwin
+====================
+
+Installation on a Cygwin system is possible by passing the
+`--disable-shared' option to `configure'.

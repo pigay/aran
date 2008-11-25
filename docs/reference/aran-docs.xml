@@ -64,24 +64,37 @@
       <title>Software prerequisites</title>
 
       <para>Aran depends on the following software:</para>
-    <itemizedlist>
-      <listitem>
-        An ISO C99 compliant C compiler (and libc) that support
-        complex number types and variable sized arrays.
-      </listitem>
-      <listitem>
-        <ulink url="http://www.gtk.org" >glib-2.0</ulink>.
-      </listitem>
-      <listitem>
-        <ulink url="http://www.libvsg.org">Vsg</ulink> geometric library.
-      </listitem>
-      <listitem>
-        Optionally <ulink url="http://www.gtk.org/gtk-doc" >gtk-doc</ulink> for
-        reference documentation. 
-      </listitem>
-    </itemizedlist>
-       
+
+      <itemizedlist>
+        <listitem>
+          An ISO C99 compliant C compiler (and libc) that support
+          complex number types and variable sized arrays.
+        </listitem>
+        <listitem>
+          <ulink url="http://www.gtk.org" >glib-2.0</ulink>.
+        </listitem>
+        <listitem>
+          <ulink url="http://www.libvsg.org">Vsg</ulink> geometric library.
+        </listitem>
+        <listitem>
+          Optionally <ulink url="http://www.gtk.org/gtk-doc" >gtk-doc</ulink>
+          for reference documentation. 
+        </listitem>
+      </itemizedlist>
     </simplesect>
+      
+    <simplesect>
+      <title>Installation</title>
+      <para>
+        Usually, the simple tool chain: <code>./configure</code> -
+        <code>make</code> - <code>make install</code> should work.
+      </para>
+      <para>
+        Under Cygwin, passing the <code>--disable-shared</code> option to
+        <code>configure</code> allows to install correctly.
+      </para>
+    </simplesect>
+
     <simplesect>
       <title>Using LibAran</title>
       <para>
