@@ -18,7 +18,7 @@ arancoefficientbufferf.c arancoefficientbufferd.c \
 arancoefficientbufferc64.c arancoefficientbufferc128.c \
 aranbinomialbufferl.c \
 aranbinomialbufferf.c aranbinomialbufferd.c \
-aranbinomialbufferc64.c aranbinomialbufferc128.c
+aranbinomialbufferc64.c aranbinomialbufferc128.c arancomplex.c
 
 
 libaran_la_sources = aran.c aransolver2d.c aranbinomial.c \

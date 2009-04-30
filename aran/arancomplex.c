@@ -17,36 +17,44 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __ARAN_COMPLEX_H__
-#define __ARAN_COMPLEX_H__
+#include "arancomplex.h"
 
-#include <aran/aranccomplex.h>
-
-#include <glib.h>
-
-#include <vsg/vsgmpi.h>
-
-G_BEGIN_DECLS;
-
-/* typedefs */
-
-/* Glib lacks some things:) */
-typedef float _Complex gcomplex64;
-typedef double _Complex gcomplex128;
-
-#define G_I (I)
-
-/* parallel type handling */
 #ifdef VSG_HAVE_MPI
+/**
+ * ARAN_MPI_TYPE_GCOMPLEX64:
+ *
+ * The #MPI_Datatype associated to #gcomplex64
+ */
 
-#define ARAN_MPI_TYPE_GCOMPLEX64 (aran_gcomplex64_get_mpi_type ())
-MPI_Datatype aran_gcomplex64_get_mpi_type (void) G_GNUC_CONST;
+MPI_Datatype aran_gcomplex64_get_mpi_type (void)
+{
+  static MPI_Datatype gcomplex64_mpi_type = MPI_DATATYPE_NULL;
 
-#define ARAN_MPI_TYPE_GCOMPLEX128 (aran_gcomplex128_get_mpi_type ())
-MPI_Datatype aran_gcomplex128_get_mpi_type (void) G_GNUC_CONST;
+  if (gcomplex64_mpi_type == MPI_DATATYPE_NULL)
+    {
+      MPI_Type_contiguous (2, MPI_FLOAT, &gcomplex64_mpi_type);
+      MPI_Type_commit (&gcomplex64_mpi_type);
+    }
 
+  return gcomplex64_mpi_type;
+}
+
+/**
+ * ARAN_MPI_TYPE_GCOMPLEX128:
+ *
+ * The #MPI_Datatype associated to #gcomplex128
+ */
+
+MPI_Datatype aran_gcomplex128_get_mpi_type (void)
+{
+  static MPI_Datatype gcomplex128_mpi_type = MPI_DATATYPE_NULL;
+
+  if (gcomplex128_mpi_type == MPI_DATATYPE_NULL)
+    {
+      MPI_Type_contiguous (2, MPI_DOUBLE, &gcomplex128_mpi_type);
+      MPI_Type_commit (&gcomplex128_mpi_type);
+    }
+
+  return gcomplex128_mpi_type;
+}
 #endif
-
-G_END_DECLS;
-
-#endif /* __ARAN_COMPLEX_H__ */
