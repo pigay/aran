@@ -360,7 +360,7 @@ AranSolver2d *aran_solver2d_new (VsgPRTree2d *prtree,
   solver = _solver2d_alloc ();
 
   if (prtree == NULL)
-    solver->prtree = vsg_prtree2d_new (&lbound, &ubound, NULL);
+    solver->prtree = vsg_prtree2d_new (&lbound, &ubound, NULL, 0);
   else
     solver->prtree = prtree;
 

@@ -361,7 +361,7 @@ AranSolver3d *aran_solver3d_new (VsgPRTree3d *prtree,
   solver = _solver3d_alloc ();
 
   if (prtree == NULL)
-    solver->prtree = vsg_prtree3d_new (&lbound, &ubound, NULL);
+    solver->prtree = vsg_prtree3d_new (&lbound, &ubound, NULL, 0);
   else
     solver->prtree = prtree;
 
