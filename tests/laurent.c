@@ -179,6 +179,41 @@ static void build_inv_z_m_1_series (AranLaurentSeriesd *als)
     }
 }
 
+static void check_add ()
+{
+  AranLaurentSeriesd *als1 = aran_laurent_seriesd_new (order, order);
+  AranLaurentSeriesd *als2 = aran_laurent_seriesd_new (order, order);
+  AranLaurentSeriesd * als3 = aran_laurent_seriesd_new (order, order);
+  gint i;
+
+  for (i=-order; i<=(gint)order; i ++)
+    {
+      gcomplex128 *term1 = aran_laurent_seriesd_get_term (als1, i);
+      gcomplex128 *term2 = aran_laurent_seriesd_get_term (als2, i);
+
+      *term1 = i;    
+      *term2 = -i*G_I;
+    }
+
+  aran_laurent_seriesd_copy (als2, als1);
+
+  aran_laurent_seriesd_add (als1, als2, als3);
+ 
+  for (i=-order; i<=(gint)order; i ++)
+    {
+      gcomplex128 *term1 = aran_laurent_seriesd_get_term (als1, i);
+      gcomplex128 *term2 = aran_laurent_seriesd_get_term (als2, i);
+      gcomplex128 *term3 = aran_laurent_seriesd_get_term (als3, i);
+
+      if (*term3 != (*term1+*term2))
+      g_printerr ("Laurent series addition error %d\n", i);
+    }
+
+  aran_laurent_seriesd_free (als1);
+  aran_laurent_seriesd_free (als2);
+  aran_laurent_seriesd_free (als3);
+}
+
 int main (int argc, char **argv)
 {
   int ret = 0;
@@ -210,6 +245,8 @@ int main (int argc, char **argv)
   aran_laurent_seriesd_free (als);
   aran_laurent_seriesd_free (alst);
   aran_laurent_seriesd_free (alstt);
+
+  check_add ();
 
   return ret;
 }
