@@ -143,6 +143,8 @@ void point_accum_destroy (PointAccum *data, gboolean resident,
   g_free (data);
 }
 
+#ifdef VSG_HAVE_MPI
+
 /* migration pack/unpack functions */
 void point_accum_migrate_pack (PointAccum *pt, VsgPackedMsg *pm,
                                gpointer user_data)
@@ -237,6 +239,8 @@ VsgParallelVTable point_accum_vtable = {
   },
 
 };
+
+#endif /* VSG_HAVE_MPI */
 
 static void _one_circle_distribution (GPtrArray *points,
 				      AranSolver2d *solver);
@@ -370,6 +374,7 @@ static void _one_circle_distribution (GPtrArray *points, AranSolver2d *solver)
     {
       PointAccum tmp;
 
+#ifdef VSG_HAVE_MPI
       if (i%_flush_interval == 0)
         {
           aran_solver2d_migrate_flush (solver);
@@ -381,6 +386,7 @@ static void _one_circle_distribution (GPtrArray *points, AranSolver2d *solver)
               aran_solver2d_distribute_contiguous_leaves (solver);
             }
         }
+#endif /* VSG_HAVE_MPI */
 
       tmp.vector.x = R * cos (theta0 + i * dtheta);
       tmp.vector.y = R * sin (theta0 + i * dtheta);
@@ -402,8 +408,10 @@ static void _one_circle_distribution (GPtrArray *points, AranSolver2d *solver)
       aran_solver2d_insert_point (solver, point);
     }
 
+#ifdef VSG_HAVE_MPI
   aran_solver2d_migrate_flush (solver);
   aran_solver2d_distribute_contiguous_leaves (solver);
+#endif /* VSG_HAVE_MPI */
 }
 
 static void _random_distribution (GPtrArray *points,
@@ -417,6 +425,7 @@ static void _random_distribution (GPtrArray *points,
     {
       PointAccum tmp;
 
+#ifdef VSG_HAVE_MPI
       if (i%_flush_interval == 0)
         {
           aran_solver2d_migrate_flush (solver);
@@ -428,6 +437,7 @@ static void _random_distribution (GPtrArray *points,
               aran_solver2d_distribute_contiguous_leaves (solver);
             }
         }
+#endif /* VSG_HAVE_MPI */
 
       tmp.vector.x = g_rand_double_range (rand, -R, R);;
       tmp.vector.y = g_rand_double_range (rand, -R, R);;
@@ -449,8 +459,10 @@ static void _random_distribution (GPtrArray *points,
       aran_solver2d_insert_point (solver, point);
     }
 
+#ifdef VSG_HAVE_MPI
   aran_solver2d_migrate_flush (solver);
   aran_solver2d_distribute_contiguous_leaves (solver);
+#endif /* VSG_HAVE_MPI */
 
   g_rand_free (rand);
 }
@@ -485,7 +497,10 @@ void check_point_accum (PointAccum *point, gint *ret)
 
 int main (int argc, char **argv)
 {
+#ifdef VSG_HAVE_MPI
   VsgPRTreeParallelConfig pconfig = {NULL,};
+#endif
+
   VsgVector2d lbound = {-1., -1.};
   VsgVector2d ubound = {1., 1.};
   VsgPRTree2d *prtree;
@@ -494,20 +509,24 @@ int main (int argc, char **argv)
   guint i;
   GTimer *timer = NULL;
 
+#ifdef VSG_HAVE_MPI
   MPI_Init (&argc, &argv);
 
   MPI_Comm_size (MPI_COMM_WORLD, &sz);
   MPI_Comm_rank (MPI_COMM_WORLD, &rk);
+#endif
 
   aran_init();
 
   parse_args (argc, argv);
 
+#ifdef VSG_HAVE_MPI
   pconfig.communicator = MPI_COMM_WORLD;
 
   pconfig.point = point_accum_vtable;
 
   aran_development2d_vtable_init (&pconfig.node_data, 0, order);
+#endif
 
   points = g_ptr_array_new ();
 
@@ -526,7 +545,9 @@ int main (int argc, char **argv)
 			      aran_development2d_new (0, order),
 			      (AranZeroFunc) aran_development2d_set_zero);
 
+#ifdef VSG_HAVE_MPI
   aran_solver2d_set_parallel (solver, &pconfig);
+#endif
 
   aran_solver2d_set_functions (solver,
 			       (AranParticle2ParticleFunc2d) p2p,
@@ -540,9 +561,11 @@ int main (int argc, char **argv)
 
   if (_verbose)
     {
-      g_printerr ("solve begin\n");
+      g_printerr ("%d : solve begin\n", rk);
 
+#ifdef VSG_HAVE_MPI
       MPI_Barrier (MPI_COMM_WORLD);
+#endif
 
       timer = g_timer_new ();
     }
@@ -551,9 +574,11 @@ int main (int argc, char **argv)
 
   if (_verbose)
     {
+#ifdef VSG_HAVE_MPI
       MPI_Barrier (MPI_COMM_WORLD);
+#endif
 
-      g_printerr ("solve ok elapsed=%f seconds\n",
+      g_printerr ("%d : solve ok elapsed=%f seconds\n", rk,
                   g_timer_elapsed (timer, NULL));
 
       g_timer_destroy (timer);
@@ -587,13 +612,17 @@ int main (int argc, char **argv)
 
   aran_solver2d_free (solver);
 
+#ifdef VSG_HAVE_MPI
   aran_development2d_vtable_clear (&pconfig.node_data);
+#endif
 
   /* destroy the points */
   g_ptr_array_foreach (points, empty_array, NULL);
   g_ptr_array_free (points, TRUE);
 
+#ifdef VSG_HAVE_MPI
   MPI_Finalize ();
+#endif
 
   return ret;
 }
