@@ -20,7 +20,7 @@
 #include "aransolver3d.h"
 
 #include <glib-object.h>
-#include <vsg/vsgd-inline.h>
+/* #include <vsg/vsgd-inline.h> */
 
 #include <string.h>
 

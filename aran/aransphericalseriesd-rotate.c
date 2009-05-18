@@ -24,7 +24,7 @@
 
 #include "aranwignerrepo.h"
 
-#include <vsg/vsgd-inline.h>
+/* #include <vsg/vsgd-inline.h> */
 
 #include <string.h>
 #include <math.h>
