@@ -23,6 +23,10 @@
 #include <glib.h>
 
 #include <vsg/vsgd.h>
+#ifdef VSG_HAVE_MPI
+#include <vsg/vsgpackedmsg.h>
+#endif
+
 
 #include <aran/arancomplex.h>
 
@@ -51,7 +55,16 @@ guint8 aran_laurent_seriesd_get_negdeg (AranLaurentSeriesd *als);
 
 void aran_laurent_seriesd_set_zero (AranLaurentSeriesd *als);
 
+void aran_laurent_seriesd_add (AranLaurentSeriesd *one,
+                               AranLaurentSeriesd *other,
+                               AranLaurentSeriesd *result);
+
 void aran_laurent_seriesd_write (AranLaurentSeriesd *als, FILE *file);
+
+#ifdef VSG_HAVE_MPI
+void aran_laurent_seriesd_pack (AranLaurentSeriesd *als, VsgPackedMsg *pm);
+void aran_laurent_seriesd_unpack (AranLaurentSeriesd *als, VsgPackedMsg *pm);
+#endif
 
 gcomplex128 aran_laurent_seriesd_evaluate (AranLaurentSeriesd *als,
 					   gcomplex128 z);

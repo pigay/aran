@@ -74,6 +74,24 @@ void aran_taylor_translate (AranLaurentSeriesd *src,
 
 /* functions */
 
+#ifdef VSG_HAVE_MPI
+
+void aran_laurent_seriesd_pack (AranLaurentSeriesd *als, VsgPackedMsg *pm)
+{
+  vsg_packed_msg_send_append (pm, ARAN_LAURENT_SERIESD_TERM (als, als->posdeg),
+                              als->negdeg + als->posdeg + 1,
+                              ARAN_MPI_TYPE_GCOMPLEX128);
+}
+
+void aran_laurent_seriesd_unpack (AranLaurentSeriesd *als, VsgPackedMsg *pm)
+{
+  vsg_packed_msg_recv_read (pm, ARAN_LAURENT_SERIESD_TERM (als, als->posdeg),
+                            als->negdeg + als->posdeg + 1,
+                            ARAN_MPI_TYPE_GCOMPLEX128);
+}
+
+#endif
+
 /**
  * aran_laurent_seriesd_new:
  * @posdeg: positive degree of the series.
@@ -210,6 +228,49 @@ void aran_laurent_seriesd_set_zero (AranLaurentSeriesd *als)
   size = (als->posdeg+als->negdeg+1) * sizeof (gcomplex128);
 
   memset (ptr, 0, size);
+}
+
+/**
+ * aran_laurent_seriesd_add:
+ * @one: a #AranLaurentSeriesd.
+ * @other:  a #AranLaurentSeriesd.
+ * @result: a #AranLaurentSeriesd.
+ *
+ * Computes the addition of @one and @other into @result. All
+ * arguments must have the same degree. Argument aliasing is allowed.
+ */
+void aran_laurent_seriesd_add (AranLaurentSeriesd *one,
+                               AranLaurentSeriesd *other,
+                               AranLaurentSeriesd *result)
+{
+  gint i;
+  gcomplex128 *oneterm;
+  gcomplex128 *otherterm;
+  gcomplex128 *resultterm;
+
+  g_return_if_fail (one != NULL);
+  g_return_if_fail (other != NULL);
+  g_return_if_fail (result != NULL);
+
+  g_return_if_fail (one->posdeg == result->posdeg);
+  g_return_if_fail (other->posdeg == result->posdeg);
+
+  g_return_if_fail (one->negdeg == result->negdeg);
+  g_return_if_fail (other->negdeg == result->negdeg);
+
+  oneterm = ARAN_LAURENT_SERIESD_TERM (one, result->posdeg);
+  otherterm = ARAN_LAURENT_SERIESD_TERM (other, result->posdeg);
+  resultterm = ARAN_LAURENT_SERIESD_TERM (result, result->posdeg);
+
+  for (i=0; i<result->posdeg+result->negdeg+1; i++)
+    {
+      *resultterm = *oneterm + *otherterm;
+
+      oneterm ++;
+      otherterm ++;
+      resultterm ++;
+    }
+
 }
 
 /**

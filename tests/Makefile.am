@@ -7,7 +7,8 @@ noinst_PROGRAMS =
 
 noinst_PROGRAMS += dummypot taylor laurent legendre sphericalharmonic \
 sphericalseriesd multipole3 taylor3 m2l3 newtonpot3 dev3 special_legendre \
-sphericalharmonic_pregradient gradient3 newtonfield3 wigner rotation
+sphericalharmonic_pregradient gradient3 newtonfield3 wigner rotation \
+dummypotparallel
 
 LDADD = $(top_srcdir)/aran/libaran.la
 

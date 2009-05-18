@@ -80,6 +80,53 @@ gcomplex128 aran_development2d_local_evaluate (const VsgPRTree2dNodeInfo *devel_
 					       AranDevelopment2d *devel,
 					       const VsgVector2d *pos);
 
+#ifdef VSG_HAVE_MPI
+
+void aran_development2d_vtable_init (VsgParallelVTable *vtable, guint8 posdeg,
+                                     guint8 negdeg);
+
+void aran_development2d_vtable_clear (VsgParallelVTable *vtable);
+
+gpointer aran_development2d_alloc (gboolean resident, AranDevelopment2d *src);
+
+void aran_development2d_destroy (gpointer data, gboolean resident,
+                                gpointer user_data);
+
+void aran_development2d_migrate_pack (AranDevelopment2d *devel,
+                                      VsgPackedMsg *pm,
+                                      gpointer user_data);
+
+void aran_development2d_migrate_unpack (AranDevelopment2d *devel,
+                                        VsgPackedMsg *pm,
+                                        gpointer user_data);
+
+void aran_development2d_visit_fw_pack (AranDevelopment2d *devel,
+                                       VsgPackedMsg *pm,
+                                       gpointer user_data);
+
+void aran_development2d_visit_fw_unpack (AranDevelopment2d *devel,
+                                         VsgPackedMsg *pm,
+                                         gpointer user_data);
+
+void aran_development2d_visit_fw_reduce (AranDevelopment2d *a,
+                                         AranDevelopment2d  *b,
+                                         gpointer user_data);
+
+void aran_development2d_visit_bw_pack (AranDevelopment2d *devel,
+                                       VsgPackedMsg *pm,
+                                       gpointer user_data);
+
+
+void aran_development2d_visit_bw_unpack (AranDevelopment2d *devel,
+                                         VsgPackedMsg *pm,
+                                         gpointer user_data);
+
+void aran_development2d_visit_bw_reduce (AranDevelopment2d *a,
+                                         AranDevelopment2d  *b,
+                                         gpointer user_data);
+
+#endif /* VSG_HAVE_MPI */
+
 G_END_DECLS;
 
 #endif /* __ARAN_DEVELOPMENT2D_H__ */

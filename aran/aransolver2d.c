@@ -260,6 +260,10 @@ static void clear_func (const VsgPRTree2dNodeInfo *node_info,
 {
   gpointer node_dev = node_info->user_data;
 
+#ifdef VSG_HAVE_MPI
+  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (node_info)) return;
+#endif
+
   aran_solver2d_clear_development (solver, node_dev);
 }
 
@@ -267,6 +271,10 @@ static void up_func (const VsgPRTree2dNodeInfo *node_info,
 		     AranSolver2d *solver)
 {
   gpointer node_dev = node_info->user_data;
+
+#ifdef VSG_HAVE_MPI
+  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (node_info)) return;
+#endif
 
   if (node_info->isleaf)
     {
@@ -301,6 +309,10 @@ static void down_func (const VsgPRTree2dNodeInfo *node_info,
 		       AranSolver2d *solver)
 {
   gpointer node_dev = node_info->user_data;
+
+#ifdef VSG_HAVE_MPI
+  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (node_info)) return;
+#endif
 
   if (solver->l2l != NULL && node_info->point_count != 0 &&
       node_info->father_info)
@@ -623,6 +635,21 @@ void aran_solver2d_foreach_point_custom (AranSolver2d *solver,
                                      func, user_data);
 }
 
+void _traverse_print_dev (VsgPRTree2dNodeInfo *node_info, FILE *f)
+{
+  if (! VSG_PRTREE2D_NODE_INFO_IS_REMOTE (node_info))
+    {
+      AranDevelopment2d *dev = (AranDevelopment2d *) node_info->user_data;
+
+      if (VSG_PRTREE2D_NODE_INFO_IS_LOCAL (node_info))
+        fprintf(f, "* ");
+      vsg_prtree_key2d_write (&node_info->id, f);
+      fprintf(f, " ");
+      aran_laurent_seriesd_write (dev->multipole, f);
+      fprintf (f, "\n");
+    }
+}
+
 /**
  * aran_solver2d_solve:
  * @solver: an #AranSolver2d.
@@ -631,9 +658,10 @@ void aran_solver2d_foreach_point_custom (AranSolver2d *solver,
  */
 void aran_solver2d_solve (AranSolver2d *solver)
 {
+
   g_return_if_fail (solver != NULL);
 
-  /* clear multipole and local develoments before the big work */
+  /* clear multipole and local developments before the big work */
   vsg_prtree2d_traverse (solver->prtree, G_POST_ORDER,
                          (VsgPRTree2dFunc) clear_func,
                          solver);
@@ -642,6 +670,17 @@ void aran_solver2d_solve (AranSolver2d *solver)
   vsg_prtree2d_traverse (solver->prtree, G_POST_ORDER,
                          (VsgPRTree2dFunc) up_func,
                          solver);
+
+#ifdef VSG_HAVE_MPI
+  /* gather shared in_counts */
+  {
+    VsgPRTreeParallelConfig pc;
+
+    vsg_prtree2d_get_parallel (solver->prtree, &pc);
+    vsg_prtree2d_shared_nodes_allreduce (solver->prtree,
+                                         &pc.node_data.visit_forward);
+  }
+#endif /* VSG_HAVE_MPI */
 
   /* transmit info from Multipole to Local developments */
   vsg_prtree2d_near_far_traversal (solver->prtree,
@@ -654,3 +693,54 @@ void aran_solver2d_solve (AranSolver2d *solver)
                          (VsgPRTree2dFunc) down_func,
                          solver);
 }
+
+void aran_solver2d_set_children_order_hilbert (AranSolver2d *solver)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree2d_set_children_order_hilbert (solver->prtree);
+
+}
+
+void aran_solver2d_set_children_order_default (AranSolver2d *solver)
+{
+  g_return_if_fail (solver != NULL);
+
+ vsg_prtree2d_set_children_order_default (solver->prtree);
+}
+
+#ifdef VSG_HAVE_MPI
+
+void aran_solver2d_set_parallel (AranSolver2d *solver,
+                                 VsgPRTreeParallelConfig *pconfig)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree2d_set_parallel (solver->prtree, pconfig);
+}
+
+void aran_solver2d_migrate_flush (AranSolver2d *solver)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree2d_migrate_flush (solver->prtree);
+}
+
+void aran_solver2d_distribute_nodes (AranSolver2d *solver,
+                                     VsgPRTree2dDistributionFunc func,
+                                     gpointer user_data)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree2d_distribute_nodes (solver->prtree, func, user_data);
+}
+
+void aran_solver2d_distribute_contiguous_leaves (AranSolver2d *solver)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree2d_distribute_contiguous_leaves (solver->prtree);
+}
+
+#endif
+
