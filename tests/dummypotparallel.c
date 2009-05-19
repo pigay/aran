@@ -253,6 +253,7 @@ static guint order = K;
 static gboolean check = TRUE;
 static guint maxbox = 1;
 static gboolean _verbose = FALSE;
+static gboolean _hilbert = FALSE;
 
 static void (*_distribution) (GPtrArray *, AranSolver2d *solver) =
 _one_circle_distribution;
@@ -320,7 +321,6 @@ void parse_args (int argc, char **argv)
 	{
 	  check = FALSE;
 	}
-
       else if (g_ascii_strcasecmp (arg, "-check") == 0)
 	{
 	  check = TRUE;
@@ -343,6 +343,10 @@ void parse_args (int argc, char **argv)
 	    {
 	      g_printerr ("Invalid distribution name (-dist %s)\n", arg);
 	    }
+	}
+      else if (g_ascii_strcasecmp (arg, "-hilbert") == 0)
+	{
+	  _hilbert = TRUE;
 	}
       else if (g_strncasecmp (arg, "-v", 2) == 0 ||
                g_strncasecmp (arg, "--verbose", 9) == 0)
@@ -556,6 +560,12 @@ int main (int argc, char **argv)
 			       (AranMultipole2LocalFunc2d) aran_development2d_m2l,
 			       (AranLocal2LocalFunc2d) aran_development2d_l2l,
 			       (AranLocal2ParticleFunc2d)l2p);
+
+  if (_hilbert)
+    {
+      /* configure for hilbert curve order traversal */
+      aran_solver2d_set_children_order_hilbert (solver);
+    }
 
   _distribution (points, solver);
 
