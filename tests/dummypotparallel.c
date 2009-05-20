@@ -476,17 +476,23 @@ void empty_array (gpointer var, gpointer data)
   g_free (var);
 }
 
+static gdouble maxerr = 0.;
+
 void check_point_accum (PointAccum *point, gint *ret)
 {
   gint i;
   gcomplex128 err;
+  gdouble abserr;
 
   i = point->id;
 
   err = (point->accum - check_points[i].accum) /
     MAX(cabs (point->accum), cabs (check_points[i].accum));
 
-  if (cabs (err) > err_lim || !finite (cabs (err)))
+  abserr = cabs (err);
+  if (maxerr < abserr) maxerr = abserr;
+ 
+  if (abserr > err_lim || !finite (abserr))
     {
       g_printerr ("%d : Error on pt%d res=(%e,%e) ref(%e,%e) err=(%e,%e) pt=",
                   rk, i,
@@ -616,6 +622,9 @@ int main (int argc, char **argv)
         }
 
       aran_solver2d_foreach_point (solver, (GFunc) check_point_accum, &ret);
+
+      if (_verbose)
+        g_printerr ("%d : max err = %e\n", rk, maxerr);
 
       g_free (check_points);
     }
