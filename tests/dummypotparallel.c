@@ -44,9 +44,6 @@ struct _PointAccum
   gint id;
 };
 
-/* Points number */
-#define N 3600000
-
 /* approximation degree */
 #define K 20
 
@@ -276,7 +273,7 @@ void parse_args (int argc, char **argv)
 
 	  arg = (iarg<argc) ? argv[iarg] : NULL;
 
-	  if (sscanf (arg, "%u", &tmp) == 1 && tmp < N)
+	  if (sscanf (arg, "%u", &tmp) == 1)
 	      np = tmp;
 	  else
 	    g_printerr ("Invalid particles number (-np %s)\n", arg);
