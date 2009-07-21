@@ -239,10 +239,9 @@ VsgParallelVTable point_accum_vtable = {
 
 #endif /* VSG_HAVE_MPI */
 
-static void _one_circle_distribution (GPtrArray *points,
-				      AranSolver2d *solver);
-static void _random_distribution (GPtrArray *points,
-				  AranSolver2d *solver);
+static void _one_circle_distribution (GPtrArray *points, AranSolver2d *solver);
+static void _random_distribution (GPtrArray *points, AranSolver2d *solver);
+static void _random2_distribution (GPtrArray *points, AranSolver2d *solver);
 
 static gdouble err_lim = 1.E-6;
 static guint np = 12;
@@ -335,6 +334,10 @@ void parse_args (int argc, char **argv)
 	  else if (g_ascii_strcasecmp (arg, "random") == 0)
 	    {
 	      _distribution = _random_distribution;
+	    }
+	  else if (g_ascii_strcasecmp (arg, "random2") == 0)
+	    {
+	      _distribution = _random2_distribution;
 	    }
 	  else 
 	    {
@@ -468,6 +471,67 @@ static void _random_distribution (GPtrArray *points,
   g_rand_free (rand);
 }
 
+static void _random2_distribution (GPtrArray *points,
+				  AranSolver2d *solver)
+{
+  guint i;
+  PointAccum *point;
+  GRand *rand = g_rand_new_with_seed (_random_seed);
+
+  point = point_accum_alloc (TRUE, NULL);
+
+  for (i=0; i<np; i++)
+    {
+
+#ifdef VSG_HAVE_MPI
+      if (i%_flush_interval == 0)
+        {
+          aran_solver2d_migrate_flush (solver);
+          if (i%(_flush_interval*10) == 0)
+            {
+              if (_verbose && rk == 0)
+                g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
+
+              aran_solver2d_distribute_contiguous_leaves (solver);
+            }
+        }
+#endif /* VSG_HAVE_MPI */
+
+      point->vector.x = g_rand_double_range (rand, -R, R);;
+      point->vector.y = g_rand_double_range (rand, -R, R);;
+      point->density = 1.;
+      point->accum = 0.;
+      point->id = i;
+
+      if (check) memcpy (&check_points[i], point, sizeof (PointAccum));
+
+      if (aran_solver2d_insert_point_local (solver, point))
+        {
+          if (i % 10000 == 0 && _verbose)
+            g_printerr ("%d: insert %dth point\n", rk, i);
+
+          point = point_accum_alloc (TRUE, NULL);
+        }
+
+#ifdef VSG_HAVE_MPI
+      if (i%(_flush_interval*10) == 0)
+        {
+          if (_verbose && rk == 0)
+            g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
+          aran_solver2d_distribute_contiguous_leaves (solver);
+        }
+#endif /* VSG_HAVE_MPI */
+    }
+
+  point_accum_destroy (point, TRUE, NULL);
+
+#ifdef VSG_HAVE_MPI
+  aran_solver2d_distribute_contiguous_leaves (solver);
+#endif /* VSG_HAVE_MPI */
+
+  g_rand_free (rand);
+}
+
 void empty_array (gpointer var, gpointer data)
 {
   g_free (var);
@@ -505,7 +569,7 @@ void check_point_accum (PointAccum *point, gint *ret)
 int main (int argc, char **argv)
 {
 #ifdef VSG_HAVE_MPI
-  VsgPRTreeParallelConfig pconfig = {NULL,};
+  VsgPRTreeParallelConfig pconfig = {{NULL,}};
 #endif
 
   VsgVector2d lbound = {-1., -1.};

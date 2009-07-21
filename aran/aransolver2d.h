@@ -98,6 +98,9 @@ guint aran_solver2d_point_count (const AranSolver2d *solver);
 void aran_solver2d_insert_point (AranSolver2d *solver,
                                  VsgPoint2 point);
 
+gboolean aran_solver2d_insert_point_local (AranSolver2d *solver,
+                                           VsgPoint2 point);
+
 gboolean aran_solver2d_remove_point (AranSolver2d *solver,
                                      VsgPoint2 point);
 

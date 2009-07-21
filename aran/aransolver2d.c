@@ -564,6 +564,24 @@ void aran_solver2d_insert_point (AranSolver2d *solver,
 }
 
 /**
+ * aran_solver2d_insert_point:
+ * @solver: an #AranSolver2d.
+ * @point: a particle.
+ *
+ * Inserts a particle @point into the associated #VsgPRTree2d only if
+ * @point falls in a local region of @solver's tree.
+ *
+ * Returns: #TRUE upon succesfull insertion.
+ */
+gboolean aran_solver2d_insert_point_local (AranSolver2d *solver,
+                                           VsgPoint2 point)
+{
+  g_return_val_if_fail (solver != NULL, FALSE);
+
+  return vsg_prtree2d_insert_point_local (solver->prtree, point);
+}
+
+/**
  * aran_solver2d_remove_point:
  * @solver: an #AranSolver2d.
  * @point: a particle.
