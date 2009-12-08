@@ -117,6 +117,53 @@ void aran_development3d_l2l_rotate (const VsgPRTree3dNodeInfo *src_node,
                                     const VsgPRTree3dNodeInfo *dst_node,
                                     AranDevelopment3d *dst);
 
+#ifdef VSG_HAVE_MPI
+
+void aran_development3d_vtable_init (VsgParallelVTable *vtable, guint8 posdeg,
+                                     guint8 negdeg);
+
+void aran_development3d_vtable_clear (VsgParallelVTable *vtable);
+
+gpointer aran_development3d_alloc (gboolean resident, AranDevelopment3d *src);
+
+void aran_development3d_destroy (gpointer data, gboolean resident,
+                                 gpointer user_data);
+
+void aran_development3d_migrate_pack (AranDevelopment3d *devel,
+                                      VsgPackedMsg *pm,
+                                      gpointer user_data);
+
+void aran_development3d_migrate_unpack (AranDevelopment3d *devel,
+                                        VsgPackedMsg *pm,
+                                        gpointer user_data);
+
+void aran_development3d_visit_fw_pack (AranDevelopment3d *devel,
+                                       VsgPackedMsg *pm,
+                                       gpointer user_data);
+
+void aran_development3d_visit_fw_unpack (AranDevelopment3d *devel,
+                                         VsgPackedMsg *pm,
+                                         gpointer user_data);
+
+void aran_development3d_visit_fw_reduce (AranDevelopment3d *a,
+                                         AranDevelopment3d  *b,
+                                         gpointer user_data);
+
+void aran_development3d_visit_bw_pack (AranDevelopment3d *devel,
+                                       VsgPackedMsg *pm,
+                                       gpointer user_data);
+
+
+void aran_development3d_visit_bw_unpack (AranDevelopment3d *devel,
+                                         VsgPackedMsg *pm,
+                                         gpointer user_data);
+
+void aran_development3d_visit_bw_reduce (AranDevelopment3d *a,
+                                         AranDevelopment3d  *b,
+                                         gpointer user_data);
+
+#endif /* VSG_HAVE_MPI */
+
 G_END_DECLS;
 
 #endif /* __ARAN_DEVELOPMENT3D_H__ */

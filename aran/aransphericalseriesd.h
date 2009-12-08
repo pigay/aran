@@ -23,6 +23,9 @@
 #include <glib.h>
 
 #include <vsg/vsgd.h>
+#ifdef VSG_HAVE_MPI
+#include <vsg/vsgpackedmsg.h>
+#endif
 
 #include <aran/arancomplex.h>
 
@@ -58,6 +61,12 @@ void aran_spherical_seriesd_set_zero (AranSphericalSeriesd *ass);
 void aran_spherical_seriesd_write (const AranSphericalSeriesd *ass,
 				   FILE *file);
 
+#ifdef VSG_HAVE_MPI
+void aran_spherical_seriesd_pack (AranSphericalSeriesd *ass, VsgPackedMsg *pm);
+void aran_spherical_seriesd_unpack (AranSphericalSeriesd *ass,
+                                    VsgPackedMsg *pm);
+#endif
+
 gcomplex128
 aran_spherical_seriesd_evaluate_internal (const AranSphericalSeriesd *ass,
 					  gdouble r,
@@ -76,6 +85,10 @@ void aran_spherical_seriesd_local_gradient_evaluate_internal
 
 void aran_spherical_seriesd_local_gradient_evaluate
 (const AranSphericalSeriesd *ass, const VsgVector3d *x, VsgVector3d *grad);
+
+void aran_spherical_seriesd_add (AranSphericalSeriesd *one,
+                               AranSphericalSeriesd *other,
+                               AranSphericalSeriesd *result);
 
 void aran_spherical_seriesd_translate (const AranSphericalSeriesd *src,
 				       const VsgVector3d *xsrc,

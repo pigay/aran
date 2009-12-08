@@ -408,3 +408,234 @@ aran_development3d_local_gradient_evaluate (const VsgPRTree3dNodeInfo *devel_nod
   aran_spherical_seriesd_local_gradient_evaluate (devel->local, &tmp, grad);
 }
 
+#ifdef VSG_HAVE_MPI
+
+#include <aran/aransphericalseriesd-private.h>
+
+void aran_development3d_vtable_init (VsgParallelVTable *vtable, guint8 posdeg,
+                                     guint8 negdeg)
+{
+  vtable->alloc = (VsgMigrableAllocDataFunc) aran_development3d_alloc;
+  vtable->alloc_data = aran_development3d_new ((posdeg), (negdeg));
+
+  vtable->destroy = aran_development3d_destroy;
+  vtable->destroy_data = NULL;
+
+  vtable->migrate.pack =
+    (VsgMigrablePackDataFunc) aran_development3d_migrate_pack;
+  vtable->migrate.pack_data = NULL;
+
+  vtable->migrate.unpack =
+    (VsgMigrablePackDataFunc) aran_development3d_migrate_unpack;
+  vtable->migrate.unpack_data = NULL;
+
+  vtable->visit_forward.pack =
+    (VsgMigrablePackDataFunc) aran_development3d_visit_fw_pack;
+  vtable->visit_forward.pack_data = NULL;
+
+  vtable->visit_forward.unpack =
+    (VsgMigrablePackDataFunc) aran_development3d_visit_fw_unpack;
+  vtable->visit_forward.unpack_data = NULL;
+
+  vtable->visit_forward.reduce =
+    (VsgMigrableReductionDataFunc) aran_development3d_visit_fw_reduce;
+  vtable->visit_forward.reduce_data = NULL;
+
+  vtable->visit_backward.pack =
+    (VsgMigrablePackDataFunc) aran_development3d_visit_bw_pack;
+  vtable->visit_backward.pack_data = NULL;
+
+  vtable->visit_backward.unpack =
+    (VsgMigrablePackDataFunc) aran_development3d_visit_bw_unpack;
+  vtable->visit_backward.unpack_data = NULL;
+
+  vtable->visit_backward.reduce =
+    (VsgMigrableReductionDataFunc) aran_development3d_visit_bw_reduce;
+  vtable->visit_backward.reduce_data = NULL;
+
+/*   { */
+/*     AranSphericalSeriesd *multipole = */
+/*       ((AranDevelopment3d *) vtable->alloc_data)->multipole; */
+/*     AranSphericalSeriesd *local = */
+/*       ((AranDevelopment3d *) vtable->alloc_data)->local; */
+/*     g_printerr ("dev3d msg size M=%lu L=%lu\n",  */
+/* 		_spherical_seriesd_size (multipole->posdeg, multipole->negdeg), */
+/* 		_spherical_seriesd_size (local->posdeg, local->negdeg)); */
+/*   } */
+}
+
+void aran_development3d_vtable_clear (VsgParallelVTable *vtable)
+{
+  g_return_if_fail (vtable != NULL);
+  g_return_if_fail (vtable->alloc_data != NULL);
+
+  aran_development3d_free (vtable->alloc_data);
+}
+
+#define ARAN_DEVELOPMENT3D_VTABLE_DESTROY(vtable) \
+  {aran_development3d_free ((vtable).alloc_data);}
+
+/**
+ * aran_development3d_alloc:
+ * @resident: unused.
+ * @src: an example #AranDevelopment3d to copy from.
+ *
+ * Allocates a new #AranDevelopment3d by clonig @src.
+ *
+ * Returns: a copy of @src.
+ */
+gpointer aran_development3d_alloc (gboolean resident, AranDevelopment3d *src)
+{
+  gpointer ret;
+
+  ret = g_boxed_copy (ARAN_TYPE_DEVELOPMENT3D, src);
+
+  return ret;
+}
+
+/**
+ * aran_development3d_destroy:
+ * @data: A #AranDevelopment3d.
+ * @resident: unused.
+ * @user_data: unused.
+ *
+ * Deletes @data from memory.
+ */
+void aran_development3d_destroy (gpointer data, gboolean resident,
+                                gpointer user_data)
+{
+  g_assert (data != NULL);
+  g_boxed_free (ARAN_TYPE_DEVELOPMENT3D, data);
+}
+
+/**
+ * aran_development3d_local_evaluate:
+ * @devel: an #AranDevelopment3d.
+ * @pm: a #VsgPackedMsg.
+ * @user_data: unused.
+ *
+ * Performs complete packing of @devel into @pm for a migration
+ * between processors.
+ */
+void aran_development3d_migrate_pack (AranDevelopment3d *devel,
+                                      VsgPackedMsg *pm,
+                                      gpointer user_data)
+{
+  aran_spherical_seriesd_pack (devel->multipole, pm);
+  aran_spherical_seriesd_pack (devel->local, pm);
+}
+
+/**
+ * aran_development3d_migrate_unpack:
+ * @devel: an #AranDevelopment3d.
+ * @pm: a #VsgPackedMsg.
+ * @user_data: unused.
+ *
+ * Unpacks information from @pm in a migration between processors and
+ * stores it in @devel.
+ */
+void aran_development3d_migrate_unpack (AranDevelopment3d *devel,
+                                        VsgPackedMsg *pm,
+                                        gpointer user_data)
+{
+  aran_spherical_seriesd_unpack (devel->multipole, pm);
+  aran_spherical_seriesd_unpack (devel->local, pm);
+}
+
+/**
+ * aran_development3d_visit_fw_pack:
+ * @devel: an #AranDevelopment3d.
+ * @pm: a #VsgPackedMsg.
+ * @user_data: unused.
+ *
+ * Performs packing of @devel into @pm for a near/far forward visit
+ * of a local node to another processor.
+ */
+void aran_development3d_visit_fw_pack (AranDevelopment3d *devel,
+                                       VsgPackedMsg *pm,
+                                       gpointer user_data)
+{
+  aran_spherical_seriesd_pack (devel->multipole, pm);
+}
+
+/**
+ * aran_development3d_visit_fw_unpack:
+ * @devel: an #AranDevelopment3d.
+ * @pm: a #VsgPackedMsg.
+ * @user_data: unused.
+ *
+ * Unpacks information from @pm for a near/far forward visit of a
+ * remote node.
+ */
+void aran_development3d_visit_fw_unpack (AranDevelopment3d *devel,
+                                         VsgPackedMsg *pm,
+                                         gpointer user_data)
+{
+  aran_spherical_seriesd_unpack (devel->multipole, pm);
+}
+
+/**
+ * aran_development3d_visit_fw_reduce:
+ * @a: source #AranDevelopment3d.
+ * @b: destination #AranDevelopment3d.
+ * @user_data: unused.
+ *
+ * Forward visit reduction operator for #AranDevelopment3d.
+ */
+void aran_development3d_visit_fw_reduce (AranDevelopment3d *a,
+                                         AranDevelopment3d *b,
+                                         gpointer user_data)
+{
+  aran_spherical_seriesd_add (a->multipole, b->multipole, b->multipole);
+}
+
+/**
+ * aran_development3d_visit_bw_pack:
+ * @devel: an #AranDevelopment3d.
+ * @pm: a #VsgPackedMsg.
+ * @user_data: unused.
+ *
+ * Performs packing of @devel into @pm for a near/far backward visit
+ * of a remote node to its original processor.
+ */
+void aran_development3d_visit_bw_pack (AranDevelopment3d *devel,
+                                       VsgPackedMsg *pm,
+                                       gpointer user_data)
+
+{
+  aran_spherical_seriesd_pack (devel->local, pm);
+}
+
+/**
+ * aran_development3d_visit_bw_unpack:
+ * @devel: an #AranDevelopment3d.
+ * @pm: a #VsgPackedMsg.
+ * @user_data: unused.
+ *
+ * Unpacks information from @pm for a near/far backward visit of a
+ * remote node.
+ */
+void aran_development3d_visit_bw_unpack (AranDevelopment3d *devel,
+                                         VsgPackedMsg *pm,
+                                         gpointer user_data)
+{
+  aran_spherical_seriesd_unpack (devel->local, pm);
+}
+
+/**
+ * aran_development3d_visit_bw_reduce:
+ * @a: source #AranDevelopment3d.
+ * @b: destination #AranDevelopment3d.
+ * @user_data: unused.
+ *
+ * Backrward visit reduction operator for #AranDevelopment3d.
+ */
+void aran_development3d_visit_bw_reduce (AranDevelopment3d *a,
+                                         AranDevelopment3d *b,
+                                         gpointer user_data)
+{
+  aran_spherical_seriesd_add (a->local, b->local, b->local);
+
+}
+
+#endif /* VSG_HAVE_MPI */

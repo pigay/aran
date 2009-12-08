@@ -97,6 +97,9 @@ guint aran_solver3d_point_count (const AranSolver3d *solver);
 void aran_solver3d_insert_point (AranSolver3d *solver,
                                  VsgPoint3 point);
 
+gboolean aran_solver3d_insert_point_local (AranSolver3d *solver,
+                                           VsgPoint3 point);
+
 gboolean aran_solver3d_remove_point (AranSolver3d *solver,
                                      VsgPoint3 point);
 
@@ -113,7 +116,26 @@ void aran_solver3d_foreach_point_custom (AranSolver3d *solver,
                                          GFunc func,
                                          gpointer user_data);
 
+void aran_solver3d_set_children_order_hilbert (AranSolver3d *solver);
+
+void aran_solver3d_set_children_order_default (AranSolver3d *solver);
+
 void aran_solver3d_solve (AranSolver3d *solver);
+
+#ifdef VSG_HAVE_MPI
+
+void aran_solver3d_set_parallel (AranSolver3d *solver,
+                                 VsgPRTreeParallelConfig *pconfig);
+
+void aran_solver3d_migrate_flush (AranSolver3d *solver);
+
+void aran_solver3d_distribute_nodes (AranSolver3d *solver,
+                                     VsgPRTree3dDistributionFunc func,
+                                     gpointer user_data);
+
+void aran_solver3d_distribute_contiguous_leaves (AranSolver3d *solver);
+
+#endif /* VSG_HAVE_MPI */
 
 G_END_DECLS;
 

@@ -91,6 +91,24 @@ void aran_spherical_seriesd_alpha_require (guint deg)
 
 /* functions */
 
+#ifdef VSG_HAVE_MPI
+
+void aran_spherical_seriesd_pack (AranSphericalSeriesd *ass, VsgPackedMsg *pm)
+{
+  vsg_packed_msg_send_append (pm, ass+1,
+                              _spherical_seriesd_size (ass->posdeg, ass->negdeg),
+                              ARAN_MPI_TYPE_GCOMPLEX128);
+}
+
+void aran_spherical_seriesd_unpack (AranSphericalSeriesd *ass, VsgPackedMsg *pm)
+{
+  vsg_packed_msg_recv_read (pm, ass+1,
+                            _spherical_seriesd_size (ass->posdeg, ass->negdeg),
+                            ARAN_MPI_TYPE_GCOMPLEX128);
+}
+
+#endif
+
 /**
  * aran_spherical_seriesd_new:
  * @posdeg: the positive expansion degree.
@@ -478,3 +496,47 @@ void aran_spherical_seriesd_local_gradient_evaluate
   local_to_cartesian (r, cost, sint, cosp, sinp,
                       creal (dr), creal (dt), creal (dp), grad);
 }
+
+/**
+ * aran_spherical_seriesd_add:
+ * @one: a #AranSphericalSeriesd.
+ * @other:  a #AranSphericalSeriesd.
+ * @result: a #AranSphericalSeriesd.
+ *
+ * Computes the addition of @one and @other into @result. All
+ * arguments must have the same degree. Argument aliasing is allowed.
+ */
+void aran_spherical_seriesd_add (AranSphericalSeriesd *one,
+				 AranSphericalSeriesd *other,
+				 AranSphericalSeriesd *result)
+{
+  gint i;
+  gcomplex128 *oneterm;
+  gcomplex128 *otherterm;
+  gcomplex128 *resultterm;
+
+  g_return_if_fail (one != NULL);
+  g_return_if_fail (other != NULL);
+  g_return_if_fail (result != NULL);
+
+  g_return_if_fail (one->posdeg == result->posdeg);
+  g_return_if_fail (other->posdeg == result->posdeg);
+
+  g_return_if_fail (one->negdeg == result->negdeg);
+  g_return_if_fail (other->negdeg == result->negdeg);
+
+  oneterm = (gcomplex128 *) (one+1);
+  otherterm = (gcomplex128 *) (other+1);
+  resultterm = (gcomplex128 *) (result+1);
+
+  for (i=0; i<_spherical_seriesd_size (result->posdeg, result->negdeg); i++)
+    {
+      *resultterm = *oneterm + *otherterm;
+
+      oneterm ++;
+      otherterm ++;
+      resultterm ++;
+    }
+
+}
+

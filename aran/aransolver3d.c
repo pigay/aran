@@ -262,6 +262,10 @@ static void clear_func (const VsgPRTree3dNodeInfo *node_info,
 {
   gpointer node_dev = node_info->user_data;
 
+#ifdef VSG_HAVE_MPI
+  if (VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info)) return;
+#endif
+
   aran_solver3d_clear_development (solver, node_dev);
 }
 
@@ -269,6 +273,10 @@ static void up_func (const VsgPRTree3dNodeInfo *node_info,
                      AranSolver3d *solver)
 {
   gpointer node_dev = node_info->user_data;
+
+#ifdef VSG_HAVE_MPI
+  if (VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info)) return;
+#endif
 
   if (node_info->isleaf)
     {
@@ -291,6 +299,7 @@ static void up_func (const VsgPRTree3dNodeInfo *node_info,
   if (solver->m2m != NULL && node_info->point_count != 0 &&
       node_info->father_info)
     {
+      /* Multipole to Multipole translation */
       solver->m2m (node_info,
                    node_dev,
                    node_info->father_info,
@@ -302,6 +311,10 @@ static void down_func (const VsgPRTree3dNodeInfo *node_info,
                        AranSolver3d *solver)
 {
   gpointer node_dev = node_info->user_data;
+
+#ifdef VSG_HAVE_MPI
+  if (VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info)) return;
+#endif
 
   if (solver->l2l != NULL && node_info->point_count != 0 &&
       node_info->father_info)
@@ -551,6 +564,24 @@ void aran_solver3d_insert_point (AranSolver3d *solver,
 }
 
 /**
+ * aran_solver3d_insert_point_local:
+ * @solver: an #AranSolver3d.
+ * @point: a particle.
+ *
+ * Inserts a particle @point into the associated #VsgPRTree3d only if
+ * @point falls in a local region of @solver's tree.
+ *
+ * Returns: #TRUE upon succesfull insertion.
+ */
+gboolean aran_solver3d_insert_point_local (AranSolver3d *solver,
+                                           VsgPoint2 point)
+{
+  g_return_val_if_fail (solver != NULL, FALSE);
+
+  return vsg_prtree3d_insert_point_local (solver->prtree, point);
+}
+
+/**
  * aran_solver3d_remove_point:
  * @solver: an #AranSolver3d.
  * @point: a particle.
@@ -635,6 +666,14 @@ void aran_solver3d_solve (AranSolver3d *solver)
 {
   g_return_if_fail (solver != NULL);
 
+#ifdef VSG_HAVE_MPI
+  {
+    VsgPRTreeParallelConfig pconfig;
+
+    vsg_prtree3d_get_parallel (solver->prtree, &pconfig);
+  }
+#endif
+
   /* clear multipole and local developments before the big work */
   vsg_prtree3d_traverse (solver->prtree, G_POST_ORDER,
                          (VsgPRTree3dFunc) clear_func,
@@ -644,6 +683,17 @@ void aran_solver3d_solve (AranSolver3d *solver)
   vsg_prtree3d_traverse (solver->prtree, G_POST_ORDER,
                          (VsgPRTree3dFunc) up_func,
                          solver);
+
+#ifdef VSG_HAVE_MPI
+  /* gather shared in_counts */
+  {
+    VsgPRTreeParallelConfig pc;
+
+    vsg_prtree3d_get_parallel (solver->prtree, &pc);
+    vsg_prtree3d_shared_nodes_allreduce (solver->prtree,
+                                         &pc.node_data.visit_forward);
+  }
+#endif /* VSG_HAVE_MPI */
 
   /* transmit info from Multipole to Local developments */
   vsg_prtree3d_near_far_traversal (solver->prtree,
@@ -656,3 +706,54 @@ void aran_solver3d_solve (AranSolver3d *solver)
                          (VsgPRTree3dFunc) down_func,
                          solver);
 }
+
+void aran_solver3d_set_children_order_hilbert (AranSolver3d *solver)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree3d_set_children_order_hilbert (solver->prtree);
+
+}
+
+void aran_solver3d_set_children_order_default (AranSolver3d *solver)
+{
+  g_return_if_fail (solver != NULL);
+
+ vsg_prtree3d_set_children_order_default (solver->prtree);
+}
+
+#ifdef VSG_HAVE_MPI
+
+void aran_solver3d_set_parallel (AranSolver3d *solver,
+                                 VsgPRTreeParallelConfig *pconfig)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree3d_set_parallel (solver->prtree, pconfig);
+}
+
+void aran_solver3d_migrate_flush (AranSolver3d *solver)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree3d_migrate_flush (solver->prtree);
+}
+
+void aran_solver3d_distribute_nodes (AranSolver3d *solver,
+                                     VsgPRTree3dDistributionFunc func,
+                                     gpointer user_data)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree3d_distribute_nodes (solver->prtree, func, user_data);
+}
+
+void aran_solver3d_distribute_contiguous_leaves (AranSolver3d *solver)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree3d_distribute_contiguous_leaves (solver->prtree);
+}
+
+#endif
+
