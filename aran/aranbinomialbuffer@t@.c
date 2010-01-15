@@ -112,7 +112,7 @@ void aran_binomial_buffer@t@_require (AranBinomialBuffer@t@ *buf,
 
   g_return_if_fail (buf != NULL);
 
-  if (buf->l >= (gint) max) return;
+  if (buf->l > (gint) max) return;
 
   l = MAX (buf->l, 1);
 

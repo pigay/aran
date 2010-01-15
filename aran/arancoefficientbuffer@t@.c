@@ -97,7 +97,7 @@ void aran_coefficient_buffer@t@_require (AranCoefficientBuffer@t@ *buf,
 
   g_return_if_fail (buf != NULL);
 
-  if (buf->n >= max) return;
+  if (buf->n > max) return;
 
   size = MAX (buf->n+1, 1);
 
