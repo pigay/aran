@@ -81,6 +81,12 @@ void aran_solver3d_set_functions (AranSolver3d *solver,
 				  AranLocal2LocalFunc3d l2l,
 				  AranLocal2ParticleFunc3d l2p);
 
+void aran_solver3d_reinit_stats (AranSolver3d *solver);
+void aran_solver3d_get_stats (AranSolver3d *solver, glong *zero_count,
+			      glong *p2p_count, glong *p2m_count,
+			      glong *m2m_count, glong *m2l_count,
+			      glong *l2l_count, glong *l2p_count);
+
 gdouble aran_solver3d_get_tolerance (AranSolver3d *solver);
 
 void aran_solver3d_set_tolerance (AranSolver3d *solver,

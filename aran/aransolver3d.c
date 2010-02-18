@@ -45,6 +45,13 @@ struct _AranSolver3d
   AranLocal2LocalFunc3d l2l;
   AranLocal2ParticleFunc3d l2p;
 
+  glong zero_counter;
+  glong p2p_counter;
+  glong p2m_counter;
+  glong m2m_counter;
+  glong m2l_counter;
+  glong l2l_counter;
+  glong l2p_counter;
 };
 
 #define ARAN_SOLVER3D_PREALLOC 4
@@ -159,6 +166,8 @@ static AranSolver3d *_solver3d_alloc ()
   solver->l2l = NULL;
   solver->l2p = NULL;
 
+  aran_solver3d_reinit_stats (solver);
+
   return solver;
 }
 
@@ -185,11 +194,6 @@ void aran_solver3d_init ()
 }
 
 
-static void aran_solver3d_clear_development (AranSolver3d *solver,
-                                             gpointer devel)
-{
-  solver->zero (devel);
-}
 /*----------------------------------------------------*/
 
 static void near_func (const VsgPRTree3dNodeInfo *one_info,
@@ -212,6 +216,7 @@ static void near_func (const VsgPRTree3dNodeInfo *one_info,
 
           /* Particle to Particle interaction */
           solver->p2p (one_point, other_point);
+          solver->p2p_counter ++;
 
           other_list = other_list->next;
         }
@@ -236,10 +241,9 @@ static gboolean far_func (const VsgPRTree3dNodeInfo *one_info,
       done = solver->m2l (one_info, one_dev,
                           other_info, other_dev);
 
-      if (!done)
-        {
-          return FALSE;
-        }
+      if (!done) return FALSE;
+
+      solver->m2l_counter ++;
 
       done = solver->m2l (other_info, other_dev, one_info, one_dev);
 
@@ -250,6 +254,8 @@ static gboolean far_func (const VsgPRTree3dNodeInfo *one_info,
                    solver->m2l);
           return FALSE;
         }
+
+      solver->m2l_counter ++;
     }
 
   return TRUE;
@@ -266,7 +272,8 @@ static void clear_func (const VsgPRTree3dNodeInfo *node_info,
   if (VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info)) return;
 #endif
 
-  aran_solver3d_clear_development (solver, node_dev);
+  solver->zero (node_dev);
+  solver->zero_counter ++;
 }
 
 static void up_func (const VsgPRTree3dNodeInfo *node_info,
@@ -290,6 +297,7 @@ static void up_func (const VsgPRTree3dNodeInfo *node_info,
 
               /* Particle to Multipole gathering */
               solver->p2m (node_point, node_info, node_dev);
+              solver->p2m_counter ++;
 
               node_list = node_list->next;
             }
@@ -304,6 +312,7 @@ static void up_func (const VsgPRTree3dNodeInfo *node_info,
                    node_dev,
                    node_info->father_info,
                    node_info->father_info->user_data);
+      solver->m2m_counter ++;
     }
 }
 
@@ -324,6 +333,7 @@ static void down_func (const VsgPRTree3dNodeInfo *node_info,
                    node_info->father_info->user_data,
                    node_info,
                    node_dev);
+      solver->l2l_counter ++;
     }
 
   if ((node_info->isleaf))
@@ -338,6 +348,7 @@ static void down_func (const VsgPRTree3dNodeInfo *node_info,
 
               /* Local to Particle distribution */
               solver->l2p (node_info, node_dev, node_point);
+              solver->l2p_counter ++;
 
               node_list = node_list->next;
             }
@@ -469,6 +480,57 @@ void aran_solver3d_set_functions (AranSolver3d *solver,
   solver->m2l = m2l;
   solver->l2l = l2l;
   solver->l2p = l2p;
+}
+
+/**
+ * aran_solver3d_reinit_stats:
+ * @solver: an #AranSolver3d.
+ *
+ * Resets @solver Near/Far counters to zero.
+ */
+void aran_solver3d_reinit_stats (AranSolver3d *solver)
+{
+  g_return_if_fail (solver != NULL);
+
+  solver->zero_counter = 0;
+  solver->p2p_counter = 0;
+
+  solver->p2m_counter = 0;
+  solver->m2m_counter = 0;
+  solver->m2l_counter = 0;
+  solver->l2l_counter = 0;
+  solver->l2p_counter = 0;
+}
+
+/**
+ * aran_solver3d_get_stats:
+ * @solver: an #AranSolver3d.
+ * @zero: Clear function count result.
+ * @p2p: particle 2 particle function count result.
+ * @p2m: particle 2 multipole function count result.
+ * @m2m: multipole 2 multipole function count result.
+ * @m2l: multipole 2 local function count result.
+ * @l2l: local 2 local function count result.
+ * @l2p: local 2 particle function count result.
+ *
+ * Retrieves count values for @solver differents functions. Each value
+ * represents the number of calls of the corresponding functino since
+ * last call to aran_solver3d_reinit_stats().
+ */
+void aran_solver3d_get_stats (AranSolver3d *solver, glong *zero_count,
+                              glong *p2p_count, glong *p2m_count,
+                              glong *m2m_count, glong *m2l_count,
+                              glong *l2l_count, glong *l2p_count)
+{
+  g_return_if_fail (solver != NULL);
+
+  *zero_count = solver->zero_counter;
+  *p2p_count = solver->p2p_counter;
+  *p2m_count = solver->p2m_counter;
+  *m2m_count = solver->m2m_counter;
+  *m2l_count = solver->m2l_counter;
+  *l2l_count = solver->l2l_counter;
+  *l2p_count = solver->l2p_counter;
 }
 
 /**
