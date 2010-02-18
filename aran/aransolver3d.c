@@ -696,6 +696,24 @@ void aran_solver3d_foreach_point (AranSolver3d *solver,
 }
 
 /**
+ * aran_solver3d_traverse:
+ * @solver: an #AranSolver3d.
+ * @func: traverse function.
+ * @user_data: pointer to pass to @func.
+ *
+ * See vsg_prtree3d_traverse() in Vsg API docs.
+ */
+void aran_solver3d_traverse (AranSolver3d *solver,
+                             GTraverseType order,
+                             VsgPRTree3dFunc func,
+                             gpointer user_data)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree3d_traverse (solver->prtree, order, func, user_data);
+}
+
+/**
  * aran_solver3d_foreach_point_custom:
  * @solver: an #AranSolver3d.
  * @selector: a #VsgRegion3.
@@ -792,6 +810,14 @@ void aran_solver3d_set_parallel (AranSolver3d *solver,
   g_return_if_fail (solver != NULL);
 
   vsg_prtree3d_set_parallel (solver->prtree, pconfig);
+}
+
+void aran_solver3d_get_parallel (AranSolver3d *solver,
+                                 VsgPRTreeParallelConfig *pconfig)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree3d_get_parallel (solver->prtree, pconfig);
 }
 
 void aran_solver3d_migrate_flush (AranSolver3d *solver)

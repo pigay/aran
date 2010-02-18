@@ -122,6 +122,11 @@ void aran_solver3d_foreach_point_custom (AranSolver3d *solver,
                                          GFunc func,
                                          gpointer user_data);
 
+void aran_solver3d_traverse (AranSolver3d *solver,
+			     GTraverseType order,
+			     VsgPRTree3dFunc func,
+			     gpointer user_data);
+
 void aran_solver3d_set_children_order_hilbert (AranSolver3d *solver);
 
 void aran_solver3d_set_children_order_default (AranSolver3d *solver);
@@ -131,6 +136,9 @@ void aran_solver3d_solve (AranSolver3d *solver);
 #ifdef VSG_HAVE_MPI
 
 void aran_solver3d_set_parallel (AranSolver3d *solver,
+                                 VsgPRTreeParallelConfig *pconfig);
+
+void aran_solver3d_get_parallel (AranSolver3d *solver,
                                  VsgPRTreeParallelConfig *pconfig);
 
 void aran_solver3d_migrate_flush (AranSolver3d *solver);

@@ -695,6 +695,24 @@ void aran_solver2d_foreach_point (AranSolver2d *solver,
 }
 
 /**
+ * aran_solver2d_traverse:
+ * @solver: an #AranSolver2d.
+ * @func: traverse function.
+ * @user_data: pointer to pass to @func.
+ *
+ * See vsg_prtree2d_traverse() in Vsg API docs.
+ */
+void aran_solver2d_traverse (AranSolver2d *solver,
+                             GTraverseType order,
+                             VsgPRTree2dFunc func,
+                             gpointer user_data)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree2d_traverse (solver->prtree, order, func, user_data);
+}
+
+/**
  * aran_solver2d_foreach_point_custom:
  * @solver: an #AranSolver2d.
  * @selector: a #VsgRegion2.
@@ -799,6 +817,14 @@ void aran_solver2d_set_parallel (AranSolver2d *solver,
   g_return_if_fail (solver != NULL);
 
   vsg_prtree2d_set_parallel (solver->prtree, pconfig);
+}
+
+void aran_solver2d_get_parallel (AranSolver2d *solver,
+                                 VsgPRTreeParallelConfig *pconfig)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree2d_get_parallel (solver->prtree, pconfig);
 }
 
 void aran_solver2d_migrate_flush (AranSolver2d *solver)
