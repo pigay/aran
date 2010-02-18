@@ -678,26 +678,12 @@ void _traverse_print_dev (VsgPRTree2dNodeInfo *node_info, FILE *f)
  */
 void aran_solver2d_solve (AranSolver2d *solver)
 {
-  GTimer *timer = NULL;
-  gdouble t1, t2;
-  gint rk = 0;
-
   g_return_if_fail (solver != NULL);
-
-  _p2p_count = 0;
-  _m2l_count = 0;
-  timer = g_timer_new ();
-#ifdef VSG_HAVE_MPI
-  MPI_Comm_rank (MPI_COMM_WORLD, &rk);
-#endif
 
   /* clear multipole and local developments before the big work */
   vsg_prtree2d_traverse (solver->prtree, G_POST_ORDER,
                          (VsgPRTree2dFunc) clear_func,
                          solver);
-
-  t1 = g_timer_elapsed (timer, NULL);
-  g_printerr ("%d : zero elapsed=%f seconds\n", rk, t1);
 
   /* gather information in Multipole development */
   vsg_prtree2d_traverse (solver->prtree, G_POST_ORDER,
@@ -715,32 +701,17 @@ void aran_solver2d_solve (AranSolver2d *solver)
   }
 #endif /* VSG_HAVE_MPI */
 
-  t2 = g_timer_elapsed (timer, NULL);
-  g_printerr ("%d : up elapsed=%f seconds\n", rk, t2-t1);
-  t1 = t2;
-
   /* transmit info from Multipole to Local developments */
   vsg_prtree2d_near_far_traversal (solver->prtree,
                                    (VsgPRTree2dFarInteractionFunc) far_func,
                                    (VsgPRTree2dInteractionFunc) near_func,
                                    solver);
 
-  t2 = g_timer_elapsed (timer, NULL);
-  g_printerr ("%d : nf elapsed=%f seconds\n", rk, t2-t1);
-  t1 = t2;
-
   /* distribute information through Local developments towards particles */
   vsg_prtree2d_traverse (solver->prtree, G_PRE_ORDER,
                          (VsgPRTree2dFunc) down_func,
                          solver);
 
-  t2 = g_timer_elapsed (timer, NULL);
-  g_printerr ("%d : down elapsed=%f seconds\n", rk, t2-t1);
-
-  g_printerr ("%d : p2p count=%ld\n", rk, _p2p_count);
-  g_printerr ("%d : m2l count=%ld\n", rk, _m2l_count);
-
-  g_timer_destroy (timer);
 }
 
 void aran_solver2d_set_children_order_hilbert (AranSolver2d *solver)
