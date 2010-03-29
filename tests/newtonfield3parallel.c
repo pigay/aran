@@ -129,7 +129,7 @@ static void p2p (PointAccum *one, PointAccum *other)
     }
 }
 
-static void p2m (PointAccum *particle, const VsgVector3d *center,
+static void p2m (PointAccum *particle, const VsgPRTree3dNodeInfo *dst_node,
                  AranDevelopment3d *devel)
 {
   VsgVector3d tmp;
@@ -140,7 +140,7 @@ static void p2m (PointAccum *particle, const VsgVector3d *center,
   gcomplex128 expp;
   gdouble fact;
 
-  vsg_vector3d_sub (&particle->vector, center, &tmp);
+  vsg_vector3d_sub (&particle->vector, &dst_node->center, &tmp);
 
   vsg_vector3d_to_spherical_internal (&tmp, &r, &cost, &sint, &cosp, &sinp);
   expp = cosp + G_I * sinp;
