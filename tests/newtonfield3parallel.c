@@ -655,10 +655,10 @@ void parse_args (int argc, char **argv)
         {
           _verbose = TRUE;
         }
-       else if (g_strncasecmp (arg, "--write", 9) == 0)
-         {
-           _write = TRUE;
-         }
+      else if (g_strncasecmp (arg, "--write", 9) == 0)
+        {
+          _write = TRUE;
+        }
       else if (g_ascii_strcasecmp (arg, "--version") == 0)
         {
           g_printerr ("%s version %s\n", argv[0], PACKAGE_VERSION);
@@ -1127,20 +1127,46 @@ int main (int argc, char **argv)
       g_timer_destroy (timer);
     }
 
-   if (_write)
-     {
-       gchar fn[1024];
-       FILE *f;
- 
-       g_sprintf (fn, "tree%03d.txt", rk);
-       f = fopen (fn, "w");
-       vsg_prtree3d_write (prtree, f);
-       fclose (f);
- 
-       _tree_write (prtree, "solv");
-       _vtp_tree_write (solver, "solv");
-     }
- 
+  if (_verbose)
+    {
+      glong zero, p2p, p2m, m2m, m2l, l2l, l2p, leaves = 0, total_leaves;
+
+      aran_solver3d_get_stats (solver, &zero, &p2p, &p2m, &m2m, &m2l, &l2l,
+                               &l2p);
+      g_printerr ("%d : zero count=%ld\n", rk, zero);
+      g_printerr ("%d : p2p count=%ld\n", rk, p2p);
+      g_printerr ("%d : p2m count=%ld\n", rk, p2m);
+      g_printerr ("%d : m2m count=%ld\n", rk, m2m);
+      g_printerr ("%d : m2l count=%ld\n", rk, m2l);
+      g_printerr ("%d : l2l count=%ld\n", rk, l2l);
+      g_printerr ("%d : l2p count=%ld\n", rk, l2p);
+      g_printerr ("%d : local_cost=%f\n", rk,
+                  (gdouble) (p2p*far_near_ratio + m2l));
+
+      aran_solver3d_traverse (solver, G_PRE_ORDER,
+                              (VsgPRTree3dFunc) _local_leaves_count, &leaves);
+
+      MPI_Allreduce (&leaves, &total_leaves, 1, MPI_LONG, MPI_SUM,
+                     MPI_COMM_WORLD);
+      if (rk == 0)
+        g_printerr ("total leaves: %ld\n", total_leaves);
+
+    }
+
+  if (_write)
+    {
+      gchar fn[1024];
+      FILE *f;
+
+      g_sprintf (fn, "tree%03d.txt", rk);
+      f = fopen (fn, "w");
+      vsg_prtree3d_write (prtree, f);
+      fclose (f);
+
+      _tree_write (prtree, "solv");
+      _vtp_tree_write (solver, "solv");
+    }
+
   if (check)
     {
       gint i, j;
