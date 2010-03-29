@@ -467,6 +467,8 @@ static void _random_fill (AranSolver3d *solver);
 
 static void _random2_fill (AranSolver3d *solver);
 
+static void _plummer_fill (AranSolver3d *solver);
+
 static void _uvsphere_fill (AranSolver3d *solver);
 
 static gchar *_load_file = NULL;
@@ -593,6 +595,10 @@ void parse_args (int argc, char **argv)
           else if (g_ascii_strcasecmp (arg, "uvsphere") == 0)
             {
               _fill = _uvsphere_fill;
+            }
+          else if (g_ascii_strcasecmp (arg, "plummer") == 0)
+            {
+              _fill = _plummer_fill;
             }
           else if (g_ascii_strcasecmp (arg, "load") == 0)
             {
@@ -823,6 +829,100 @@ static void _random2_fill (AranSolver3d *solver)
   point_accum_destroy (point, TRUE, NULL);
 
 #ifdef VSG_HAVE_MPI
+  aran_solver3d_distribute_contiguous_leaves (solver);
+#endif /* VSG_HAVE_MPI */
+
+  g_rand_free (rand);
+}
+
+static void _plummer_fill (AranSolver3d *solver)
+{
+  gdouble rmax = 300.;
+  guint i, real_np = 0;
+  PointAccum *point;
+  GRand *rand = g_rand_new_with_seed (_random_seed);
+
+  point = point_accum_alloc (TRUE, NULL);
+
+  if (rk == 0)
+    {
+      point->vector.x = rmax;
+      point->vector.y = rmax;
+      point->vector.z = rmax;
+
+      aran_solver3d_insert_point (solver, point);
+      aran_solver3d_remove_point (solver, point);
+
+      point->vector.x = - rmax;
+      point->vector.y = - rmax;
+      point->vector.z = - rmax;
+
+      aran_solver3d_insert_point (solver, point);
+      aran_solver3d_remove_point (solver, point);
+
+    }
+
+  aran_solver3d_migrate_flush (solver);
+
+  for (i=0; i<np; i++)
+    {
+      gdouble x1, x2, x3, r, tmp;
+
+#ifdef VSG_HAVE_MPI
+      if (i%_flush_interval == 0)
+        {
+          aran_solver3d_migrate_flush (solver);
+          if (i%(_flush_interval*10) == 0)
+            {
+              if (_verbose && rk == 0)
+                g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
+
+              aran_solver3d_distribute_contiguous_leaves (solver);
+              _flush_interval *=2;
+            }
+        }
+#endif /* VSG_HAVE_MPI */
+
+      x1 = g_rand_double_range (rand, 0., 1.);
+      x2 = g_rand_double_range (rand, 0., 1.);
+      x3 = g_rand_double_range (rand, 0., 1.);
+
+      r = 1./ sqrt (pow (x1, -2./3.) -1.);
+
+      point->vector.z = R * (1. - (x2+x2)) * r;
+
+      tmp = sqrt (r*r - point->vector.z*point->vector.z);
+
+      point->vector.x = R * tmp * cos (2.*G_PI * x3);
+      point->vector.y = R * tmp * sin (2.*G_PI * x3);
+
+      if (fabs (point->vector.x) > rmax) continue;
+      if (fabs (point->vector.y) > rmax) continue;
+      if (fabs (point->vector.z) > rmax) continue;
+
+      real_np ++;
+
+      point->density = 1./np;
+      point->field = VSG_V3D_ZERO;
+      point->id = i;
+
+      if (check) memcpy (&check_points[i], point, sizeof (PointAccum));
+
+      if (aran_solver3d_insert_point_local (solver, point))
+        {
+          if (i % 10000 == 0 && _verbose)
+            g_printerr ("%d: insert %dth point\n", rk, i);
+
+          point = point_accum_alloc (TRUE, NULL);
+        }
+    }
+
+  g_printerr ("%d : real_np %d\n", rk, real_np);
+
+  point_accum_destroy (point, TRUE, NULL);
+
+#ifdef VSG_HAVE_MPI
+  aran_solver3d_migrate_flush (solver);
   aran_solver3d_distribute_contiguous_leaves (solver);
 #endif /* VSG_HAVE_MPI */
 
@@ -1125,32 +1225,6 @@ int main (int argc, char **argv)
                   g_timer_elapsed (timer, NULL));
 
       g_timer_destroy (timer);
-    }
-
-  if (_verbose)
-    {
-      glong zero, p2p, p2m, m2m, m2l, l2l, l2p, leaves = 0, total_leaves;
-
-      aran_solver3d_get_stats (solver, &zero, &p2p, &p2m, &m2m, &m2l, &l2l,
-                               &l2p);
-      g_printerr ("%d : zero count=%ld\n", rk, zero);
-      g_printerr ("%d : p2p count=%ld\n", rk, p2p);
-      g_printerr ("%d : p2m count=%ld\n", rk, p2m);
-      g_printerr ("%d : m2m count=%ld\n", rk, m2m);
-      g_printerr ("%d : m2l count=%ld\n", rk, m2l);
-      g_printerr ("%d : l2l count=%ld\n", rk, l2l);
-      g_printerr ("%d : l2p count=%ld\n", rk, l2p);
-      g_printerr ("%d : local_cost=%f\n", rk,
-                  (gdouble) (p2p*far_near_ratio + m2l));
-
-      aran_solver3d_traverse (solver, G_PRE_ORDER,
-                              (VsgPRTree3dFunc) _local_leaves_count, &leaves);
-
-      MPI_Allreduce (&leaves, &total_leaves, 1, MPI_LONG, MPI_SUM,
-                     MPI_COMM_WORLD);
-      if (rk == 0)
-        g_printerr ("total leaves: %ld\n", total_leaves);
-
     }
 
   if (_write)
