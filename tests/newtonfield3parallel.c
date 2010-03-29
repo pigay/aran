@@ -320,6 +320,15 @@ VsgParallelVTable point_accum_vtable = {
 
 #endif /* VSG_HAVE_MPI */
 
+static void _traverse_count_local_nodes (VsgPRTree3dNodeInfo *node_info,
+                                         gint *count)
+{
+  if (! VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info))
+    {
+      (*count) ++;
+    }
+}
+
 static void _pt_write (PointAccum *pt, FILE *file)
 {
   fprintf (file, "i=%d v=", pt->id);
@@ -362,6 +371,97 @@ static void _tree_write (VsgPRTree3d *tree, gchar *prefix)
 
 }
 
+ static void _vtp_pt_write (PointAccum *pt, FILE *file)
+ {
+   fprintf (file, "%g %g %g\n",
+            pt->vector.x, pt->vector.y, pt->vector.z);
+ }
+ 
+ static void _vtp_traverse_bg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
+ {
+   if (! VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info))
+     {
+       gdouble x = node_info->center.x;
+       gdouble y = node_info->center.y;
+       gdouble z = node_info->center.z;
+       gdouble dx = node_info->ubound.x - node_info->center.x;
+       gdouble dy = node_info->ubound.y - node_info->center.y;
+       gdouble dz = node_info->ubound.z - node_info->center.z;
+ 
+       fprintf (file, "%g %g %g\n", x - dx, y, z);
+       fprintf (file, "%g %g %g\n", x + dx, y, z);
+ 
+       fprintf (file, "%g %g %g\n", x, y - dy, z);
+       fprintf (file, "%g %g %g\n", x, y + dy, z);
+ 
+       fprintf (file, "%g %g %g\n", x, y, z - dz);
+       fprintf (file, "%g %g %g\n", x, y, z + dz);
+     }
+ }
+ 
+ static void _vtp_traverse_fg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
+ {
+   g_slist_foreach (node_info->point_list, (GFunc) _vtp_pt_write, file);
+ }
+ 
+ static void _vtp_tree_write (AranSolver3d *solver, gchar *prefix)
+ {
+   gchar fn[1024];
+   FILE *f;
+   gint np = aran_solver3d_point_count (solver);
+   gint nn = 0;
+   gint i;
+ 
+   g_sprintf (fn, "%s%03d.vtp", prefix, rk);
+   f = fopen (fn, "w");
+ 
+   aran_solver3d_traverse (solver, G_PRE_ORDER,
+                          (VsgPRTree3dFunc) _traverse_count_local_nodes,
+                          &nn);
+ 
+   fprintf (f, "<?xml version=\"1.0\" ?>\n" \
+            "<VTKFile type=\"PolyData\" version=\"0.1\">\n" \
+            "<PolyData>\n" \
+            "<Piece NumberOfPoints=\"%d\" NumberOfVerts=\"%d\" " \
+            "NumberOfLines=\"%d\" NumberOfStrips=\"0\" " \
+            "NumberOfPolys=\"0\">\n",
+            np + 6*nn, np, 3*nn);
+ 
+   fprintf (f, "<Points>\n");
+   fprintf (f, "<DataArray type=\"Float64\" NumberOfComponents=\"3\" " \
+            "format=\"ascii\">\n");
+   aran_solver3d_traverse (solver, G_PRE_ORDER,
+                          (VsgPRTree3dFunc) _vtp_traverse_fg_write,
+                          f);
+   aran_solver3d_traverse (solver, G_PRE_ORDER,
+                          (VsgPRTree3dFunc) _vtp_traverse_bg_write,
+                          f);
+   fprintf (f, "</DataArray>\n</Points>\n");
+ 
+   fprintf (f, "<Verts>\n");
+   fprintf (f, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
+   for (i=0; i<np; i++) fprintf (f, "%d ", i);
+   fprintf (f, "\n</DataArray>\n");
+   fprintf (f, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\" >");
+   for (i=0; i<np; i++) fprintf (f, "%d ", i+1);
+   fprintf (f, "\n</DataArray>\n</Verts>\n");
+ 
+   fprintf (f, "<Lines>\n");
+   fprintf (f, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
+   for (i=0; i<3*nn; i++) fprintf (f, "%d %d ", np + 2*i, np + 2*i+1);
+   fprintf (f, "\n</DataArray>\n");
+   fprintf (f, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\" >");
+   for (i=0; i<3*nn; i++) fprintf (f, "%d ", 2*(i+1));
+   fprintf (f, "\n</DataArray>\n</Lines>\n");
+ 
+ 
+ 
+   fprintf (f, "\n</Piece>\n");
+   fprintf (f, "</PolyData>\n</VTKFile>\n");
+   fclose (f);
+ 
+ }
+ 
 static void _one_circle_fill (AranSolver3d *solver);
 static void _random_fill (AranSolver3d *solver);
 
@@ -381,6 +481,7 @@ static gboolean check = TRUE;
 static gboolean direct = FALSE;
 static guint maxbox = 1;
 static gboolean _verbose = FALSE;
+static gboolean _write = FALSE;
 static gboolean _hilbert = FALSE;
 
 static AranMultipole2MultipoleFunc3d m2m =
@@ -554,6 +655,10 @@ void parse_args (int argc, char **argv)
         {
           _verbose = TRUE;
         }
+       else if (g_strncasecmp (arg, "--write", 9) == 0)
+         {
+           _write = TRUE;
+         }
       else if (g_ascii_strcasecmp (arg, "--version") == 0)
         {
           g_printerr ("%s version %s\n", argv[0], PACKAGE_VERSION);
@@ -1022,18 +1127,20 @@ int main (int argc, char **argv)
       g_timer_destroy (timer);
     }
 
-/*   { */
-/*     gchar fn[1024]; */
-/*     FILE *f; */
-
-/*     g_sprintf (fn, "tree%03d.txt", rk); */
-/*     f = fopen (fn, "w"); */
-/*     vsg_prtree3d_write (prtree, f); */
-/*     fclose (f); */
-
-/*     _tree_write (prtree, "solv"); */
-/*   } */
-
+   if (_write)
+     {
+       gchar fn[1024];
+       FILE *f;
+ 
+       g_sprintf (fn, "tree%03d.txt", rk);
+       f = fopen (fn, "w");
+       vsg_prtree3d_write (prtree, f);
+       fclose (f);
+ 
+       _tree_write (prtree, "solv");
+       _vtp_tree_write (solver, "solv");
+     }
+ 
   if (check)
     {
       gint i, j;
