@@ -120,17 +120,17 @@ static void p2p (PointAccum *one, PointAccum *other)
           vsg_vector3d_scalp (&tmp, inv_r3*one->density, &tmp2);
           vsg_vector3d_add (&other->field, &tmp2, &other->field);
 
-/* 	  g_printerr ("%d : p2p %d %d ", rk, one->id, other->id); */
-/* 	  vsg_vector3d_write (&one->vector, stderr); */
-/* 	  g_printerr (" "); */
-/* 	  vsg_vector3d_write (&one->field, stderr); */
-/* 	  g_printerr ("\n"); */
+/*           g_printerr ("%d : p2p %d %d ", rk, one->id, other->id); */
+/*           vsg_vector3d_write (&one->vector, stderr); */
+/*           g_printerr (" "); */
+/*           vsg_vector3d_write (&one->field, stderr); */
+/*           g_printerr ("\n"); */
         }
     }
 }
 
 static void p2m (PointAccum *particle, const VsgVector3d *center,
-		 AranDevelopment3d *devel)
+                 AranDevelopment3d *devel)
 {
   VsgVector3d tmp;
   guint deg = aran_spherical_seriesd_get_negdeg (devel->multipole);
@@ -146,7 +146,7 @@ static void p2m (PointAccum *particle, const VsgVector3d *center,
   expp = cosp + G_I * sinp;
 
   aran_spherical_harmonic_evaluate_multiple_internal (deg, cost, sint, expp,
-						      harmonics);
+                                                      harmonics);
 
 
   *aran_spherical_seriesd_get_term (devel->multipole, 0, 0) += 0.;
@@ -159,26 +159,26 @@ static void p2m (PointAccum *particle, const VsgVector3d *center,
       gcomplex128 term;
 
       term = fact * (4.*G_PI / (l+l+1.)) *
-	*aran_spherical_harmonic_multiple_get_term (l, 0, harmonics);
+        *aran_spherical_harmonic_multiple_get_term (l, 0, harmonics);
 
       ptr = aran_spherical_seriesd_get_term (devel->multipole, -l-1, 0);
       ptr[0] += conj (term);
 
       for (m=1; m<=l; m ++)
-	{
+        {
 
-	  term = fact * (4.*G_PI / (l+l+1.)) *
-	    *aran_spherical_harmonic_multiple_get_term (l, m, harmonics);
+          term = fact * (4.*G_PI / (l+l+1.)) *
+            *aran_spherical_harmonic_multiple_get_term (l, m, harmonics);
 
           ptr[m] += conj (term);
-	}
+        }
       fact *= r;
     }
 
 }
 
 static void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
-		 PointAccum *particle)
+                 PointAccum *particle)
 {
   VsgVector3d tmp;
 
@@ -338,7 +338,7 @@ static void _traverse_fg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
   if (!VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info))
     {
       aran_development3d_write ((AranDevelopment3d *) node_info->user_data,
-				file);
+                                file);
       fprintf (file, "\n");
 
       g_slist_foreach (node_info->point_list, (GFunc) _pt_write, file);
@@ -407,162 +407,162 @@ void parse_args (int argc, char **argv)
       arg = argv[iarg];
 
       if (g_ascii_strcasecmp (arg, "-np") == 0)
-	{
-	  guint tmp = 0;
-	  iarg ++;
+        {
+          guint tmp = 0;
+          iarg ++;
 
-	  arg = (iarg<argc) ? argv[iarg] : NULL;
+          arg = (iarg<argc) ? argv[iarg] : NULL;
 
-	  if (sscanf (arg, "%u", &tmp) == 1)
-	      np = tmp;
-	  else
-	    g_printerr ("Invalid particles number (-np %s)\n", arg);
-	}
+          if (sscanf (arg, "%u", &tmp) == 1)
+              np = tmp;
+          else
+            g_printerr ("Invalid particles number (-np %s)\n", arg);
+        }
       else if (g_ascii_strcasecmp (arg, "-pr") == 0)
-	{
-	  guint tmp = 0;
-	  iarg ++;
+        {
+          guint tmp = 0;
+          iarg ++;
 
-	  arg = (iarg<argc) ? argv[iarg] : NULL;
+          arg = (iarg<argc) ? argv[iarg] : NULL;
 
-	  if (sscanf (arg, "%u", &tmp) == 1 && tmp > 0)
-	      order = tmp;
-	  else
-	    g_printerr ("Invalid precision order value (-pr %s)\n", arg);
-	}
+          if (sscanf (arg, "%u", &tmp) == 1 && tmp > 0)
+              order = tmp;
+          else
+            g_printerr ("Invalid precision order value (-pr %s)\n", arg);
+        }
       else if (g_ascii_strcasecmp (arg, "-s") == 0)
-	{
-	  guint tmp = 0;
-	  iarg ++;
+        {
+          guint tmp = 0;
+          iarg ++;
 
-	  arg = (iarg<argc) ? argv[iarg] : NULL;
+          arg = (iarg<argc) ? argv[iarg] : NULL;
 
-	  if (sscanf (arg, "%u", &tmp) == 1 && tmp > 0)
-	      maxbox = tmp;
-	  else
-	    g_printerr ("Invalid maximum box size value (-s %s)\n", arg);
-	}
+          if (sscanf (arg, "%u", &tmp) == 1 && tmp > 0)
+              maxbox = tmp;
+          else
+            g_printerr ("Invalid maximum box size value (-s %s)\n", arg);
+        }
       else if (g_ascii_strcasecmp (arg, "-err") == 0)
-	{
-	  gdouble tmp = 0;
-	  iarg ++;
+        {
+          gdouble tmp = 0;
+          iarg ++;
 
-	  arg = (iarg<argc) ? argv[iarg] : NULL;
+          arg = (iarg<argc) ? argv[iarg] : NULL;
 
-	  if (sscanf (arg, "%lf", &tmp) == 1 && tmp > 0.)
-	      err_lim = tmp;
-	  else
-	    g_printerr ("Invalid error limit value (-err %s)\n", arg);
-	}
+          if (sscanf (arg, "%lf", &tmp) == 1 && tmp > 0.)
+              err_lim = tmp;
+          else
+            g_printerr ("Invalid error limit value (-err %s)\n", arg);
+        }
       else if (g_ascii_strcasecmp (arg, "-nocheck") == 0)
-	{
-	  check = FALSE;
-	}
+        {
+          check = FALSE;
+        }
 
       else if (g_ascii_strcasecmp (arg, "-check") == 0)
-	{
-	  check = TRUE;
-	}
+        {
+          check = TRUE;
+        }
       else if (g_ascii_strcasecmp (arg, "-direct") == 0)
-	{
-	  direct = TRUE;
-	}
+        {
+          direct = TRUE;
+        }
       else if (g_ascii_strcasecmp (arg, "-dist") == 0)
-	{
-	  iarg ++;
+        {
+          iarg ++;
 
-	  arg = (iarg<argc) ? argv[iarg] : NULL;
+          arg = (iarg<argc) ? argv[iarg] : NULL;
 
-	  if (g_ascii_strcasecmp (arg, "circle") == 0)
-	    {
-	      _fill = _one_circle_fill;
-	    }
-	  else if (g_ascii_strcasecmp (arg, "random2") == 0)
-	    {
-	      _fill = _random2_fill;
-	    }
-	  else if (g_ascii_strcasecmp (arg, "random") == 0)
-	    {
-	      _fill = _random_fill;
-	    }
-	  else if (g_ascii_strcasecmp (arg, "grid") == 0)
-	    {
-	      _fill = _grid_fill;
-	    }
-	  else if (g_ascii_strcasecmp (arg, "uvsphere") == 0)
-	    {
-	      _fill = _uvsphere_fill;
-	    }
-	  else if (g_ascii_strcasecmp (arg, "load") == 0)
-	    {
-	      _fill = _load_fill;
+          if (g_ascii_strcasecmp (arg, "circle") == 0)
+            {
+              _fill = _one_circle_fill;
+            }
+          else if (g_ascii_strcasecmp (arg, "random2") == 0)
+            {
+              _fill = _random2_fill;
+            }
+          else if (g_ascii_strcasecmp (arg, "random") == 0)
+            {
+              _fill = _random_fill;
+            }
+          else if (g_ascii_strcasecmp (arg, "grid") == 0)
+            {
+              _fill = _grid_fill;
+            }
+          else if (g_ascii_strcasecmp (arg, "uvsphere") == 0)
+            {
+              _fill = _uvsphere_fill;
+            }
+          else if (g_ascii_strcasecmp (arg, "load") == 0)
+            {
+              _fill = _load_fill;
 
-	      iarg ++;
-	      arg = (iarg<argc) ? argv[iarg] : NULL;
+              iarg ++;
+              arg = (iarg<argc) ? argv[iarg] : NULL;
 
-	      _load_file = g_malloc (1024*sizeof (gchar));
-	      sscanf (arg, "%s", _load_file);
-	    }
-	  else 
-	    {
-	      g_printerr ("Invalid fill name (-dist %s)\n", arg);
-	    }
-	}
+              _load_file = g_malloc (1024*sizeof (gchar));
+              sscanf (arg, "%s", _load_file);
+            }
+          else 
+            {
+              g_printerr ("Invalid fill name (-dist %s)\n", arg);
+            }
+        }
       else if (g_ascii_strcasecmp (arg, "-translation") == 0)
-	{
-	  iarg ++;
+        {
+          iarg ++;
 
-	  arg = (iarg<argc) ? argv[iarg] : NULL;
+          arg = (iarg<argc) ? argv[iarg] : NULL;
 
-	  if (g_ascii_strcasecmp (arg, "normal") == 0)
-	    {
+          if (g_ascii_strcasecmp (arg, "normal") == 0)
+            {
               m2m = (AranMultipole2MultipoleFunc3d) aran_development3d_m2m;
 
               m2l = (AranMultipole2LocalFunc3d) aran_development3d_m2l;
 
               l2l = (AranLocal2LocalFunc3d) aran_development3d_l2l;
-	    }
-	  else if (g_ascii_strcasecmp (arg, "kkylin") == 0)
-	    {
+            }
+          else if (g_ascii_strcasecmp (arg, "kkylin") == 0)
+            {
               m2m =
                 (AranMultipole2MultipoleFunc3d) aran_development3d_m2m_kkylin;
 
               m2l = (AranMultipole2LocalFunc3d) aran_development3d_m2l_kkylin;
 
               l2l = (AranLocal2LocalFunc3d) aran_development3d_l2l_kkylin;
-	    }
-	  else if (g_ascii_strcasecmp (arg, "rotate") == 0)
-	    {
+            }
+          else if (g_ascii_strcasecmp (arg, "rotate") == 0)
+            {
               m2m =
                 (AranMultipole2MultipoleFunc3d) aran_development3d_m2m_rotate;
 
               m2l = (AranMultipole2LocalFunc3d) aran_development3d_m2l_rotate;
 
               l2l = (AranLocal2LocalFunc3d) aran_development3d_l2l_rotate;
-	    }
-	  else 
-	    {
-	      g_printerr ("Invalid translation name (-translation %s)\n", arg);
-	    }
-	}
+            }
+          else 
+            {
+              g_printerr ("Invalid translation name (-translation %s)\n", arg);
+            }
+        }
       else if (g_ascii_strcasecmp (arg, "-hilbert") == 0)
-	{
-	  _hilbert = TRUE;
-	}
+        {
+          _hilbert = TRUE;
+        }
       else if (g_strncasecmp (arg, "-v", 2) == 0 ||
                g_strncasecmp (arg, "--verbose", 9) == 0)
         {
           _verbose = TRUE;
         }
       else if (g_ascii_strcasecmp (arg, "--version") == 0)
-	{
-	  g_printerr ("%s version %s\n", argv[0], PACKAGE_VERSION);
-	  exit (0);
-	}
+        {
+          g_printerr ("%s version %s\n", argv[0], PACKAGE_VERSION);
+          exit (0);
+        }
       else
-	{
-	  g_printerr ("Invalid argument \"%s\"\n", arg);
-	}
+        {
+          g_printerr ("Invalid argument \"%s\"\n", arg);
+        }
 
       iarg ++;
     }
@@ -762,15 +762,15 @@ static void _load_fill (AranSolver3d *solver)
       np ++;
 
       if (check)
-	{
-	  if (np > _cp_size)
-	    {
-	      _cp_size *= 2;
-	      check_points = g_realloc (check_points, _cp_size);
-	    }
+        {
+          if (np > _cp_size)
+            {
+              _cp_size *= 2;
+              check_points = g_realloc (check_points, _cp_size);
+            }
 
-	  memcpy (&check_points[i], point, sizeof (PointAccum));
-	}
+          memcpy (&check_points[i], point, sizeof (PointAccum));
+        }
 
       if (aran_solver3d_insert_point_local (solver, point))
         {
@@ -831,7 +831,7 @@ static void _uvsphere_fill (AranSolver3d *solver)
         {
           if (_verbose && rk == 0)
             g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
-	  aran_solver3d_distribute_contiguous_leaves (solver);
+          aran_solver3d_distribute_contiguous_leaves (solver);
         }
 #endif /* VSG_HAVE_MPI */
     }
@@ -906,19 +906,19 @@ void check_point_field (PointAccum *point, gint *ret)
   if (fabs (err) > err_lim || !finite (err))
     {
       g_printerr ("%d : Field simulation error: %d relative=(%e) "
-		  "pos=(%f,%f,%f)\n"
-		  "                        computed=(%f,%f,%f) "
-		  "exact=(%f,%f,%f)\n",
-		  rk, i, fabs(err),
-		  point->vector.x, point->vector.y, point->vector.z,
-		  point->field.x, point->field.y, point->field.z,
-		  check->field.x, check->field.y, check->field.z);
+                  "pos=(%f,%f,%f)\n"
+                  "                        computed=(%f,%f,%f) "
+                  "exact=(%f,%f,%f)\n",
+                  rk, i, fabs(err),
+                  point->vector.x, point->vector.y, point->vector.z,
+                  point->field.x, point->field.y, point->field.z,
+                  check->field.x, check->field.y, check->field.z);
       (*ret) ++;
     }
 /*   else */
 /*     { */
 /*       g_printerr ("%d : Field simulation ok: %d relative=(%e) exact=(%f,%f,%f)\n", */
-/* 		  rk, i, fabs(err), check->field.x, check->field.y, check->field.z); */
+/*                   rk, i, fabs(err), check->field.x, check->field.y, check->field.z); */
 
 /*     } */
 }
@@ -965,25 +965,25 @@ int main (int argc, char **argv)
 
   prtree =
     vsg_prtree3d_new_full (&lbound, &ubound,
-			    (VsgPoint3dLocFunc) vsg_vector3d_vector3d_locfunc,
-			    (VsgPoint3dDistFunc) vsg_vector3d_dist,
-			    (VsgRegion3dLocFunc) NULL, maxbox);
+                            (VsgPoint3dLocFunc) vsg_vector3d_vector3d_locfunc,
+                            (VsgPoint3dDistFunc) vsg_vector3d_dist,
+                            (VsgRegion3dLocFunc) NULL, maxbox);
 
   solver = aran_solver3d_new (prtree, ARAN_TYPE_DEVELOPMENT3D,
-			      aran_development3d_new (0, order),
-			      (AranZeroFunc) aran_development3d_set_zero);
+                              aran_development3d_new (0, order),
+                              (AranZeroFunc) aran_development3d_set_zero);
 
 #ifdef VSG_HAVE_MPI
   aran_solver3d_set_parallel (solver, &pconfig);
 #endif
 
   aran_solver3d_set_functions (solver,
-			       (AranParticle2ParticleFunc3d) p2p,
-			       (AranParticle2MultipoleFunc3d) p2m,
+                               (AranParticle2ParticleFunc3d) p2p,
+                               (AranParticle2MultipoleFunc3d) p2m,
                                m2m,
-			       m2l,
-			       l2l,
-			       (AranLocal2ParticleFunc3d)l2p);
+                               m2l,
+                               l2l,
+                               (AranLocal2ParticleFunc3d)l2p);
 
   if (_hilbert)
     {
@@ -1044,11 +1044,11 @@ int main (int argc, char **argv)
 
           for (j=0; j<np; j ++)
             {
-	      if (j != i)
-		{
+              if (j != i)
+                {
                   PointAccum *pj = &check_points[j];
-		  p2p_one_way (pi, pj);
-		}
+                  p2p_one_way (pi, pj);
+                }
             }
 
         }
