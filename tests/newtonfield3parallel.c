@@ -698,6 +698,7 @@ static void _one_circle_fill (AranSolver3d *solver)
                 g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
 
               aran_solver3d_distribute_contiguous_leaves (solver);
+              _flush_interval *=2;
             }
         }
 #endif /* VSG_HAVE_MPI */
@@ -749,6 +750,7 @@ static void _random_fill (AranSolver3d *solver)
                 g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
 
               aran_solver3d_distribute_contiguous_leaves (solver);
+              _flush_interval *=2;
             }
         }
 #endif /* VSG_HAVE_MPI */
@@ -803,6 +805,7 @@ static void _random2_fill (AranSolver3d *solver)
                 g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
 
               aran_solver3d_distribute_contiguous_leaves (solver);
+              _flush_interval *=2;
             }
         }
 #endif /* VSG_HAVE_MPI */
@@ -953,6 +956,7 @@ static void _load_fill (AranSolver3d *solver)
                 g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
 
               aran_solver3d_distribute_contiguous_leaves (solver);
+              _flush_interval *=2;
             }
         }
 #endif /* VSG_HAVE_MPI */
@@ -1037,6 +1041,7 @@ static void _uvsphere_fill (AranSolver3d *solver)
           if (_verbose && rk == 0)
             g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
           aran_solver3d_distribute_contiguous_leaves (solver);
+              _flush_interval *=2;
         }
 #endif /* VSG_HAVE_MPI */
     }
