@@ -371,97 +371,95 @@ static void _tree_write (VsgPRTree3d *tree, gchar *prefix)
 
 }
 
- static void _vtp_pt_write (PointAccum *pt, FILE *file)
- {
-   fprintf (file, "%g %g %g\n",
-            pt->vector.x, pt->vector.y, pt->vector.z);
- }
- 
- static void _vtp_traverse_bg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
- {
-   if (! VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info))
-     {
-       gdouble x = node_info->center.x;
-       gdouble y = node_info->center.y;
-       gdouble z = node_info->center.z;
-       gdouble dx = node_info->ubound.x - node_info->center.x;
-       gdouble dy = node_info->ubound.y - node_info->center.y;
-       gdouble dz = node_info->ubound.z - node_info->center.z;
- 
-       fprintf (file, "%g %g %g\n", x - dx, y, z);
-       fprintf (file, "%g %g %g\n", x + dx, y, z);
- 
-       fprintf (file, "%g %g %g\n", x, y - dy, z);
-       fprintf (file, "%g %g %g\n", x, y + dy, z);
- 
-       fprintf (file, "%g %g %g\n", x, y, z - dz);
-       fprintf (file, "%g %g %g\n", x, y, z + dz);
-     }
- }
- 
- static void _vtp_traverse_fg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
- {
-   g_slist_foreach (node_info->point_list, (GFunc) _vtp_pt_write, file);
- }
- 
- static void _vtp_tree_write (AranSolver3d *solver, gchar *prefix)
- {
-   gchar fn[1024];
-   FILE *f;
-   gint np = aran_solver3d_point_count (solver);
-   gint nn = 0;
-   gint i;
- 
-   g_sprintf (fn, "%s%03d.vtp", prefix, rk);
-   f = fopen (fn, "w");
- 
-   aran_solver3d_traverse (solver, G_PRE_ORDER,
+static void _vtp_pt_write (PointAccum *pt, FILE *file)
+{
+  fprintf (file, "%g %g %g\n",
+           pt->vector.x, pt->vector.y, pt->vector.z);
+}
+
+static void _vtp_traverse_bg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
+{
+  if (! VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info))
+    {
+      gdouble x = node_info->center.x;
+      gdouble y = node_info->center.y;
+      gdouble z = node_info->center.z;
+      gdouble dx = node_info->ubound.x - node_info->center.x;
+      gdouble dy = node_info->ubound.y - node_info->center.y;
+      gdouble dz = node_info->ubound.z - node_info->center.z;
+
+      fprintf (file, "%g %g %g\n", x - dx, y, z);
+      fprintf (file, "%g %g %g\n", x + dx, y, z);
+
+      fprintf (file, "%g %g %g\n", x, y - dy, z);
+      fprintf (file, "%g %g %g\n", x, y + dy, z);
+
+      fprintf (file, "%g %g %g\n", x, y, z - dz);
+      fprintf (file, "%g %g %g\n", x, y, z + dz);
+    }
+}
+
+static void _vtp_traverse_fg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
+{
+  g_slist_foreach (node_info->point_list, (GFunc) _vtp_pt_write, file);
+}
+
+static void _vtp_tree_write (AranSolver3d *solver, gchar *prefix)
+{
+  gchar fn[1024];
+  FILE *f;
+  gint np = aran_solver3d_point_count (solver);
+  gint nn = 0;
+  gint i;
+
+  g_sprintf (fn, "%s%03d.vtp", prefix, rk);
+  f = fopen (fn, "w");
+
+  aran_solver3d_traverse (solver, G_PRE_ORDER,
                           (VsgPRTree3dFunc) _traverse_count_local_nodes,
                           &nn);
- 
-   fprintf (f, "<?xml version=\"1.0\" ?>\n" \
-            "<VTKFile type=\"PolyData\" version=\"0.1\">\n" \
-            "<PolyData>\n" \
-            "<Piece NumberOfPoints=\"%d\" NumberOfVerts=\"%d\" " \
-            "NumberOfLines=\"%d\" NumberOfStrips=\"0\" " \
-            "NumberOfPolys=\"0\">\n",
-            np + 6*nn, np, 3*nn);
- 
-   fprintf (f, "<Points>\n");
-   fprintf (f, "<DataArray type=\"Float64\" NumberOfComponents=\"3\" " \
-            "format=\"ascii\">\n");
-   aran_solver3d_traverse (solver, G_PRE_ORDER,
+
+  fprintf (f, "<?xml version=\"1.0\" ?>\n"                       \
+           "<VTKFile type=\"PolyData\" version=\"0.1\">\n"       \
+           "<PolyData>\n"                                        \
+           "<Piece NumberOfPoints=\"%d\" NumberOfVerts=\"%d\" "  \
+           "NumberOfLines=\"%d\" NumberOfStrips=\"0\" "          \
+           "NumberOfPolys=\"0\">\n",
+           np + 6*nn, np, 3*nn);
+
+  fprintf (f, "<Points>\n");
+  fprintf (f, "<DataArray type=\"Float64\" NumberOfComponents=\"3\" "   \
+           "format=\"ascii\">\n");
+  aran_solver3d_traverse (solver, G_PRE_ORDER,
                           (VsgPRTree3dFunc) _vtp_traverse_fg_write,
                           f);
-   aran_solver3d_traverse (solver, G_PRE_ORDER,
+  aran_solver3d_traverse (solver, G_PRE_ORDER,
                           (VsgPRTree3dFunc) _vtp_traverse_bg_write,
                           f);
-   fprintf (f, "</DataArray>\n</Points>\n");
- 
-   fprintf (f, "<Verts>\n");
-   fprintf (f, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
-   for (i=0; i<np; i++) fprintf (f, "%d ", i);
-   fprintf (f, "\n</DataArray>\n");
-   fprintf (f, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\" >");
-   for (i=0; i<np; i++) fprintf (f, "%d ", i+1);
-   fprintf (f, "\n</DataArray>\n</Verts>\n");
- 
-   fprintf (f, "<Lines>\n");
-   fprintf (f, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
-   for (i=0; i<3*nn; i++) fprintf (f, "%d %d ", np + 2*i, np + 2*i+1);
-   fprintf (f, "\n</DataArray>\n");
-   fprintf (f, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\" >");
-   for (i=0; i<3*nn; i++) fprintf (f, "%d ", 2*(i+1));
-   fprintf (f, "\n</DataArray>\n</Lines>\n");
- 
- 
- 
-   fprintf (f, "\n</Piece>\n");
-   fprintf (f, "</PolyData>\n</VTKFile>\n");
-   fclose (f);
- 
- }
- 
+  fprintf (f, "</DataArray>\n</Points>\n");
+
+  fprintf (f, "<Verts>\n");
+  fprintf (f, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
+  for (i=0; i<np; i++) fprintf (f, "%d ", i);
+  fprintf (f, "\n</DataArray>\n");
+  fprintf (f, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\" >");
+  for (i=0; i<np; i++) fprintf (f, "%d ", i+1);
+  fprintf (f, "\n</DataArray>\n</Verts>\n");
+
+  fprintf (f, "<Lines>\n");
+  fprintf (f, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
+  for (i=0; i<3*nn; i++) fprintf (f, "%d %d ", np + 2*i, np + 2*i+1);
+  fprintf (f, "\n</DataArray>\n");
+  fprintf (f, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\" >");
+  for (i=0; i<3*nn; i++) fprintf (f, "%d ", 2*(i+1));
+  fprintf (f, "\n</DataArray>\n</Lines>\n");
+
+  fprintf (f, "\n</Piece>\n");
+  fprintf (f, "</PolyData>\n</VTKFile>\n");
+  fclose (f);
+
+}
+
 static void _one_circle_fill (AranSolver3d *solver);
 static void _random_fill (AranSolver3d *solver);
 
@@ -610,7 +608,7 @@ void parse_args (int argc, char **argv)
               _load_file = g_malloc (1024*sizeof (gchar));
               sscanf (arg, "%s", _load_file);
             }
-          else 
+          else
             {
               g_printerr ("Invalid fill name (-dist %s)\n", arg);
             }
@@ -647,7 +645,7 @@ void parse_args (int argc, char **argv)
 
               l2l = (AranLocal2LocalFunc3d) aran_development3d_l2l_rotate;
             }
-          else 
+          else
             {
               g_printerr ("Invalid translation name (-translation %s)\n", arg);
             }
