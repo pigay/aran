@@ -29,9 +29,6 @@
 #include "aran/aransolver2d.h"
 #include "aran/aranbinomial.h"
 
-/* Points number */
-#define N 36000
-
 /* approximation degree */
 #define K 20
 
@@ -136,7 +133,7 @@ void parse_args (int argc, char **argv)
 
 	  arg = (iarg<argc) ? argv[iarg] : NULL;
 
-	  if (sscanf (arg, "%u", &tmp) == 1 && tmp < N)
+	  if (sscanf (arg, "%u", &tmp) == 1)
 	      np = tmp;
 	  else
 	    g_printerr ("Invalid particles number (-np %s)\n", arg);
@@ -227,8 +224,8 @@ static void _one_circle_distribution (PointAccum **points, AranSolver2d *solver)
     {
       PointAccum *point = g_malloc0 (sizeof (PointAccum));
 
-      point->vector.x = R * cos(2.*G_PI*i/N);
-      point->vector.y = R * sin(2.*G_PI*i/N);
+      point->vector.x = R * cos(2.*G_PI*i/np);
+      point->vector.y = R * sin(2.*G_PI*i/np);
       point->density = 1.;
       point->accum = 0.;
       point->id = i;
@@ -264,7 +261,7 @@ int main (int argc, char **argv)
 {
   VsgVector2d lbound = {-1., -1.};
   VsgVector2d ubound = {1., 1.};
-  PointAccum *points[N] = {0};
+  PointAccum **points;
   VsgPRTree2d *prtree;
   AranSolver2d *solver;
   int ret = 0;
@@ -273,6 +270,8 @@ int main (int argc, char **argv)
   aran_init();
 
   parse_args (argc, argv);
+
+  points = g_malloc (np * sizeof (PointAccum*));
 
   prtree = 
     vsg_prtree2d_new_full (&lbound, &ubound,
@@ -342,6 +341,7 @@ int main (int argc, char **argv)
       g_free (points[i]);
     }
 
+  g_free (points);
 
   return ret;
 }
