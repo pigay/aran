@@ -148,8 +148,8 @@ static AranSolver2d *_solver2d_alloc ()
   if (!aran_solver2d_mem_chunk)
     {
       aran_solver2d_mem_chunk = g_mem_chunk_create (AranSolver2d,
-						    ARAN_SOLVER2D_PREALLOC,
-						    G_ALLOC_ONLY);
+                                                    ARAN_SOLVER2D_PREALLOC,
+                                                    G_ALLOC_ONLY);
     }
 
   aran_solver2d_instances_count ++;
@@ -196,38 +196,90 @@ void aran_solver2d_init ()
 
 
 /*----------------------------------------------------*/
-static void near_func (const VsgPRTree2dNodeInfo *one_info,
-		       const VsgPRTree2dNodeInfo *other_info,
-		       AranSolver2d *solver)
+static void nop_near_func (const VsgPRTree2dNodeInfo *one_info,
+                       const VsgPRTree2dNodeInfo *other_info,
+                       AranSolver2d *solver)
+{
+}
+
+/* general case near_func algorithm */
+static void near_func_default (const VsgPRTree2dNodeInfo *one_info,
+                               const VsgPRTree2dNodeInfo *other_info,
+                               AranSolver2d *solver)
 {
   GSList *one_list = one_info->point_list;
-
-  if (solver->p2p == NULL) return;
 
   while (one_list)
     {
       VsgPoint2 one_point = (VsgPoint2) one_list->data;
-      GSList *other_list =
-	(one_info != other_info)? other_info->point_list : one_list;
+      GSList *other_list = other_info->point_list;
 
       while (other_list)
-	{
-	  VsgPoint2 other_point = (VsgPoint2) other_list->data;
+        {
+          VsgPoint2 other_point = (VsgPoint2) other_list->data;
 
-	  /* Particle to Particle interaction */
-	  solver->p2p (one_point, other_point);
-          solver->p2p_counter ++;
+          /* Particle to Particle interaction */
+          solver->p2p (one_point, other_point);
 
-	  other_list = other_list->next;
-	}
+          other_list = other_list->next;
+        }
 
       one_list = one_list->next;
     }
+
+  solver->p2p_counter +=one_info->point_count * other_info->point_count;
+}
+
+/* near_func algorithm for reflexive interaction (one_info == other_info */
+static void near_func_reflexive (const VsgPRTree2dNodeInfo *one_info,
+                                 const VsgPRTree2dNodeInfo *other_info,
+                                 AranSolver2d *solver)
+{
+  GSList *one_list = one_info->point_list;
+
+  while (one_list)
+    {
+      VsgPoint2 one_point = (VsgPoint2) one_list->data;
+      GSList *other_list = one_list;
+
+      while (other_list)
+        {
+          VsgPoint2 other_point = (VsgPoint2) other_list->data;
+
+          /* Particle to Particle interaction */
+          solver->p2p (one_point, other_point);
+
+          other_list = other_list->next;
+        }
+
+      one_list = one_list->next;
+    }
+
+  solver->p2p_counter +=
+    (one_info->point_count * (one_info->point_count+1)) / 2;
+}
+
+static void near_func (const VsgPRTree2dNodeInfo *one_info,
+                       const VsgPRTree2dNodeInfo *other_info,
+                       AranSolver2d *solver)
+{
+  if (one_info == other_info)
+    near_func_reflexive (one_info, other_info, solver);
+  else
+    near_func_default (one_info, other_info, solver);
+}
+
+
+static gboolean nop_far_func (const VsgPRTree2dNodeInfo *one_info,
+                              const VsgPRTree2dNodeInfo *other_info,
+                              AranSolver2d *solver)
+{
+  return TRUE;
 }
 
 static gboolean far_func (const VsgPRTree2dNodeInfo *one_info,
-			  const VsgPRTree2dNodeInfo *other_info,
-			  AranSolver2d *solver)
+                          const VsgPRTree2dNodeInfo *other_info,
+                          AranSolver2d *solver)
 {
   gboolean done;
 
@@ -239,22 +291,22 @@ static gboolean far_func (const VsgPRTree2dNodeInfo *one_info,
 
       /* both ways in order to get symmetric exchange */
       done = solver->m2l (one_info, one_dev,
-			  other_info, other_dev);
+                          other_info, other_dev);
 
       if (!done) return FALSE;
 
       solver->m2l_counter ++;
 
       done = solver->m2l (other_info, other_dev,
-			  one_info, one_dev);
+                          one_info, one_dev);
 
       if (!done)
-	{
-	  /* should _NOT_ happen : user error */
-	  g_error ("m2l function (0x%p) return status not symmetric.",
-		   solver->m2l);
-	  return FALSE;
-	}
+        {
+          /* should _NOT_ happen : user error */
+          g_error ("m2l function (0x%p) return status not symmetric.",
+                   solver->m2l);
+          return FALSE;
+        }
 
       solver->m2l_counter ++;
     }
@@ -277,7 +329,7 @@ static void clear_func (const VsgPRTree2dNodeInfo *node_info,
 }
 
 static void up_func (const VsgPRTree2dNodeInfo *node_info,
-		     AranSolver2d *solver)
+                     AranSolver2d *solver)
 {
   gpointer node_dev = node_info->user_data;
 
@@ -288,20 +340,20 @@ static void up_func (const VsgPRTree2dNodeInfo *node_info,
   if (node_info->isleaf)
     {
       if (solver->p2m != NULL)
-	{
-	  GSList *node_list = node_info->point_list;
+        {
+          GSList *node_list = node_info->point_list;
 
-	  while (node_list)
-	    {
-	      VsgPoint2 node_point = (VsgPoint2) node_list->data;
+          while (node_list)
+            {
+              VsgPoint2 node_point = (VsgPoint2) node_list->data;
 
-	      /* Particle to Multipole gathering */
-	      solver->p2m (node_point, node_info, node_dev);
-          solver->p2m_counter ++;
+              /* Particle to Multipole gathering */
+              solver->p2m (node_point, node_info, node_dev);
+              solver->p2m_counter ++;
 
-	      node_list = node_list->next;
-	    }
-	}
+              node_list = node_list->next;
+            }
+        }
     }
 
   if (solver->m2m != NULL && node_info->point_count != 0 &&
@@ -317,7 +369,7 @@ static void up_func (const VsgPRTree2dNodeInfo *node_info,
 }
 
 static void down_func (const VsgPRTree2dNodeInfo *node_info,
-		       AranSolver2d *solver)
+                       AranSolver2d *solver)
 {
   gpointer node_dev = node_info->user_data;
 
@@ -339,20 +391,20 @@ static void down_func (const VsgPRTree2dNodeInfo *node_info,
   if ((node_info->isleaf))
     {
       if (solver->l2p != NULL)
-	{
-	  GSList *node_list = node_info->point_list;
+        {
+          GSList *node_list = node_info->point_list;
 
-	  while (node_list)
-	    {
-	      VsgPoint2 node_point = (VsgPoint2) node_list->data;
+          while (node_list)
+            {
+              VsgPoint2 node_point = (VsgPoint2) node_list->data;
 
-	      /* Local to Particle distribution */
-	      solver->l2p (node_info, node_dev, node_point);
+              /* Local to Particle distribution */
+              solver->l2p (node_info, node_dev, node_point);
               solver->l2p_counter ++;
 
-	      node_list = node_list->next;
-	    }
-	}
+              node_list = node_list->next;
+            }
+        }
     }
 }
 
@@ -374,9 +426,9 @@ static void down_func (const VsgPRTree2dNodeInfo *node_info,
  * Returns: newly allocated structure.
  */
 AranSolver2d *aran_solver2d_new (VsgPRTree2d *prtree,
-				 GType devel_type,
-				 gpointer devel,
-				 AranZeroFunc zero)
+                                 GType devel_type,
+                                 gpointer devel,
+                                 AranZeroFunc zero)
 {
   VsgVector2d lbound = {-1., -1.};
   VsgVector2d ubound = {1., 1.};
@@ -423,14 +475,14 @@ void aran_solver2d_free (AranSolver2d *solver)
  * Associates @solver with a new development definition.
  */
 void aran_solver2d_set_development (AranSolver2d *solver,
-				    GType devel_type,
-				    gpointer devel,
-				    AranZeroFunc zero)
+                                    GType devel_type,
+                                    gpointer devel,
+                                    AranZeroFunc zero)
 {
   g_return_if_fail (solver != NULL);
 
   g_return_if_fail ((devel_type == G_TYPE_NONE) ||
-		    G_TYPE_IS_BOXED (devel_type));
+                    G_TYPE_IS_BOXED (devel_type));
 
   if (solver->devel != NULL)
     g_boxed_free (solver->devel_type, solver->devel);
@@ -464,12 +516,12 @@ void aran_solver2d_set_development (AranSolver2d *solver,
  * Associates @solver with a set of FMM functions.
  */
 void aran_solver2d_set_functions (AranSolver2d *solver,
-				  AranParticle2ParticleFunc2d p2p,
-				  AranParticle2MultipoleFunc2d p2m,
-				  AranMultipole2MultipoleFunc2d m2m,
-				  AranMultipole2LocalFunc2d m2l,
-				  AranLocal2LocalFunc2d l2l,
-				  AranLocal2ParticleFunc2d l2p)
+                                  AranParticle2ParticleFunc2d p2p,
+                                  AranParticle2MultipoleFunc2d p2m,
+                                  AranMultipole2MultipoleFunc2d m2m,
+                                  AranMultipole2LocalFunc2d m2l,
+                                  AranLocal2LocalFunc2d l2l,
+                                  AranLocal2ParticleFunc2d l2p)
 {
   g_return_if_fail (solver != NULL);
 
@@ -556,7 +608,7 @@ gdouble aran_solver2d_get_tolerance (AranSolver2d *solver)
  * Sets the spatial tolerance used in the associated #VsgPRTree2d.
  */
 void aran_solver2d_set_tolerance (AranSolver2d *solver,
-				  gdouble tolerance)
+                                  gdouble tolerance)
 {
   g_return_if_fail (solver != NULL);
 
@@ -572,8 +624,8 @@ void aran_solver2d_set_tolerance (AranSolver2d *solver,
  * Gets the bounding box for the associated #VsgPRTree2d.
  */
 void aran_solver2d_get_bounds (AranSolver2d *solver,
-			       VsgVector2d *lbound,
-			       VsgVector2d *ubound)
+                               VsgVector2d *lbound,
+                               VsgVector2d *ubound)
 {
   g_return_if_fail (solver != NULL);
 
@@ -626,7 +678,7 @@ void aran_solver2d_insert_point (AranSolver2d *solver,
 }
 
 /**
- * aran_solver2d_insert_point:
+ * aran_solver2d_insert_point_local:
  * @solver: an #AranSolver2d.
  * @point: a particle.
  *
@@ -735,21 +787,6 @@ void aran_solver2d_foreach_point_custom (AranSolver2d *solver,
                                      func, user_data);
 }
 
-void _traverse_print_dev (VsgPRTree2dNodeInfo *node_info, FILE *f)
-{
-  if (! VSG_PRTREE2D_NODE_INFO_IS_REMOTE (node_info))
-    {
-      AranDevelopment2d *dev = (AranDevelopment2d *) node_info->user_data;
-
-      if (VSG_PRTREE2D_NODE_INFO_IS_LOCAL (node_info))
-        fprintf(f, "* ");
-      vsg_prtree_key2d_write (&node_info->id, f);
-      fprintf(f, " ");
-      aran_laurent_seriesd_write (dev->multipole, f);
-      fprintf (f, "\n");
-    }
-}
-
 /**
  * aran_solver2d_solve:
  * @solver: an #AranSolver2d.
@@ -758,7 +795,17 @@ void _traverse_print_dev (VsgPRTree2dNodeInfo *node_info, FILE *f)
  */
 void aran_solver2d_solve (AranSolver2d *solver)
 {
+  VsgPRTree2dFarInteractionFunc far;
+  VsgPRTree2dInteractionFunc near;
   g_return_if_fail (solver != NULL);
+
+  /*set interaction functions from solevr configuration */
+  far = (VsgPRTree2dFarInteractionFunc)
+    ((solver->m2l != NULL) ? far_func : nop_far_func);
+
+  near = (VsgPRTree2dInteractionFunc)
+    ((solver->p2p != NULL) ? near_func : nop_near_func);
+
 
   /* clear multipole and local developments before the big work */
   vsg_prtree2d_traverse (solver->prtree, G_POST_ORDER,
@@ -782,10 +829,7 @@ void aran_solver2d_solve (AranSolver2d *solver)
 #endif /* VSG_HAVE_MPI */
 
   /* transmit info from Multipole to Local developments */
-  vsg_prtree2d_near_far_traversal (solver->prtree,
-                                   (VsgPRTree2dFarInteractionFunc) far_func,
-                                   (VsgPRTree2dInteractionFunc) near_func,
-                                   solver);
+  vsg_prtree2d_near_far_traversal (solver->prtree, far, near, solver);
 
   /* distribute information through Local developments towards particles */
   vsg_prtree2d_traverse (solver->prtree, G_PRE_ORDER,

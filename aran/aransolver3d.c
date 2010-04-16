@@ -195,34 +195,85 @@ void aran_solver3d_init ()
 
 
 /*----------------------------------------------------*/
+static void nop_near_func (const VsgPRTree3dNodeInfo *one_info,
+		       const VsgPRTree3dNodeInfo *other_info,
+		       AranSolver3d *solver)
+{
+}
+
+/* general case near_func algorithm */
+static void near_func_default (const VsgPRTree3dNodeInfo *one_info,
+                               const VsgPRTree3dNodeInfo *other_info,
+                               AranSolver3d *solver)
+{
+  GSList *one_list = one_info->point_list;
+
+  while (one_list)
+    {
+      VsgPoint2 one_point = (VsgPoint2) one_list->data;
+      GSList *other_list = other_info->point_list;
+
+      while (other_list)
+	{
+	  VsgPoint2 other_point = (VsgPoint2) other_list->data;
+
+	  /* Particle to Particle interaction */
+	  solver->p2p (one_point, other_point);
+
+	  other_list = other_list->next;
+	}
+
+      one_list = one_list->next;
+    }
+
+  solver->p2p_counter +=one_info->point_count * other_info->point_count;
+}
+
+/* near_func algorithm for reflexive interaction (one_info == other_info */
+static void near_func_reflexive (const VsgPRTree3dNodeInfo *one_info,
+                                 const VsgPRTree3dNodeInfo *other_info,
+                                 AranSolver3d *solver)
+{
+  GSList *one_list = one_info->point_list;
+
+  while (one_list)
+    {
+      VsgPoint2 one_point = (VsgPoint2) one_list->data;
+      GSList *other_list = one_list;
+
+      while (other_list)
+	{
+	  VsgPoint2 other_point = (VsgPoint2) other_list->data;
+
+	  /* Particle to Particle interaction */
+	  solver->p2p (one_point, other_point);
+
+	  other_list = other_list->next;
+	}
+
+      one_list = one_list->next;
+    }
+
+  solver->p2p_counter +=
+    (one_info->point_count * (one_info->point_count+1)) / 2;
+}
 
 static void near_func (const VsgPRTree3dNodeInfo *one_info,
                        const VsgPRTree3dNodeInfo *other_info,
                        AranSolver3d *solver)
 {
-  GSList *one_list = one_info->point_list;
+  if (one_info == other_info)
+    near_func_reflexive (one_info, other_info, solver);
+  else
+    near_func_default (one_info, other_info, solver);
+}
 
-  if (solver->p2p == NULL) return;
 
-  while (one_list)
-    {
-      VsgPoint3 one_point = (VsgPoint3) one_list->data;
-      GSList *other_list =
-        (one_info != other_info)? other_info->point_list : one_list;
-
-      while (other_list)
-        {
-          VsgPoint3 other_point = (VsgPoint3) other_list->data;
-
-          /* Particle to Particle interaction */
-          solver->p2p (one_point, other_point);
-          solver->p2p_counter ++;
-
-          other_list = other_list->next;
-        }
-
-      one_list = one_list->next;
-    }
+static gboolean nop_far_func (const VsgPRTree3dNodeInfo *one_info,
+                              const VsgPRTree3dNodeInfo *other_info,
+                              AranSolver3d *solver)
+{
+  return TRUE;
 }
 
 static gboolean far_func (const VsgPRTree3dNodeInfo *one_info,
@@ -260,7 +311,6 @@ static gboolean far_func (const VsgPRTree3dNodeInfo *one_info,
 
   return TRUE;
 }
-
 
 
 static void clear_func (const VsgPRTree3dNodeInfo *node_info,
@@ -677,7 +727,6 @@ VsgPoint3 aran_solver3d_find_point (AranSolver3d *solver,
   return vsg_prtree3d_find_point (solver->prtree, selector);
 }
 
-
 /**
  * aran_solver3d_foreach_point:
  * @solver: an #AranSolver3d.
@@ -744,15 +793,17 @@ void aran_solver3d_foreach_point_custom (AranSolver3d *solver,
  */
 void aran_solver3d_solve (AranSolver3d *solver)
 {
+  VsgPRTree3dFarInteractionFunc far;
+  VsgPRTree3dInteractionFunc near;
   g_return_if_fail (solver != NULL);
 
-#ifdef VSG_HAVE_MPI
-  {
-    VsgPRTreeParallelConfig pconfig;
+  /*set interaction functions from solevr configuration */
+  far = (VsgPRTree3dFarInteractionFunc)
+    ((solver->m2l != NULL) ? far_func : nop_far_func);
 
-    vsg_prtree3d_get_parallel (solver->prtree, &pconfig);
-  }
-#endif
+  near = (VsgPRTree3dInteractionFunc)
+    ((solver->p2p != NULL) ? near_func : nop_near_func);
+
 
   /* clear multipole and local developments before the big work */
   vsg_prtree3d_traverse (solver->prtree, G_POST_ORDER,
@@ -776,10 +827,7 @@ void aran_solver3d_solve (AranSolver3d *solver)
 #endif /* VSG_HAVE_MPI */
 
   /* transmit info from Multipole to Local developments */
-  vsg_prtree3d_near_far_traversal (solver->prtree,
-                                   (VsgPRTree3dFarInteractionFunc) far_func,
-                                   (VsgPRTree3dInteractionFunc) near_func,
-                                   solver);
+  vsg_prtree3d_near_far_traversal (solver->prtree, far, near, solver);
 
   /* distribute information through Local developments towards particles */
   vsg_prtree3d_traverse (solver->prtree, G_PRE_ORDER,
