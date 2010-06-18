@@ -11,3 +11,10 @@ $(pkgconfig_DATA): config.status
 EXTRA_DIST = autogen.sh types.list
 
 ACLOCAL_AMFLAGS = -I m4
+
+profile :
+	for d in aran tests; do \
+	  (cd $$d && $(MAKE) $(AM_MAKEFLAGS) profile); \
+	done
+
+.PHONY: profile

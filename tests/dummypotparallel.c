@@ -29,6 +29,8 @@
 #include "aran/aran.h"
 #include "aran/aransolver2d.h"
 #include "aran/aranbinomial.h"
+#include "aran/aranprofile.h"
+#include "aran/aranprofiledb.h"
 
 /* Particle type */
 typedef struct _PointAccum PointAccum;
@@ -61,7 +63,7 @@ static gint _flush_interval = 1000;
 
 
 
-static void p2p (PointAccum *one, PointAccum *other)
+void p2p (PointAccum *one, PointAccum *other)
 {
   if (one != other)
     {
@@ -83,8 +85,8 @@ static void p2p (PointAccum *one, PointAccum *other)
     }
 }
 
-static void p2m (PointAccum *particle, const VsgPRTree2dNodeInfo *devel_node,
-		 AranDevelopment2d *devel)
+void p2m (PointAccum *particle, const VsgPRTree2dNodeInfo *devel_node,
+          AranDevelopment2d *devel)
 {
   guint i;
   gcomplex128 *multipole = aran_laurent_seriesd_get_term (devel->multipole, 0);
@@ -106,9 +108,8 @@ static void p2m (PointAccum *particle, const VsgPRTree2dNodeInfo *devel_node,
     }
 }
 
-static void l2p (const VsgPRTree2dNodeInfo *devel_node,
-                 AranDevelopment2d *devel,
-		 PointAccum *particle)
+void l2p (const VsgPRTree2dNodeInfo *devel_node, AranDevelopment2d *devel,
+          PointAccum *particle)
 {
   particle->accum += aran_development2d_local_evaluate (devel_node,
                                                         devel,

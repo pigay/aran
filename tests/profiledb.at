@@ -19,44 +19,11 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
+AT_TESTED([profiledb])
 
-AT_INIT([aran_test])
-
-m4_include([taylor.at])
-
-m4_include([laurent.at])
-
-m4_include([legendre.at])
-
-m4_include([special_legendre.at])
-
-m4_include([sphericalharmonic.at])
-
-m4_include([sphericalharmonic_pregradient.at])
-
-m4_include([wigner.at])
-
-m4_include([sphericalseriesd.at])
-
-m4_include([multipole3.at])
-
-m4_include([taylor3.at])
-
-m4_include([gradient3.at])
-
-m4_include([m2l3.at])
-
-m4_include([rotation.at])
-
-m4_include([dev3.at])
-
-m4_include([profiledb.at])
-
-m4_include([dummypot.at])
-
-m4_include([newtonpot3.at])
-
-m4_include([newtonfield3.at])
+AT_SETUP(Profile Database )
 
 
+AT_CHECK(profiledb --file $abs_srcdir/profiledb-test.ini, 0, ignore)
 
+AT_CLEANUP

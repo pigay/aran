@@ -148,7 +148,7 @@ ARAN_C_COMPLEX
 ARAN_CXX_CCOMPLEX
 
 PKG_CHECK_MODULES(BASE_DEPENDENCIES, [glib-2.0 >= 2.0.0 gobject-2.0 >= 2.0.0
-                                      vsgd >= 0.2.0])
+                                      gmodule-2.0 >= 2.0.0 vsgd >= 0.2.0])
 
 CFLAGS="$BASE_DEPENDENCIES_CFLAGS $CFLAGS"
 LIBS="$BASE_DEPENDENCIES_LIBS $LIBS "

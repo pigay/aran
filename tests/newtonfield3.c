@@ -29,7 +29,10 @@
 #include "aran/aran.h"
 #include "aran/aransolver3d.h"
 #include "aran/aranbinomial.h"
+#include "aran/aranprofile.h"
+#include "aran/aranprofiledb.h"
 
+#include "glib/gprintf.h"
 
 /* tree bbox size */
 #define TR (1.)
@@ -47,13 +50,17 @@ struct _PointAccum
   gdouble density;
 
   VsgVector3d field;
-/*   gcomplex128 accum; */
 
   guint id;
 };
 
 
 static const gdouble epsilon = 1.e-5;
+
+static void point_accum_clear_accum (PointAccum *pa)
+{
+  vsg_vector3d_set (&pa->field, 0., 0., 0.);
+}
 
 static void p2p_one_way (PointAccum *one, const PointAccum *other)
 {
@@ -81,7 +88,7 @@ static void p2p_one_way (PointAccum *one, const PointAccum *other)
     }
 }
 
-static void p2p (PointAccum *one, PointAccum *other)
+void p2p (PointAccum *one, PointAccum *other)
 {
   if (one != other)
     {
@@ -111,8 +118,8 @@ static void p2p (PointAccum *one, PointAccum *other)
     }
 }
 
-static void p2m (PointAccum *particle, const VsgVector3d *center,
-		 AranDevelopment3d *devel)
+void p2m (PointAccum *particle, const VsgVector3d *center,
+          AranDevelopment3d *devel)
 {
   VsgVector3d tmp;
   guint deg = aran_spherical_seriesd_get_negdeg (devel->multipole);
@@ -159,8 +166,8 @@ static void p2m (PointAccum *particle, const VsgVector3d *center,
 
 }
 
-static void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
-		 PointAccum *particle)
+void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
+          PointAccum *particle)
 {
   VsgVector3d tmp;
 
@@ -182,6 +189,57 @@ static void _direct (PointAccum **points, guint np)
           p2p (points[i], points[j]);
         }
     }
+}
+
+static void _profile_operators (gchar *profiles_group)
+{
+  GKeyFile *profiles_file = g_key_file_new ();
+  gchar *profiles_data;
+  gchar comment[1024] = {'\0', };
+  PointAccum p1 = {{0.1, 0.1, 0.1}, 0.1, {0., 0., 0.}, 0};
+  PointAccum p2 = {{0.5, 0.5, 0.5}, 0.1, {0., 0., 0.}, 1};
+  gdouble chisq, t;
+  AranPoly1d *ap1d = aran_poly1d_new (2);
+  gint maxbox = 100;
+
+  ap1d->degree = 0;
+  t = aran_profile_nearfunc_3d ((AranParticle2ParticleFunc3d) p2p,
+                                (AranParticleInitFunc3d) point_accum_clear_accum,
+                                &p1, &p2, maxbox);
+  ap1d->terms[0] = t / (maxbox * maxbox);
+  aran_poly1d_write_key_file (ap1d, profiles_file, profiles_group, "p2p");
+
+
+  ap1d->degree = 1;
+  chisq =
+    aran_poly1d_profile_p2m_3d ((AranParticle2MultipoleFunc3d) p2m,
+                                (AranZeroFunc) aran_development3d_set_zero,
+                                &p1,
+                                (AranDevelopmentNewFunc)
+                                aran_development3d_new,
+                                (GDestroyNotify) aran_development3d_free,
+                                ap1d, 20);
+  aran_poly1d_write_key_file (ap1d, profiles_file, profiles_group, "p2m");
+  g_sprintf (comment, " \"%s\" function fitting: chisq=%g", "p2m", chisq);
+  g_key_file_set_comment (profiles_file, profiles_group, "p2m", comment,NULL);
+
+  ap1d->degree = 1;
+  t =
+    aran_poly1d_profile_l2p_3d ((AranLocal2ParticleFunc3d) l2p,
+                                NULL,
+                                &p1,
+                                (AranDevelopmentNewFunc) aran_development3d_new,
+                                (GDestroyNotify) aran_development3d_free,
+                                ap1d, 20);
+  aran_poly1d_write_key_file (ap1d, profiles_file, profiles_group, "l2p");
+  g_sprintf (comment, " \"%s\" function fitting: chisq=%g", "l2p", chisq);
+  g_key_file_set_comment (profiles_file, profiles_group, "l2p", comment,NULL);
+  aran_poly1d_free (ap1d);
+
+  profiles_data = g_key_file_to_data (profiles_file, NULL, NULL);
+  g_printf ("%s", profiles_data);
+  g_key_file_free (profiles_file);
+  g_free (profiles_data);
 }
 
 static void _one_circle_distribution (PointAccum **points,
@@ -222,7 +280,17 @@ void parse_args (int argc, char **argv)
     {
       arg = argv[iarg];
 
-      if (g_ascii_strcasecmp (arg, "-np") == 0)
+      if (g_ascii_strcasecmp (arg, "-profile") == 0)
+	{
+	  iarg ++;
+
+	  arg = (iarg<argc) ? argv[iarg] : "default";
+
+          _profile_operators (arg);
+
+          exit (0);
+	}
+      else if (g_ascii_strcasecmp (arg, "-np") == 0)
 	{
 	  guint tmp = 0;
 	  iarg ++;
