@@ -6,8 +6,9 @@
 #include "stdio.h"
 #include "glib/gprintf.h"
 
+static gchar *_profiles_filename = NULL;
 static GKeyFile *_profiles_file = NULL;
-static gchar *_profiles_group = ARAN_PROFILE_DB_DEFAULT_GROUP;
+static gchar *_profiles_group = NULL;
 /* static gboolean _verbose = FALSE; */
 
 
@@ -116,14 +117,18 @@ static GOptionEntry entries[] =
 /*   { "verbose", 'v', 0, G_OPTION_ARG_NONE, &_verbose, "Be verbose", NULL }, */
   { "group", 'g', 0, G_OPTION_ARG_STRING, &_profiles_group, "Group name",
     NULL },
+  { "file", 'f', 0, G_OPTION_ARG_STRING, &_profiles_filename, "Profile File",
+    NULL },
   { NULL }
 };
+
 int main (gint argc, gchar **argv)
 {
   gint i;
   gchar *profiles_data;
   GError *error = NULL;
   GOptionContext *context;
+  FILE *f = stdout;
 
   context = g_option_context_new ("- aranprofile");
   g_option_context_add_main_entries (context, entries,
@@ -139,9 +144,23 @@ int main (gint argc, gchar **argv)
 
   _profiles_file = g_key_file_new ();
 
+  if (_profiles_filename != NULL)
+    {
+      g_key_file_load_from_file (_profiles_file, _profiles_filename,
+                                 G_KEY_FILE_KEEP_COMMENTS |
+                                 G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
+
+      f = fopen (_profiles_filename, "w");
+    }
+
   g_key_file_set_comment (_profiles_file, NULL, NULL,
                           " Aran profiling configuration file",
                           &error);
+
+  if (_profiles_group == NULL)
+    _profiles_group = g_getenv ("ARAN_PROFILE_GROUP");
+  if (_profiles_group == NULL)
+    _profiles_group = ARAN_PROFILE_DB_DEFAULT_GROUP;
 
   i = 0;
   while (_profiles[i].name != NULL)
@@ -155,9 +174,11 @@ int main (gint argc, gchar **argv)
 
   g_key_file_free (_profiles_file);
 
-  g_printf ("%s", profiles_data);
+  g_fprintf (f, "%s", profiles_data);
 
   g_free (profiles_data);
+
+  fclose (f);
 
   return 0;
 }

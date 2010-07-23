@@ -31,7 +31,7 @@ profiledbs = profiledb-dummypot.ini profiledb-newtonpot3.ini \
 profiledb-newtonfield3.ini
 
 EXTRA_DIST = testsuite.at $(testscripts) testsuite profiledb-test.ini \
-$(profiledbs)
+$(profiledbs) profiledb.stamp
 
 TESTSUITE = $(srcdir)/testsuite
 check-local: atconfig $(TESTSUITE)
@@ -43,20 +43,31 @@ $(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4 $(testscripts)
 	mv $@.tmp $@
 
 # rules for building profile db
-profiledb-dummypot.ini : 
-	./dummypot -profile > $@
+profiledb-dummypot.ini : profiledb.stamp
+	./dummypot -profile $@
 
-profiledb-newtonpot3.ini : 
-	./newtonpot3 -profile > $@
+profiledb-newtonpot3.ini : profiledb.stamp
+	./newtonpot3 -profile $@
 
-profiledb-newtonfield3.ini : 
-	./newtonfield3 -profile > $@
+profiledb-newtonfield3.ini : profiledb.stamp
+	./newtonfield3 -profile $@
 
-all : dummypot $(profiledbs)
+_profiledb_files = profiledb-dummypot.ini \
+profiledb-newtonpot3.ini profiledb-newtonfield3.ini
 
-profile : clean_profile dummypot 
+all : profiledbs
+profiledbs : $(noinst_PROGRAMS) $(_profiledb_files)
+
+profile : _touch_profiledb.stamp $(_profiledb_files)
+
+profiledb.stamp : 
+	touch profiledb.stamp
+
+_touch_profiledb.stamp : 
+	touch profiledb.stamp
+
 clean_profile :
-	\rm $(profiledbs)
+	\rm -f $(_profiledb_files)
 
-.PHONY: profile clean_profile
+.PHONY: profile clean_profile _touch_profiledb.stamp
 

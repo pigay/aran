@@ -145,7 +145,7 @@ static void _direct (PointAccum **points, guint np)
     }
 }
 
-static void _profile_operators (gchar *profiles_group)
+static void _profile_operators (const gchar *db_filename)
 {
   GKeyFile *profiles_file = g_key_file_new ();
   gchar *profiles_data;
@@ -155,6 +155,19 @@ static void _profile_operators (gchar *profiles_group)
   gdouble chisq, t;
   AranPoly1d *ap1d = aran_poly1d_new (2);
   gint maxbox = 100;
+  const gchar *profiles_group;
+  FILE *f = stdout;
+
+  profiles_group = g_getenv ("ARAN_PROFILE_GROUP");
+  if (profiles_group == NULL) profiles_group = ARAN_PROFILE_DB_DEFAULT_GROUP;
+
+  if (db_filename != NULL)
+    {
+      g_key_file_load_from_file (profiles_file, db_filename,
+                                 G_KEY_FILE_KEEP_COMMENTS |
+                                 G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
+      f = fopen (db_filename, "w");
+    }
 
   ap1d->degree = 0;
   t = aran_profile_nearfunc_3d ((AranParticle2ParticleFunc3d) p2p,
@@ -191,9 +204,12 @@ static void _profile_operators (gchar *profiles_group)
   aran_poly1d_free (ap1d);
 
   profiles_data = g_key_file_to_data (profiles_file, NULL, NULL);
-  g_printf ("%s", profiles_data);
   g_key_file_free (profiles_file);
+
   g_free (profiles_data);
+  g_fprintf (f, "%s", profiles_data);
+
+  if (db_filename != NULL) fclose (f);
 }
 
 static void _one_circle_distribution (PointAccum **points,
@@ -238,7 +254,7 @@ void parse_args (int argc, char **argv)
 	{
 	  iarg ++;
 
-	  arg = (iarg<argc) ? argv[iarg] : "default";
+	  arg = (iarg<argc) ? argv[iarg] : NULL;
 
           _profile_operators (arg);
 

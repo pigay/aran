@@ -112,8 +112,8 @@ gdouble aran_poly1d_eval (AranPoly1d *ap1d, gdouble x)
   return ret;
 }
 
-void aran_poly1d_write_key_file (AranPoly1d *ap1d, GKeyFile *kf, gchar *group,
-                                 gchar *key)
+void aran_poly1d_write_key_file (AranPoly1d *ap1d, GKeyFile *kf,
+                                 const gchar *group, const gchar *key)
 {
   g_key_file_set_double_list (kf, group, key, ap1d->terms, ap1d->degree+1);
 }

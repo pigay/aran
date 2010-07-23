@@ -51,8 +51,8 @@ void aran_poly1d_scalp (AranPoly1d *ap1d, gdouble factor, AranPoly1d *ret);
 
 gdouble aran_poly1d_eval (AranPoly1d *ap1d, gdouble x);
 
-void aran_poly1d_write_key_file (AranPoly1d *ap1d, GKeyFile *kf, gchar *group,
-                                 gchar *key);
+void aran_poly1d_write_key_file (AranPoly1d *ap1d, GKeyFile *kf,
+                                 const gchar *group, const gchar *key);
 G_END_DECLS;
 
 #endif /* __ARAN_POLY1D_H__ */

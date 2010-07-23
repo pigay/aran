@@ -57,21 +57,27 @@ aranbinomialbuffer@t@.h aranbinomialbuffer@t@.c aranccomplex.h.in
 
 pkgdata_DATA = profiledb.ini
 
-EXTRA_DIST = $(noinst_DATA) $(pkgdata_DATA)
+EXTRA_DIST = $(noinst_DATA) $(pkgdata_DATA) profiledb.stamp
 BUILT_SOURCES = $(libaran_la_built_headers) $(libaran_la_built_sources)
 
 # rules for building profile db
-profiledb.ini :
-	./aranprofile > $@
+profiledb.ini : profiledb.stamp
+	./aranprofile --file $@
 
 all : aranprofile profiledb.ini
 
-profile : clean_profile aranprofile profiledb.ini
+profile : _touch_profiledb.stamp aranprofile profiledb.ini
 
 clean_profile :
-	\rm profiledb.ini
+	\rm -f profiledb.ini
 
-.PHONY: profile clean_profile
+profiledb.stamp : 
+	touch profiledb.stamp
+
+_touch_profiledb.stamp : 
+	touch profiledb.stamp
+
+.PHONY: profile clean_profile _touch_profiledb.stamp
 
 # rules for building generated sources
 types_list = $(top_srcdir)/types.list
