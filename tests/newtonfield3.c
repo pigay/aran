@@ -566,6 +566,8 @@ int main (int argc, char **argv)
 
   aran_init();
 
+  vsg_packed_msg_trace_set_active (FALSE);
+
   parse_args (argc, argv);
 
   points = g_malloc0 (np * sizeof (PointAccum *));
