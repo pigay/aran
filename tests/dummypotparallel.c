@@ -567,6 +567,50 @@ void check_point_accum (PointAccum *point, gint *ret)
     }
 }
 
+void check_parallel_points (AranSolver2d *tocheck)
+{
+  VsgVector2d lbound = {-1., -1.};
+  VsgVector2d ubound = {1., 1.};
+  VsgPRTree2d *prtree;
+  AranSolver2d *solver;
+  int i;
+
+  prtree = 
+    vsg_prtree2d_new_full (&lbound, &ubound,
+			    (VsgPoint2dLocFunc) vsg_vector2d_vector2d_locfunc,
+			    (VsgPoint2dDistFunc) vsg_vector2d_dist,
+			    (VsgRegion2dLocFunc) NULL, maxbox);
+
+  aran_binomial_require (2*order);
+
+  solver = aran_solver2d_new (prtree, ARAN_TYPE_DEVELOPMENT2D,
+			      aran_development2d_new (0, order),
+			      (AranZeroFunc) aran_development2d_set_zero);
+
+  aran_solver2d_set_functions (solver,
+			       (AranParticle2ParticleFunc2d) p2p,
+			       (AranParticle2MultipoleFunc2d) p2m,
+			       (AranMultipole2MultipoleFunc2d) aran_development2d_m2m,
+			       (AranMultipole2LocalFunc2d) aran_development2d_m2l,
+			       (AranLocal2LocalFunc2d) aran_development2d_l2l,
+			       (AranLocal2ParticleFunc2d)l2p);
+
+  if (_hilbert)
+    {
+      /* configure for hilbert curve order traversal */
+      aran_solver2d_set_children_order_hilbert (solver);
+    }
+
+  for (i=0; i<np; i++)
+    {
+      aran_solver2d_insert_point (solver, &check_points[i]);
+    }
+
+  aran_solver2d_solve (solver);
+ 
+  aran_solver2d_free (solver);
+}
+
 int main (int argc, char **argv)
 {
 #ifdef VSG_HAVE_MPI
@@ -664,24 +708,29 @@ int main (int argc, char **argv)
 
   if (check)
     {
-      for (i=0; i<np; i++)
-	{
-          PointAccum *pi = &check_points[i];
-	  guint j;
+      if (sz == 1)
+        {
+          for (i=0; i<np; i++)
+            {
+              PointAccum *pi = &check_points[i];
+              guint j;
 
-	  for (j=0; j<np; j++)
-	    {
-	      if (i != j)
-		{
-                  PointAccum *pj = &check_points[j];
-		  gcomplex128 zd_m_zs =
-		    (pi->vector.x + I*pi->vector.y) -
-		    (pj->vector.x + I*pj->vector.y);
+              for (j=0; j<np; j++)
+                {
+                  if (i != j)
+                    {
+                      PointAccum *pj = &check_points[j];
+                      gcomplex128 zd_m_zs =
+                        (pi->vector.x + I*pi->vector.y) -
+                        (pj->vector.x + I*pj->vector.y);
 
-		  pi->accum += 1./zd_m_zs * pj->density;
-		}
-	    }
+                      pi->accum += 1./zd_m_zs * pj->density;
+                    }
+                }
+            }
         }
+      else
+        check_parallel_points (solver);
 
       aran_solver2d_foreach_point (solver, (GFunc) check_point_accum, &ret);
 

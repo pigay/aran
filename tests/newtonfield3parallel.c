@@ -1094,6 +1094,8 @@ static void _grid_fill (AranSolver3d *solver)
 /*     } */
 }
 
+gdouble maxerr = 0.;
+
 void check_point_field (PointAccum *point, gint *ret)
 {
   gint i;
@@ -1110,6 +1112,8 @@ void check_point_field (PointAccum *point, gint *ret)
   vsg_vector3d_sub (&point->field, &check->field, &tmp);
   err = vsg_vector3d_norm (&tmp);
   if (denom > 0.) err /= denom;
+
+  maxerr = MAX (maxerr, fabs (err));
 
   if (fabs (err) > err_lim || !finite (err))
     {
@@ -1129,6 +1133,48 @@ void check_point_field (PointAccum *point, gint *ret)
 /*                   rk, i, fabs(err), check->field.x, check->field.y, check->field.z); */
 
 /*     } */
+}
+
+void check_parallel_points ()
+{
+  VsgVector3d lbound = {-TR, -TR, -TR};
+  VsgVector3d ubound = {TR, TR, TR};
+  VsgPRTree3d *prtree;
+  AranSolver3d *solver;
+  int i;
+
+  prtree =
+    vsg_prtree3d_new_full (&lbound, &ubound,
+                            (VsgPoint3dLocFunc) vsg_vector3d_vector3d_locfunc,
+                            (VsgPoint3dDistFunc) vsg_vector3d_dist,
+                            (VsgRegion3dLocFunc) NULL, maxbox);
+
+  solver = aran_solver3d_new (prtree, ARAN_TYPE_DEVELOPMENT3D,
+                              aran_development3d_new (0, order),
+                              (AranZeroFunc) aran_development3d_set_zero);
+
+  aran_solver3d_set_functions (solver,
+                               (AranParticle2ParticleFunc3d) p2p,
+                               (AranParticle2MultipoleFunc3d) p2m,
+                               m2m,
+                               m2l,
+                               l2l,
+                               (AranLocal2ParticleFunc3d)l2p);
+
+  if (_hilbert)
+    {
+      /* configure for hilbert curve order traversal */
+      aran_solver3d_set_children_order_hilbert (solver);
+    }
+
+  for (i=0; i<np; i++)
+    {
+      aran_solver3d_insert_point (solver, &check_points[i]);
+    }
+
+  aran_solver3d_solve (solver);
+ 
+  aran_solver3d_free (solver);
 }
 
 int main (int argc, char **argv)
@@ -1248,22 +1294,32 @@ int main (int argc, char **argv)
     {
       gint i, j;
 
-      for (i=0; i<np; i ++)
+      if (sz == 1)
         {
-          PointAccum *pi = &check_points[i];
-
-          for (j=0; j<np; j ++)
+          for (i=0; i<np; i ++)
             {
-              if (j != i)
-                {
-                  PointAccum *pj = &check_points[j];
-                  p2p_one_way (pi, pj);
-                }
-            }
+              PointAccum *pi = &check_points[i];
 
+              for (j=0; j<np; j ++)
+                {
+                  if (j != i)
+                    {
+                      PointAccum *pj = &check_points[j];
+                      p2p_one_way (pi, pj);
+                    }
+                }
+
+            }
         }
+      else
+        check_parallel_points ();
 
       aran_solver3d_foreach_point (solver, (GFunc) check_point_field, &ret);
+
+      if (_verbose)
+        g_printerr ("%d : max err = %e\n", rk, maxerr);
+
+      g_free (check_points);
     }
 
   aran_solver3d_free (solver);
