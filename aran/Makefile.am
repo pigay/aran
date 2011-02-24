@@ -61,7 +61,7 @@ EXTRA_DIST = $(noinst_DATA) $(pkgdata_DATA) profiledb.stamp
 BUILT_SOURCES = $(libaran_la_built_headers) $(libaran_la_built_sources)
 
 # rules for building profile db
-profiledb.ini : aranprofile profiledb.stamp
+profiledb.ini : profiledb.stamp
 	./aranprofile --file $@
 
 all : aranprofile profiledb.ini
