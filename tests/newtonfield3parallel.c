@@ -93,7 +93,7 @@ static void p2p_one_way (PointAccum *one, const PointAccum *other)
     }
 }
 
-static void p2p (PointAccum *one, PointAccum *other)
+void p2p (PointAccum *one, PointAccum *other)
 {
   if (one != other)
     {
@@ -129,7 +129,7 @@ static void p2p (PointAccum *one, PointAccum *other)
     }
 }
 
-static void p2m (PointAccum *particle, const VsgPRTree3dNodeInfo *dst_node,
+void p2m (PointAccum *particle, const VsgPRTree3dNodeInfo *dst_node,
                  AranDevelopment3d *devel)
 {
   VsgVector3d tmp;
@@ -177,8 +177,8 @@ static void p2m (PointAccum *particle, const VsgPRTree3dNodeInfo *dst_node,
 
 }
 
-static void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
-                 PointAccum *particle)
+void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
+          PointAccum *particle)
 {
   VsgVector3d tmp;
 
@@ -840,30 +840,30 @@ static void _plummer_fill (AranSolver3d *solver)
 {
   gdouble rmax = 300.;
   guint i, real_np = 0;
+  PointAccum lb, ub;
   PointAccum *point;
   GRand *rand = g_rand_new_with_seed (_random_seed);
 
   point = point_accum_alloc (TRUE, NULL);
 
+  ub.vector.x = rmax;
+  ub.vector.y = rmax;
+  ub.vector.z = rmax;
+
+  lb.vector.x = - rmax;
+  lb.vector.y = - rmax;
+  lb.vector.z = - rmax;
+
   if (rk == 0)
     {
-      point->vector.x = rmax;
-      point->vector.y = rmax;
-      point->vector.z = rmax;
-
-      aran_solver3d_insert_point (solver, point);
-      aran_solver3d_remove_point (solver, point);
-
-      point->vector.x = - rmax;
-      point->vector.y = - rmax;
-      point->vector.z = - rmax;
-
-      aran_solver3d_insert_point (solver, point);
-      aran_solver3d_remove_point (solver, point);
-
+      aran_solver3d_insert_point (solver, &ub);
+      aran_solver3d_insert_point (solver, &lb);
     }
 
   aran_solver3d_migrate_flush (solver);
+
+  aran_solver3d_remove_point (solver, &lb);
+  aran_solver3d_remove_point (solver, &ub);
 
   for (i=0; i<np; i++)
     {
@@ -907,7 +907,7 @@ static void _plummer_fill (AranSolver3d *solver)
       point->field = VSG_V3D_ZERO;
       point->id = i;
 
-      if (check) memcpy (&check_points[i], point, sizeof (PointAccum));
+      if (check) memcpy (&check_points[real_np-1], point, sizeof (PointAccum));
 
       if (aran_solver3d_insert_point_local (solver, point))
         {
@@ -919,6 +919,8 @@ static void _plummer_fill (AranSolver3d *solver)
     }
 
   g_printerr ("%d : real_np %d\n", rk, real_np);
+
+  np = real_np;
 
   point_accum_destroy (point, TRUE, NULL);
 
@@ -1039,7 +1041,8 @@ static void _uvsphere_fill (AranSolver3d *solver)
           if (_verbose && rk == 0)
             g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
           aran_solver3d_distribute_contiguous_leaves (solver);
-              _flush_interval *=2;
+
+          _flush_interval *=2;
         }
 #endif /* VSG_HAVE_MPI */
     }
@@ -1135,13 +1138,15 @@ void check_point_field (PointAccum *point, gint *ret)
 /*     } */
 }
 
-void check_parallel_points ()
+void check_parallel_points (AranSolver3d *solver)
 {
-  VsgVector3d lbound = {-TR, -TR, -TR};
-  VsgVector3d ubound = {TR, TR, TR};
+  VsgVector3d lbound;
+  VsgVector3d ubound;
   VsgPRTree3d *prtree;
-  AranSolver3d *solver;
+  AranSolver3d *solver2;
   int i;
+
+  aran_solver3d_get_bounds (solver, &lbound, &ubound);
 
   prtree =
     vsg_prtree3d_new_full (&lbound, &ubound,
@@ -1149,32 +1154,32 @@ void check_parallel_points ()
                             (VsgPoint3dDistFunc) vsg_vector3d_dist,
                             (VsgRegion3dLocFunc) NULL, maxbox);
 
-  solver = aran_solver3d_new (prtree, ARAN_TYPE_DEVELOPMENT3D,
+  solver2 = aran_solver3d_new (prtree, ARAN_TYPE_DEVELOPMENT3D,
                               aran_development3d_new (0, order),
                               (AranZeroFunc) aran_development3d_set_zero);
 
-  aran_solver3d_set_functions (solver,
+  aran_solver3d_set_functions (solver2,
                                (AranParticle2ParticleFunc3d) p2p,
                                (AranParticle2MultipoleFunc3d) p2m,
                                m2m,
                                m2l,
                                l2l,
-                               (AranLocal2ParticleFunc3d)l2p);
+                               (AranLocal2ParticleFunc3d) l2p);
 
   if (_hilbert)
     {
       /* configure for hilbert curve order traversal */
-      aran_solver3d_set_children_order_hilbert (solver);
+      aran_solver3d_set_children_order_hilbert (solver2);
     }
 
   for (i=0; i<np; i++)
     {
-      aran_solver3d_insert_point (solver, &check_points[i]);
+      aran_solver3d_insert_point (solver2, &check_points[i]);
     }
 
-  aran_solver3d_solve (solver);
- 
-  aran_solver3d_free (solver);
+  aran_solver3d_solve (solver2);
+
+  aran_solver3d_free (solver2);
 }
 
 int main (int argc, char **argv)
@@ -1237,7 +1242,7 @@ int main (int argc, char **argv)
                                m2m,
                                m2l,
                                l2l,
-                               (AranLocal2ParticleFunc3d)l2p);
+                               (AranLocal2ParticleFunc3d) l2p);
 
   if (_hilbert)
     {
@@ -1312,7 +1317,7 @@ int main (int argc, char **argv)
             }
         }
       else
-        check_parallel_points ();
+        check_parallel_points (solver);
 
       aran_solver3d_foreach_point (solver, (GFunc) check_point_field, &ret);
 
