@@ -901,13 +901,13 @@ static void _plummer_fill (AranSolver3d *solver)
       if (fabs (point->vector.y) > rmax) continue;
       if (fabs (point->vector.z) > rmax) continue;
 
-      real_np ++;
-
       point->density = 1./np;
       point->field = VSG_V3D_ZERO;
-      point->id = i;
+      point->id = real_np;
 
-      if (check) memcpy (&check_points[real_np-1], point, sizeof (PointAccum));
+      if (check) memcpy (&check_points[real_np], point, sizeof (PointAccum));
+
+      real_np ++;
 
       if (aran_solver3d_insert_point_local (solver, point))
         {
