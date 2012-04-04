@@ -49,10 +49,10 @@ typedef void (*AranMultipole2MultipoleFunc2d) (const VsgPRTree2dNodeInfo *src_no
                                                 const VsgPRTree2dNodeInfo *dst_node,
                                                 gpointer dst);
 
-typedef gboolean (*AranMultipole2LocalFunc2d) (const VsgPRTree2dNodeInfo *src_node,
-                                                gpointer src,
-                                                const VsgPRTree2dNodeInfo *dst_node,
-                                                gpointer dst);
+typedef void (*AranMultipole2LocalFunc2d) (const VsgPRTree2dNodeInfo *src_node,
+                                           gpointer src,
+                                           const VsgPRTree2dNodeInfo *dst_node,
+                                           gpointer dst);
 
 typedef void (*AranLocal2LocalFunc2d) (const VsgPRTree2dNodeInfo *src_node,
                                         gpointer src,

@@ -62,10 +62,10 @@ void aran_development3d_m2m (const VsgPRTree3dNodeInfo *src_node,
 			     const VsgPRTree3dNodeInfo *dst_node,
 			     AranDevelopment3d *dst);
 
-gboolean aran_development3d_m2l (const VsgPRTree3dNodeInfo *src_node,
-				 AranDevelopment3d *src,
-				 const VsgPRTree3dNodeInfo *dst_node,
-				 AranDevelopment3d *dst);
+void aran_development3d_m2l (const VsgPRTree3dNodeInfo *src_node,
+                             AranDevelopment3d *src,
+                             const VsgPRTree3dNodeInfo *dst_node,
+                             AranDevelopment3d *dst);
 
 void aran_development3d_l2l (const VsgPRTree3dNodeInfo *src_node,
 			     AranDevelopment3d *src,
@@ -92,10 +92,10 @@ void aran_development3d_m2m_kkylin (const VsgPRTree3dNodeInfo *src_node,
                                     const VsgPRTree3dNodeInfo *dst_node,
                                     AranDevelopment3d *dst);
 
-gboolean aran_development3d_m2l_kkylin (const VsgPRTree3dNodeInfo *src_node,
-					AranDevelopment3d *src,
-					const VsgPRTree3dNodeInfo *dst_node,
-					AranDevelopment3d *dst);
+void aran_development3d_m2l_kkylin (const VsgPRTree3dNodeInfo *src_node,
+                                    AranDevelopment3d *src,
+                                    const VsgPRTree3dNodeInfo *dst_node,
+                                    AranDevelopment3d *dst);
 
 void aran_development3d_l2l_kkylin (const VsgPRTree3dNodeInfo *src_node,
                                     AranDevelopment3d *src,
@@ -107,10 +107,10 @@ void aran_development3d_m2m_rotate (const VsgPRTree3dNodeInfo *src_node,
                                     const VsgPRTree3dNodeInfo *dst_node,
                                     AranDevelopment3d *dst);
 
-gboolean aran_development3d_m2l_rotate (const VsgPRTree3dNodeInfo *src_node,
-					AranDevelopment3d *src,
-					const VsgPRTree3dNodeInfo *dst_node,
-					AranDevelopment3d *dst);
+void aran_development3d_m2l_rotate (const VsgPRTree3dNodeInfo *src_node,
+                                    AranDevelopment3d *src,
+                                    const VsgPRTree3dNodeInfo *dst_node,
+                                    AranDevelopment3d *dst);
 
 void aran_development3d_l2l_rotate (const VsgPRTree3dNodeInfo *src_node,
                                     AranDevelopment3d *src,

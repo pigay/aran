@@ -183,18 +183,14 @@ void aran_development3d_m2m (const VsgPRTree3dNodeInfo *src_node,
  * @dst: an #AranDevelopment3d.
  *
  * Performs multipole 2 local translation between @src and @dst.
- *
- * Returns: %TRUE.
  */
-gboolean aran_development3d_m2l (const VsgPRTree3dNodeInfo *src_node,
+void aran_development3d_m2l (const VsgPRTree3dNodeInfo *src_node,
 				 AranDevelopment3d *src,
 				 const VsgPRTree3dNodeInfo *dst_node,
 				 AranDevelopment3d *dst)
 {
   aran_spherical_seriesd_to_local (src->multipole, &src_node->center,
 				   dst->local, &dst_node->center);
-
-  return TRUE;
 }
 
 /**
@@ -243,18 +239,14 @@ void aran_development3d_m2m_kkylin (const VsgPRTree3dNodeInfo *src_node,
  *
  * Performs multipole 2 local translation between @src and @dst with the
  * K. Kylin formulas.
- *
- * Returns: %TRUE.
  */
-gboolean aran_development3d_m2l_kkylin (const VsgPRTree3dNodeInfo *src_node,
-					AranDevelopment3d *src,
-					const VsgPRTree3dNodeInfo *dst_node,
-					AranDevelopment3d *dst)
+void aran_development3d_m2l_kkylin (const VsgPRTree3dNodeInfo *src_node,
+                                    AranDevelopment3d *src,
+                                    const VsgPRTree3dNodeInfo *dst_node,
+                                    AranDevelopment3d *dst)
 {
   aran_spherical_seriesd_to_local_kkylin (src->multipole, &src_node->center,
                                           dst->local, &dst_node->center);
-
-  return TRUE;
 }
 
 /**
@@ -308,18 +300,14 @@ void aran_development3d_m2m_rotate (const VsgPRTree3dNodeInfo *src_node,
  * "Point and Shoot" technique: rotate @src to @dst_node->center direction and
  * then translate the rotated series along the Z axis. Rotate it back and
  * accumulate it into dst. These operations lead to a O(p^3) scheme.
- *
- * Returns: %TRUE.
  */
-gboolean aran_development3d_m2l_rotate (const VsgPRTree3dNodeInfo *src_node,
+void aran_development3d_m2l_rotate (const VsgPRTree3dNodeInfo *src_node,
 					AranDevelopment3d *src,
 					const VsgPRTree3dNodeInfo *dst_node,
 					AranDevelopment3d *dst)
 {
   aran_spherical_seriesd_to_local_rotate (src->multipole, &src_node->center,
                                           dst->local, &dst_node->center);
-
-  return TRUE;
 }
 
 /**

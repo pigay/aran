@@ -270,19 +270,16 @@ static void near_func (const VsgPRTree2dNodeInfo *one_info,
 }
 
 
-static gboolean nop_far_func (const VsgPRTree2dNodeInfo *one_info,
-                              const VsgPRTree2dNodeInfo *other_info,
-                              AranSolver2d *solver)
-{
-  return TRUE;
-}
-
-static gboolean far_func (const VsgPRTree2dNodeInfo *one_info,
+static void nop_far_func (const VsgPRTree2dNodeInfo *one_info,
                           const VsgPRTree2dNodeInfo *other_info,
                           AranSolver2d *solver)
 {
-  gboolean done;
+}
 
+static void far_func (const VsgPRTree2dNodeInfo *one_info,
+                      const VsgPRTree2dNodeInfo *other_info,
+                      AranSolver2d *solver)
+{
   /* Multipole to Local transformation */
   if (solver->m2l != NULL)
     {
@@ -290,28 +287,14 @@ static gboolean far_func (const VsgPRTree2dNodeInfo *one_info,
       gpointer other_dev = other_info->user_data;
 
       /* both ways in order to get symmetric exchange */
-      done = solver->m2l (one_info, one_dev,
-                          other_info, other_dev);
-
-      if (!done) return FALSE;
+      solver->m2l (one_info, one_dev, other_info, other_dev);
 
       solver->m2l_counter ++;
 
-      done = solver->m2l (other_info, other_dev,
-                          one_info, one_dev);
-
-      if (!done)
-        {
-          /* should _NOT_ happen : user error */
-          g_error ("m2l function (0x%p) return status not symmetric.",
-                   solver->m2l);
-          return FALSE;
-        }
+      solver->m2l (other_info, other_dev, one_info, one_dev);
 
       solver->m2l_counter ++;
     }
-
-  return TRUE;
 }
 
 
@@ -799,7 +782,7 @@ void aran_solver2d_solve (AranSolver2d *solver)
   VsgPRTree2dInteractionFunc near;
   g_return_if_fail (solver != NULL);
 
-  /*set interaction functions from solevr configuration */
+  /* set interaction functions from solver configuration */
   far = (VsgPRTree2dFarInteractionFunc)
     ((solver->m2l != NULL) ? far_func : nop_far_func);
 

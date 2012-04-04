@@ -183,20 +183,16 @@ void aran_development2d_m2m (const VsgPRTree2dNodeInfo *src_node,
  * @dst: an #AranDevelopment2d.
  *
  * Performs multipole 2 local translation between @src and @dst.
- *
- * Returns: %TRUE.
  */
-gboolean aran_development2d_m2l (const VsgPRTree2dNodeInfo *src_node,
-                                 AranDevelopment2d *src,
-                                 const VsgPRTree2dNodeInfo *dst_node,
-                                 AranDevelopment2d *dst)
+void aran_development2d_m2l (const VsgPRTree2dNodeInfo *src_node,
+                             AranDevelopment2d *src,
+                             const VsgPRTree2dNodeInfo *dst_node,
+                             AranDevelopment2d *dst)
 {
   gcomplex128 zsrc = src_node->center.x + G_I*src_node->center.y;
   gcomplex128 zdst = dst_node->center.x + G_I*dst_node->center.y;
 
   aran_laurent_seriesd_to_taylor (src->multipole, zsrc, dst->local, zdst);
-
-  return TRUE;
 }
 
 /**
