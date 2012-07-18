@@ -480,6 +480,7 @@ static guint order = 20;
 static gboolean check = TRUE;
 static gboolean direct = FALSE;
 static guint maxbox = 1;
+static guint virtual_maxbox = 0;
 static gboolean _verbose = FALSE;
 static gboolean _write = FALSE;
 static gboolean _hilbert = FALSE;
@@ -543,6 +544,18 @@ void parse_args (int argc, char **argv)
           else
             g_printerr ("Invalid maximum box size value (-s %s)\n", arg);
         }
+      else if (g_ascii_strncasecmp (arg, "-virtual-maxbox", 15) == 0)
+	{
+	  guint tmp = 0;
+	  iarg ++;
+
+	  arg = (iarg<argc) ? argv[iarg] : NULL;
+
+	  if (sscanf (arg, "%u", &tmp) == 1)
+            virtual_maxbox = tmp;
+	  else
+	    g_printerr ("Invalid virtual maxbox (-virtual-maxbox %s)\n", arg);
+	}
       else if (g_ascii_strcasecmp (arg, "-err") == 0)
         {
           gdouble tmp = 0;
@@ -1182,6 +1195,18 @@ void check_parallel_points (AranSolver3d *solver)
   aran_solver3d_free (solver2);
 }
 
+gboolean _nf_isleaf_virtual_maxbox (const VsgPRTree3dNodeInfo *node_info,
+                                    gpointer virtual_maxbox)
+{
+  /* shared nodes shouldn't be considered as virtual leaves in this case
+   * because point_count is only a local count. For example, a shared node
+   * without any local child would be considered as a virtual leaf whatever is
+   * its global point_count */
+  if (VSG_PRTREE3D_NODE_INFO_IS_SHARED (node_info)) return FALSE;
+
+  return node_info->point_count <= * ((guint *) virtual_maxbox);
+}
+
 int main (int argc, char **argv)
 {
 #ifdef VSG_HAVE_MPI
@@ -1235,6 +1260,10 @@ int main (int argc, char **argv)
 #ifdef VSG_HAVE_MPI
   aran_solver3d_set_parallel (solver, &pconfig);
 #endif
+
+  if (virtual_maxbox != 0)
+    aran_solver3d_set_nf_isleaf (solver, _nf_isleaf_virtual_maxbox,
+                                 &virtual_maxbox);
 
   aran_solver3d_set_functions (solver,
                                (AranParticle2ParticleFunc3d) p2p,

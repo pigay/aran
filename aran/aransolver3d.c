@@ -877,3 +877,12 @@ void aran_solver3d_distribute_contiguous_leaves (AranSolver3d *solver)
 
 #endif
 
+
+void aran_solver3d_set_nf_isleaf (AranSolver3d *solver,
+                                  VsgPRTree3dNFIsleafFunc isleaf,
+                                  gpointer user_data)
+{
+  g_return_if_fail (solver != NULL);
+
+  vsg_prtree3d_set_nf_isleaf (solver->prtree, isleaf, user_data);
+}

@@ -151,6 +151,10 @@ void aran_solver3d_distribute_contiguous_leaves (AranSolver3d *solver);
 
 #endif /* VSG_HAVE_MPI */
 
+void aran_solver3d_set_nf_isleaf (AranSolver3d *solver,
+                                  VsgPRTree3dNFIsleafFunc isleaf,
+                                  gpointer user_data);
+
 G_END_DECLS;
 
 #endif /* __ARAN_SOLVER3D_H__ */
