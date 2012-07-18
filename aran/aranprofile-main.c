@@ -8,7 +8,7 @@
 
 static gchar *_profiles_filename = NULL;
 static GKeyFile *_profiles_file = NULL;
-static gchar *_profiles_group = NULL;
+static const gchar *_profiles_group = NULL;
 /* static gboolean _verbose = FALSE; */
 
 
