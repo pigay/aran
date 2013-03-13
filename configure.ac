@@ -113,6 +113,10 @@ if test "x$enable_debug" = "xyes"; then
   esac
 fi
 
+AC_ARG_ENABLE(timings,
+              [AC_HELP_STRING([--enable-timings],
+              [turns on some timing messages])],
+              [AC_DEFINE(VSG_TIMING_OUTPUT, 1, [turns on some timing messages])])
 # Checks for libraries.
 AC_CHECK_LIB(m, cos)
 

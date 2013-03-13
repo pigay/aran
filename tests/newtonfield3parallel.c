@@ -1308,6 +1308,29 @@ int main (int argc, char **argv)
                   g_timer_elapsed (timer, NULL));
 
       g_timer_destroy (timer);
+
+      {
+        glong zero_count, p2p_count, p2m_count, m2m_count;
+        glong m2l_count, l2l_count, l2p_count;
+        glong p2p_remote_count, m2l_remote_count;
+
+        aran_solver3d_get_stats (solver, &zero_count,
+                                 &p2p_count, &p2m_count,
+                                 &m2m_count, &m2l_count,
+                                 &l2l_count, &l2p_count,
+                                 &p2p_remote_count,
+                                 &m2l_remote_count);
+
+        g_printerr ("%d : zero count=%ld\n", rk, zero_count);
+        g_printerr ("%d : p2p count=%ld\n", rk, p2p_count);
+        g_printerr ("%d : p2p remote count=%ld\n", rk, p2p_remote_count);
+        g_printerr ("%d : p2m count=%ld\n", rk, p2m_count);
+        g_printerr ("%d : m2m count=%ld\n", rk, m2m_count);
+        g_printerr ("%d : m2l count=%ld\n", rk, m2l_count);
+        g_printerr ("%d : m2l remote count=%ld\n", rk, m2l_remote_count);
+        g_printerr ("%d : l2l count=%ld\n", rk, l2l_count);
+        g_printerr ("%d : l2p count=%ld\n", rk, l2p_count);
+      }
     }
 
   if (_write)

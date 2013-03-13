@@ -19,8 +19,12 @@
 
 #include "aransolver3d.h"
 
+#include "aran-config.h"
+
 #include <glib-object.h>
 /* #include <vsg/vsgd-inline.h> */
+
+#include <vsg/vsgtiming.h>
 
 #include <string.h>
 
@@ -46,10 +50,10 @@ struct _AranSolver3d
   AranLocal2ParticleFunc3d l2p;
 
   glong zero_counter;
-  glong p2p_counter;
+  glong p2p_counter, p2p_remote_counter;
   glong p2m_counter;
   glong m2m_counter;
-  glong m2l_counter;
+  glong m2l_counter, m2l_remote_counter;
   glong l2l_counter;
   glong l2p_counter;
 };
@@ -227,9 +231,12 @@ static void near_func_default (const VsgPRTree3dNodeInfo *one_info,
     }
 
   solver->p2p_counter +=one_info->point_count * other_info->point_count;
+  if (VSG_PRTREE3D_NODE_INFO_IS_REMOTE (one_info) ||
+      VSG_PRTREE3D_NODE_INFO_IS_REMOTE (other_info))
+    solver->p2p_remote_counter +=one_info->point_count * other_info->point_count;
 }
 
-/* near_func algorithm for reflexive interaction (one_info == other_info */
+/* near_func algorithm for reflexive interaction (one_info == other_info) */
 static void near_func_reflexive (const VsgPRTree3dNodeInfo *one_info,
                                  const VsgPRTree3dNodeInfo *other_info,
                                  AranSolver3d *solver)
@@ -256,6 +263,9 @@ static void near_func_reflexive (const VsgPRTree3dNodeInfo *one_info,
 
   solver->p2p_counter +=
     (one_info->point_count * (one_info->point_count+1)) / 2;
+
+  if (VSG_PRTREE3D_NODE_INFO_IS_REMOTE (one_info))
+    solver->p2p_remote_counter +=one_info->point_count * other_info->point_count;
 }
 
 static void near_func (const VsgPRTree3dNodeInfo *one_info,
@@ -288,11 +298,13 @@ static void far_func (const VsgPRTree3dNodeInfo *one_info,
       /* both ways in order to get symmetric exchange */
       solver->m2l (one_info, one_dev, other_info, other_dev);
 
-      solver->m2l_counter ++;
-
       solver->m2l (other_info, other_dev, one_info, one_dev);
 
-      solver->m2l_counter ++;
+      solver->m2l_counter += 2;
+
+      if (VSG_PRTREE3D_NODE_INFO_IS_REMOTE (one_info) ||
+          VSG_PRTREE3D_NODE_INFO_IS_REMOTE (other_info))
+        solver->m2l_remote_counter += 2;
     }
 }
 
@@ -528,10 +540,12 @@ void aran_solver3d_reinit_stats (AranSolver3d *solver)
 
   solver->zero_counter = 0;
   solver->p2p_counter = 0;
+  solver->p2p_remote_counter = 0;
 
   solver->p2m_counter = 0;
   solver->m2m_counter = 0;
   solver->m2l_counter = 0;
+  solver->m2l_remote_counter = 0;
   solver->l2l_counter = 0;
   solver->l2p_counter = 0;
 }
@@ -546,6 +560,8 @@ void aran_solver3d_reinit_stats (AranSolver3d *solver)
  * @m2l: multipole 2 local function count result.
  * @l2l: local 2 local function count result.
  * @l2p: local 2 particle function count result.
+ * @p2p_remote: number of p2p calls with remote nodes.
+ * @m2l_remote: number of m2l calls with remote nodes.
  *
  * Retrieves count values for @solver differents functions. Each value
  * represents the number of calls of the corresponding functino since
@@ -554,15 +570,18 @@ void aran_solver3d_reinit_stats (AranSolver3d *solver)
 void aran_solver3d_get_stats (AranSolver3d *solver, glong *zero_count,
                               glong *p2p_count, glong *p2m_count,
                               glong *m2m_count, glong *m2l_count,
-                              glong *l2l_count, glong *l2p_count)
+                              glong *l2l_count, glong *l2p_count,
+                              glong *p2p_remote_count, glong *m2l_remote_count)
 {
   g_return_if_fail (solver != NULL);
 
   *zero_count = solver->zero_counter;
   *p2p_count = solver->p2p_counter;
+  *p2p_remote_count = solver->p2p_remote_counter;
   *p2m_count = solver->p2m_counter;
   *m2m_count = solver->m2m_counter;
   *m2l_count = solver->m2l_counter;
+  *m2l_remote_count = solver->m2l_remote_counter;
   *l2l_count = solver->l2l_counter;
   *l2p_count = solver->l2p_counter;
 }
@@ -781,6 +800,8 @@ void aran_solver3d_solve (AranSolver3d *solver)
   VsgPRTree3dInteractionFunc near;
   g_return_if_fail (solver != NULL);
 
+  VSG_TIMING_START (solve)
+
   /*set interaction functions from solevr configuration */
   far = (VsgPRTree3dFarInteractionFunc)
     ((solver->m2l != NULL) ? far_func : nop_far_func);
@@ -793,6 +814,8 @@ void aran_solver3d_solve (AranSolver3d *solver)
   vsg_prtree3d_traverse (solver->prtree, G_POST_ORDER,
                          (VsgPRTree3dFunc) clear_func,
                          solver);
+
+  VSG_TIMING_START (up);
 
   /* gather information in Multipole development */
   vsg_prtree3d_traverse (solver->prtree, G_POST_ORDER,
@@ -810,13 +833,21 @@ void aran_solver3d_solve (AranSolver3d *solver)
   }
 #endif /* VSG_HAVE_MPI */
 
+  VSG_TIMING_END (up, stderr);
+
   /* transmit info from Multipole to Local developments */
   vsg_prtree3d_near_far_traversal (solver->prtree, far, near, solver);
+
+  VSG_TIMING_START (down);
 
   /* distribute information through Local developments towards particles */
   vsg_prtree3d_traverse (solver->prtree, G_PRE_ORDER,
                          (VsgPRTree3dFunc) down_func,
                          solver);
+
+  VSG_TIMING_END (down, stderr);
+
+  VSG_TIMING_END (solve, stderr);
 }
 
 void aran_solver3d_set_children_order_hilbert (AranSolver3d *solver)
