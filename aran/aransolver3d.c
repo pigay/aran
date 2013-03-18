@@ -800,7 +800,7 @@ void aran_solver3d_solve (AranSolver3d *solver)
   VsgPRTree3dInteractionFunc near;
   g_return_if_fail (solver != NULL);
 
-  VSG_TIMING_START (solve)
+  VSG_TIMING_START (solve, solver->prtree->config->parallel_config.communicator);
 
   /*set interaction functions from solevr configuration */
   far = (VsgPRTree3dFarInteractionFunc)
@@ -815,7 +815,7 @@ void aran_solver3d_solve (AranSolver3d *solver)
                          (VsgPRTree3dFunc) clear_func,
                          solver);
 
-  VSG_TIMING_START (up);
+  VSG_TIMING_START (up, solver->prtree->config->parallel_config.communicator);
 
   /* gather information in Multipole development */
   vsg_prtree3d_traverse (solver->prtree, G_POST_ORDER,
@@ -838,7 +838,7 @@ void aran_solver3d_solve (AranSolver3d *solver)
   /* transmit info from Multipole to Local developments */
   vsg_prtree3d_near_far_traversal (solver->prtree, far, near, solver);
 
-  VSG_TIMING_START (down);
+  VSG_TIMING_START (down, solver->prtree->config->parallel_config.communicator);
 
   /* distribute information through Local developments towards particles */
   vsg_prtree3d_traverse (solver->prtree, G_PRE_ORDER,
