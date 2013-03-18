@@ -32,15 +32,28 @@
 
 static gdouble epsilon = 1.e-7;
 
+static void gradient_spherical_to_cartesian (gdouble r,
+                                             gdouble cost, gdouble sint,
+                                             gdouble cosp, gdouble sinp,
+                                             gdouble dr, gdouble dt, gdouble dp,
+                                             VsgVector3d *grad)
+{
+  grad->x = sint*cosp*dr + cost*cosp*dt - sinp*dp;
+  grad->y = sint*sinp*dr + cost*sinp*dt + cosp*dp;
+  grad->z = cost*dr - sint*dt;
+}
+
 static void check (const gchar *log,
                    AranSphericalSeriesd *ass, gdouble radius,
 		   VsgVector3d *center,
-		   gcomplex128 (*f) (VsgVector3d *x))
+		   gcomplex128 (*f) (VsgVector3d *x),
+		   void (*fv) (VsgVector3d *x, VsgVector3d *grad))
 {
   guint i, j, k;
   gdouble t, p;
   gcomplex128 yres, yref, err;
   gdouble r, cost, sint, cosp, sinp;
+  gcomplex128 dr, dt, dp;
 
   for (i=0; i<N ; i ++)
     {
@@ -57,6 +70,10 @@ static void check (const gchar *log,
 	  for (k=0; k<N; k ++)
 	    {
 	      VsgVector3d vec;
+	      VsgVector3d vref;
+	      VsgVector3d vres;
+	      VsgVector3d verr;
+
 	      r = radius + radius * k/(N-1.);
 
 	      yres = aran_spherical_seriesd_evaluate_internal (ass, r,
@@ -77,15 +94,55 @@ static void check (const gchar *log,
 	      if ((cabs (err) > epsilon && cabs(yref) > epsilon) ||
 		  !finite (cabs (err)))
 		{
-		  g_printerr ("Error %s (%f,%f,%f) : " \
-                              "(%e+%ej), (%e+%ej) -> %e\n",
+		  g_printerr ("Error %s (r=%f, t=%f, p=%f) : " \
+                              "ref(%e+%ej), res(%e+%ej) -> %e\n",
                               log,
 			      r, t, p,
 			      creal (yref), cimag (yref),
 			      creal (yres), cimag (yres),
 			      cabs (err));
 		}
-	    }
+
+              /* check gradient part */
+	      vsg_vector3d_from_spherical_internal (&vec, r,
+						    cost, sint,
+						    cosp, sinp);
+
+/*               aran_spherical_seriesd_local_gradient_evaluate (ass, &vec, */
+/*                                                               &vres); */
+
+              aran_spherical_seriesd_multipole_gradient_evaluate_internal (ass,
+                                                                           r,
+                                                                           cost, sint,
+                                                                           cosp, sinp,
+                                                                           &dr, &dt, &dp);
+              gradient_spherical_to_cartesian (r, cost, sint, cosp, sinp,
+                                               creal (dr), creal (dt), creal (dp),
+                                               &vres);
+
+              
+              vsg_vector3d_scalp (&vres, -1., &vres);
+
+	      vsg_vector3d_add (&vec, center, &vec);
+
+	      fv (&vec, &vref);
+
+	      vsg_vector3d_sub (&vref, &vres, &verr);
+
+              err = vsg_vector3d_norm (&verr) / vsg_vector3d_norm (&vref);
+
+	      if (fabs (err) > epsilon || !finite (err))
+		{
+		  g_printerr ("Error %s (r=%f, t=%f, p=%f) : " \
+                              "ref(%f,%f,%f) != res(%f,%f,%f) -> %e\n",
+                              log,
+			      r, t, p,
+/* 			      vec.x, vec.y, vec.z, */
+			      vref.x, vref.y, vref.z,
+			      vres.x, vres.y, vres.z,
+			      fabs (err));
+                }
+            }
 	}
     }
 }
@@ -144,6 +201,18 @@ gcomplex128 newtonpot (VsgVector3d *vec)
   vsg_vector3d_sub (vec, &p, &tmp);
 
   return 1. / vsg_vector3d_norm (&tmp);
+}
+
+
+void newtongrad (VsgVector3d *vec, VsgVector3d *grad)
+{
+  gdouble r;
+
+  vsg_vector3d_sub (vec, &p, grad);
+
+  r = vsg_vector3d_norm (grad);
+
+  vsg_vector3d_scalp (grad, 1./ (r*r*r), grad);
 }
 
 static VsgVector3d zero = {0., 0., 0.};
@@ -216,7 +285,7 @@ int main (int argc, char **argv)
 
 /*   aran_spherical_seriesd_write (ass, stderr); */
 /*   g_printerr ("\n"); */
-  check ("devel", ass, 5., &zero, newtonpot);
+  check ("devel", ass, 5., &zero, newtonpot, newtongrad);
 
   ast = aran_spherical_seriesd_clone (ass);
 
@@ -225,7 +294,7 @@ int main (int argc, char **argv)
 
 /*   aran_spherical_seriesd_write (ast, stderr); */
 /*   g_printerr ("\n"); */
-  check ("translated", ast, 5., &tr, newtonpot);
+  check ("translated", ast, 5., &tr, newtonpot, newtongrad);
 
   ast2 = aran_spherical_seriesd_clone (ass);
 
@@ -234,7 +303,7 @@ int main (int argc, char **argv)
 
 /*   aran_spherical_seriesd_write (ast2, stderr); */
 /*   g_printerr ("\n"); */
-  check ("translated kkylin", ast2, 5., &tr, newtonpot);
+  check ("translated kkylin", ast2, 5., &tr, newtonpot, newtongrad);
 
   ast3 = aran_spherical_seriesd_clone (ass);
 
@@ -243,14 +312,14 @@ int main (int argc, char **argv)
 
 /*   aran_spherical_seriesd_write (ast3, stderr); */
 /*   g_printerr ("\n"); */
-  check ("translated rotate", ast3, 5., &tr, newtonpot);
+  check ("translated rotate", ast3, 5., &tr, newtonpot, newtongrad);
 
   aran_spherical_seriesd_set_zero (ass);
   aran_spherical_seriesd_translate (ast, &tr, ass, &zero);
 
 /*   aran_spherical_seriesd_write (ass, stderr); */
 /*   g_printerr ("\n"); */
-  check ("translated back", ass, 5., &zero, newtonpot);
+  check ("translated back", ass, 5., &zero, newtonpot, newtongrad);
 
   aran_spherical_seriesd_free (ass);
   aran_spherical_seriesd_free (ast);
@@ -259,4 +328,3 @@ int main (int argc, char **argv)
 
   return ret;
 }
-

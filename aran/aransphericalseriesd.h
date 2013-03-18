@@ -86,6 +86,16 @@ void aran_spherical_seriesd_local_gradient_evaluate_internal
 void aran_spherical_seriesd_local_gradient_evaluate
 (const AranSphericalSeriesd *ass, const VsgVector3d *x, VsgVector3d *grad);
 
+void aran_spherical_seriesd_multipole_gradient_evaluate_internal
+(const AranSphericalSeriesd *ass,
+ gdouble r,
+ gdouble cost, gdouble sint,
+ gdouble cosp, gdouble sinp,
+ gcomplex128 *dr, gcomplex128 *dt, gcomplex128 *dp);
+
+void aran_spherical_seriesd_multipole_gradient_evaluate
+(const AranSphericalSeriesd *ass, const VsgVector3d *x, VsgVector3d *grad);
+
 void aran_spherical_seriesd_add (AranSphericalSeriesd *one,
                                AranSphericalSeriesd *other,
                                AranSphericalSeriesd *result);
