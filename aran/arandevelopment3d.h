@@ -82,6 +82,12 @@ gcomplex128 aran_development3d_local_evaluate (const VsgPRTree3dNodeInfo *devel_
 					       const VsgVector3d *pos);
 
 void
+aran_development3d_multipole_gradient_evaluate (const VsgPRTree3dNodeInfo *devel_node,
+                                                AranDevelopment3d *devel,
+                                                const VsgVector3d *pos,
+                                                VsgVector3d *grad);
+
+void
 aran_development3d_local_gradient_evaluate (const VsgPRTree3dNodeInfo *devel_node,
                                             AranDevelopment3d *devel,
                                             const VsgVector3d *pos,

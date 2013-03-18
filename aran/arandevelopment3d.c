@@ -375,6 +375,28 @@ gcomplex128 aran_development3d_local_evaluate (const VsgPRTree3dNodeInfo *devel_
 }
 
 /**
+ * aran_development3d_multipole_gradient_evaluate:
+ * @devel_node: tree node info of @devel.
+ * @devel: an #AranDevelopment3d.
+ * @pos: evaluation position.
+ * @grad: result gradient.
+ *
+ * Evaluates the gradient of the multipole part of @devel at @pos.
+ */
+void
+aran_development3d_multipole_gradient_evaluate (const VsgPRTree3dNodeInfo *devel_node,
+                                            AranDevelopment3d *devel,
+                                            const VsgVector3d *pos,
+                                            VsgVector3d *grad)
+{
+  VsgVector3d tmp;
+
+  vsg_vector3d_sub (pos, &devel_node->center, &tmp);
+
+  aran_spherical_seriesd_gradient_evaluate (devel->multipole, &tmp, grad);
+}
+
+/**
  * aran_development3d_local_gradient_evaluate:
  * @devel_node: tree node info of @devel.
  * @devel: an #AranDevelopment3d.
@@ -393,7 +415,7 @@ aran_development3d_local_gradient_evaluate (const VsgPRTree3dNodeInfo *devel_nod
 
   vsg_vector3d_sub (pos, &devel_node->center, &tmp);
 
-  aran_spherical_seriesd_local_gradient_evaluate (devel->local, &tmp, grad);
+  aran_spherical_seriesd_gradient_evaluate (devel->local, &tmp, grad);
 }
 
 #ifdef VSG_HAVE_MPI

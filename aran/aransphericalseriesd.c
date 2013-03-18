@@ -391,8 +391,18 @@ gcomplex128 aran_spherical_seriesd_evaluate (const AranSphericalSeriesd * ass,
                                                    sinp);
 }
 
+static void grad_spherical_to_cartesian (gdouble r,
+                                         gdouble cost, gdouble sint,
+                                         gdouble cosp, gdouble sinp,
+                                         gdouble dr, gdouble dt, gdouble dp,
+                                         VsgVector3d * grad)
+{
+  grad->x = sint * cosp * dr + cost * cosp * dt - sinp * dp;
+  grad->y = sint * sinp * dr + cost * sinp * dt + cosp * dp;
+  grad->z = cost * dr - sint * dt;
+}
 /**
- * aran_spherical_seriesd_local_gradient_evaluate_internal:
+ * aran_spherical_seriesd_gradient_evaluate_internal:
  * @ass: an #AranSphericalSeriesd.
  * @r: radius
  * @cost: cos (theta).
@@ -403,10 +413,10 @@ gcomplex128 aran_spherical_seriesd_evaluate (const AranSphericalSeriesd * ass,
  * @dt: gradient theta coordinate.
  * @dp: gradient phi coordinate.
  *
- * Evaluates gradient of local part of @ass at a point defined by its spherical
+ * Evaluates gradient of @ass at a point defined by its spherical
  * coordinates.
  */
-void aran_spherical_seriesd_local_gradient_evaluate_internal
+void aran_spherical_seriesd_gradient_evaluate_internal
   (const AranSphericalSeriesd * ass,
    gdouble r,
    gdouble cost, gdouble sint,
@@ -414,12 +424,15 @@ void aran_spherical_seriesd_local_gradient_evaluate_internal
    gcomplex128 * dr, gcomplex128 * dt, gcomplex128 * dp)
 {
   gint l, m;
+  guint n = MAX(ass->posdeg, ass->negdeg);
+  guint harmonics_size = ((n + 1) * (n + 2)) / 2;
   gcomplex128 expp = cosp + G_I * sinp;
-  gcomplex128 harmonics[((ass->posdeg + 1) * (ass->posdeg + 2)) / 2];
-  gcomplex128 special_harmonics[((ass->posdeg + 1) * (ass->posdeg + 2)) / 2];
+  gcomplex128 harmonics[harmonics_size];
+  gcomplex128 special_harmonics[harmonics_size];
   gcomplex128 *hterm, *srcterm, *shterm;
+  gdouble invr;
 
-  aran_spherical_harmonic_pre_gradient_multiple_internal (ass->posdeg,
+  aran_spherical_harmonic_pre_gradient_multiple_internal (n,
                                                           cost, sint, expp,
                                                           harmonics,
                                                           special_harmonics);
@@ -428,6 +441,7 @@ void aran_spherical_seriesd_local_gradient_evaluate_internal
   *dt = 0.;
   *dp = 0.;
 
+  /* Gradient of Local expansion */
   for (l = ass->posdeg; l >= 1; l--)
     {
       gcomplex128 sumr = 0., sumt = 0., sump = 0.;
@@ -457,136 +471,63 @@ void aran_spherical_seriesd_local_gradient_evaluate_internal
       *dt = (*dt) * r + sumt;
       *dp = (*dp) * r + sump;
     }
-}
 
-static void grad_spherical_to_cartesian (gdouble r,
-                                         gdouble cost, gdouble sint,
-                                         gdouble cosp, gdouble sinp,
-                                         gdouble dr, gdouble dt, gdouble dp,
-                                         VsgVector3d * grad)
-{
-  grad->x = sint * cosp * dr + cost * cosp * dt - sinp * dp;
-  grad->y = sint * sinp * dr + cost * sinp * dt + cosp * dp;
-  grad->z = cost * dr - sint * dt;
-}
-
-/**
- * aran_spherical_seriesd_local_gradient_evaluate:
- * @ass: an #AranSphericalSeriesd.
- * @x: location.
- * @grad: result
- *
- * Evaluates the gradient local part of @ass at @x. This is a convenience
- * wrapper around aran_spherical_seriesd_local_gradient_evaluate_internal().
- */
-void aran_spherical_seriesd_local_gradient_evaluate
-  (const AranSphericalSeriesd * ass, const VsgVector3d * x, VsgVector3d * grad)
-{
-  gdouble r, cost, sint, cosp, sinp;
-  gcomplex128 dr, dt, dp;
-
-  vsg_vector3d_to_spherical_internal (x, &r, &cost, &sint, &cosp, &sinp);
-
-  aran_spherical_seriesd_local_gradient_evaluate_internal (ass,
-                                                           r,
-                                                           cost, sint,
-                                                           cosp, sinp,
-                                                           &dr, &dt, &dp);
-
-  grad_spherical_to_cartesian (r, cost, sint, cosp, sinp,
-                               creal (dr), creal (dt), creal (dp), grad);
-}
-
-/**
- * aran_spherical_seriesd_multipole_gradient_evaluate_internal:
- * @ass: an #AranSphericalSeriesd.
- * @r: radius
- * @cost: cos (theta).
- * @sint: sin (theta).
- * @cosp: cos (phi).
- * @sinp: sin (phi).
- * @dr: gradient radius coordinate.
- * @dt: gradient theta coordinate.
- * @dp: gradient phi coordinate.
- *
- * Evaluates gradient of multipole part of @ass at a point defined by its spherical
- * coordinates.
- */
-void aran_spherical_seriesd_multipole_gradient_evaluate_internal
-  (const AranSphericalSeriesd * ass,
-   gdouble r,
-   gdouble cost, gdouble sint,
-   gdouble cosp, gdouble sinp,
-   gcomplex128 * dr, gcomplex128 * dt, gcomplex128 * dp)
-{
-  gint l, m;
-  guint deg = ass->negdeg;
-  guint harmonics_size = ((deg + 1) * (deg + 2)) / 2;
-  gcomplex128 expp = cosp + G_I * sinp;
-  gcomplex128 harmonics[harmonics_size];
-  gcomplex128 special_harmonics[harmonics_size];
-  gcomplex128 *hterm, *srcterm, *shterm;
-  gdouble inv_r;
-
-  aran_spherical_harmonic_pre_gradient_multiple_internal (ass->negdeg,
-                                                          cost, sint, expp,
-                                                          harmonics,
-                                                          special_harmonics);
-
-  inv_r = 1. / r;
-
-  *dr = 0.;
-  *dt = 0.;
-  *dp = 0.;
-
-  for (l = ass->negdeg-1; l >= 1; l--)
+  if (ass->negdeg > 0)
     {
-      gcomplex128 sumr = 0., sumt = 0., sump = 0.;
+      /* Gradient of Multipole expansion */
+      gdouble dr2 = 0., dt2 = 0., dp2 = 0.;
 
-      hterm = aran_spherical_harmonic_multiple_get_term (l, 0, harmonics);
-      shterm =
-        aran_spherical_harmonic_multiple_get_term (l, 0, special_harmonics);
-      srcterm = _spherical_seriesd_get_neg_term (ass, l, 0);
+      invr = 1. / r;
 
-      for (m = 1; m <= l; m++)
+      for (l = ass->negdeg-1; l >= 1; l--)
         {
-          sumr += creal (hterm[m] * srcterm[m]);
-          sumt += creal (shterm[m] * srcterm[m]) * (cost * m);
-          sump += cimag (shterm[m] * srcterm[m]) * m;
-        }
-      for (m = 1; m <= l - 1; m++)
-        {
-          sumt += creal (hterm[m + 1] * srcterm[m] * conj (expp)) *
-            sqrt ((l - m) * (l + m + 1));
-        }
-      sumr = 2. * sumr + creal (hterm[0] * srcterm[0]);
-      sumt = 2. * sumt + creal (hterm[1] * srcterm[0] * conj (expp)) *
-        sqrt (l * (l + 1));
-      sump *= -2.;
+          gcomplex128 sumr = 0., sumt = 0., sump = 0.;
 
-      *dr = (*dr) * inv_r + sumr * (l + 1);
-      *dt = (*dt) * inv_r + sumt;
-      *dp = (*dp) * inv_r + sump;
+          hterm = aran_spherical_harmonic_multiple_get_term (l, 0, harmonics);
+          shterm =
+            aran_spherical_harmonic_multiple_get_term (l, 0, special_harmonics);
+          srcterm = _spherical_seriesd_get_neg_term (ass, l, 0);
+
+          for (m = 1; m <= l; m++)
+            {
+              sumr += creal (hterm[m] * srcterm[m]);
+              sumt += creal (shterm[m] * srcterm[m]) * (cost * m);
+              sump += cimag (shterm[m] * srcterm[m]) * m;
+            }
+          for (m = 1; m <= l - 1; m++)
+            {
+              sumt += creal (hterm[m + 1] * srcterm[m] * conj (expp)) *
+                sqrt ((l - m) * (l + m + 1));
+            }
+          sumr = 2. * sumr + creal (hterm[0] * srcterm[0]);
+          sumt = 2. * sumt + creal (hterm[1] * srcterm[0] * conj (expp)) *
+            sqrt (l * (l + 1));
+          sump *= -2.;
+
+          dr2 = dr2 * invr + sumr * (l + 1);
+          dt2 = dt2 * invr + sumt;
+          dp2 = dp2 * invr + sump;
+        }
+
+      hterm = aran_spherical_harmonic_multiple_get_term (0, 0, harmonics);
+      srcterm = _spherical_seriesd_get_neg_term (ass, 0, 0);
+
+      *dr += - invr * invr * (dr2 * invr + hterm[0] * srcterm[0]);
+      *dt += dt2 * invr * invr * invr;
+      *dp += dp2 * invr * invr * invr;
     }
-
-  hterm = aran_spherical_harmonic_multiple_get_term (0, 0, harmonics);
-  srcterm = _spherical_seriesd_get_neg_term (ass, 0, 0);
-
-  *dr = - inv_r * inv_r * ((*dr) * inv_r + hterm[0] * srcterm[0]);
-  *dt *= inv_r * inv_r * inv_r;
-  *dp *= inv_r * inv_r * inv_r;
 }
 
 /**
- * aran_spherical_seriesd_multipole_gradient_evaluate:
+ * aran_spherical_seriesd_gradient_evaluate:
  * @ass: an #AranSphericalSeriesd.
  * @x: location.
  * @grad: result
  *
- * Evaluates the gradient multipole part of @ass at @x. This is a convenience
- * wrapper around aran_spherical_seriesd_multipole_gradient_evaluate_internal().
+ * Evaluates the gradient of @ass at @x. This is a convenience
+ * wrapper around aran_spherical_seriesd_gradient_evaluate_internal().
  */
-void aran_spherical_seriesd_multipole_gradient_evaluate
+void aran_spherical_seriesd_gradient_evaluate
   (const AranSphericalSeriesd * ass, const VsgVector3d * x, VsgVector3d * grad)
 {
   gdouble r, cost, sint, cosp, sinp;
@@ -594,7 +535,7 @@ void aran_spherical_seriesd_multipole_gradient_evaluate
 
   vsg_vector3d_to_spherical_internal (x, &r, &cost, &sint, &cosp, &sinp);
 
-  aran_spherical_seriesd_multipole_gradient_evaluate_internal (ass,
+  aran_spherical_seriesd_gradient_evaluate_internal (ass,
                                                            r,
                                                            cost, sint,
                                                            cosp, sinp,

@@ -96,14 +96,14 @@ static void check (const gchar *log,
 						    cost, sint,
 						    cosp, sinp);
 
-/*               aran_spherical_seriesd_local_gradient_evaluate (ass, &vec, */
-/*                                                               &vres); */
+/*               aran_spherical_seriesd_gradient_evaluate (ass, &vec, */
+/*                                                         &vres); */
 
-              aran_spherical_seriesd_local_gradient_evaluate_internal (dev->local,
-                                                                       r,
-                                                                       cost, sint,
-                                                                       cosp, sinp,
-                                                                       &dr, &dt, &dp);
+              aran_spherical_seriesd_gradient_evaluate_internal (dev->local,
+                                                                 r,
+                                                                 cost, sint,
+                                                                 cosp, sinp,
+                                                                 &dr, &dt, &dp);
               local_to_cartesian (r, cost, sint, cosp, sinp,
                                   creal (dr), creal (dt), creal (dp),
                                   &vres);
