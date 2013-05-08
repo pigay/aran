@@ -77,52 +77,10 @@ void p2p (PointAccum *one, PointAccum *other)
     }
 }
 
-void p2m (PointAccum *particle, const VsgVector3d *center,
-          AranDevelopment3d *devel)
+void p2m (PointAccum *particle, const VsgPRTree3dNodeInfo *dst_node,
+          AranDevelopment3d *dst)
 {
-  VsgVector3d tmp;
-  guint deg = aran_spherical_seriesd_get_negdeg (devel->multipole);
-  gint l, m;
-  gcomplex128 harmonics[((deg+1)*(deg+2))/2];
-  gdouble r, cost, sint, cosp, sinp;
-  gcomplex128 expp;
-  gdouble fact;
-
-  vsg_vector3d_sub (&particle->vector, center, &tmp);
-
-  vsg_vector3d_to_spherical_internal (&tmp, &r, &cost, &sint, &cosp, &sinp);
-  expp = cosp + G_I * sinp;
-
-  aran_spherical_harmonic_evaluate_multiple_internal (deg, cost, sint, expp,
-						      harmonics);
-
-
-  *aran_spherical_seriesd_get_term (devel->multipole, 0, 0) += 0.;
-
-  fact = particle->density;
-
-  for (l=0; l<deg; l ++)
-    {
-      gcomplex128 *ptr;
-      gcomplex128 term;
-
-      term = fact * (4.*G_PI / (l+l+1.)) *
-	*aran_spherical_harmonic_multiple_get_term (l, 0, harmonics);
-
-      ptr = aran_spherical_seriesd_get_term (devel->multipole, -l-1, 0);
-      ptr[0] += conj (term);
-
-      for (m=1; m<=l; m ++)
-	{
-
-	  term = fact * (4.*G_PI / (l+l+1.)) *
-	    *aran_spherical_harmonic_multiple_get_term (l, m, harmonics);
-
-          ptr[m] += conj (term);
-	}
-      fact *= r;
-    }
-
+  aran_development3d_p2m(&particle->vector, particle->density, dst_node, dst);
 }
 
 void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,

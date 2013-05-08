@@ -57,6 +57,14 @@ void aran_development3d_set_zero (AranDevelopment3d *ad);
 
 void aran_development3d_write (AranDevelopment3d *ad, FILE *file);
 
+void aran_development3d_p2m (const VsgVector3d *position, const gdouble charge,
+                             const VsgPRTree3dNodeInfo *dst_node,
+                             AranDevelopment3d *dst);
+
+void aran_development3d_p2l (const VsgVector3d *position, const gdouble charge,
+                             const VsgPRTree3dNodeInfo *dst_node,
+                             AranDevelopment3d *dst);
+
 void aran_development3d_m2m (const VsgPRTree3dNodeInfo *src_node,
 			     AranDevelopment3d *src,
 			     const VsgPRTree3dNodeInfo *dst_node,

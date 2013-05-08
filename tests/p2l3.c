@@ -135,59 +135,6 @@ static void check (const gchar *log,
 }
 
 
-/* compute some particle contribution to a Local expansion */
-void aran_development3d_p2l (const VsgVector3d *position, const gdouble charge,
-                             const VsgPRTree3dNodeInfo *dst_node,
-                             AranDevelopment3d *devel)
-{
-  VsgVector3d tmp;
-  guint deg = aran_spherical_seriesd_get_posdeg (devel->local);
-  gint l, m;
-  gcomplex128 harmonics[((deg+1)*(deg+2))/2];
-  gdouble r, cost, sint, cosp, sinp;
-  gcomplex128 expp;
-  gdouble fact, inv_r;
-
-  vsg_vector3d_sub (position, &dst_node->center, &tmp);
-
-  vsg_vector3d_to_spherical_internal (&tmp, &r, &cost, &sint, &cosp, &sinp);
-  expp = cosp + G_I * sinp;
-
-  aran_spherical_harmonic_evaluate_multiple_internal (deg, cost, sint, expp,
-                                                      harmonics);
-
-
-  *aran_spherical_seriesd_get_term (devel->local, 0, 0) += 0.;
-
-  inv_r = 1. / r;
-  fact = charge * inv_r;
-
-  for (l=0; l<=deg; l ++)
-    {
-      gcomplex128 *ptr;
-      gcomplex128 term;
-
-      term = fact * (4.*G_PI / (l+l+1.)) *
-        *aran_spherical_harmonic_multiple_get_term (l, 0, harmonics);
-
-      /* *aran_spherical_seriesd_get_term (devel->local, l, 0) = conj (term); */
-      ptr = aran_spherical_seriesd_get_term (devel->local, l, 0);
-      ptr[0] += conj (term);
-
-      for (m=1; m<=l; m ++)
-        {
-
-          term = fact * (4.*G_PI / (l+l+1.)) *
-            *aran_spherical_harmonic_multiple_get_term (l, m, harmonics);
-
-          /* *aran_spherical_seriesd_get_term (devel->local, l, m) = conj (term); */
-          ptr[m] += conj (term);
-        }
-      fact *= inv_r;
-    }
-
-}
-
 Particle particle;
 
 /* Newton force field evaluation at position vec */
