@@ -75,27 +75,10 @@ void p2p (PointAccum *one, PointAccum *other)
     }
 }
 
-void p2m (PointAccum *particle, const VsgPRTree2dNodeInfo *devel_node,
-          AranDevelopment2d *devel)
+void p2m (PointAccum *particle, const VsgPRTree2dNodeInfo *dst_node,
+          AranDevelopment2d *dst)
 {
-  guint i;
-  gcomplex128 *multipole = aran_laurent_seriesd_get_term (devel->multipole, 0);
-  gcomplex128 tmp, zp_m_zm;
-
-  tmp = particle->density;
-
-  zp_m_zm = (particle->vector.x + G_I*particle->vector.y) -
-    (devel_node->center.x + G_I*devel_node->center.y);
-
-  /* a_0 = 0 */
-  multipole[0] += 0.;
-
-  for (i=1; i<aran_laurent_seriesd_get_negdeg (devel->multipole); i++)
-    {
-      /* a_i = (zp-zm)^(k-1) */
-      multipole[i] += tmp;
-      tmp *= zp_m_zm;
-    }
+  aran_development2d_p2m (&particle->vector, particle->density, dst_node, dst);
 }
 
 void l2p (const VsgPRTree2dNodeInfo *devel_node, AranDevelopment2d *devel,

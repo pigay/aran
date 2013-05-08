@@ -156,6 +156,39 @@ void aran_development2d_write (AranDevelopment2d *ad, FILE *file)
 }
 
 /**
+ * aran_development2d_p2m:
+ * @position: particle position
+ * @charge: particle charge
+ * @dst_node: @dst tree node info.
+ * @dst: an #AranDevelopment2d.
+ *
+ * compute some particle contribution to a Local expansion
+ */
+void aran_development2d_p2m (VsgVector2d *position, gdouble charge,
+                             const VsgPRTree2dNodeInfo *dst_node,
+                             AranDevelopment2d *dst)
+{
+  guint i;
+  gcomplex128 *multipole = aran_laurent_seriesd_get_term (dst->multipole, 0);
+  gcomplex128 tmp, zp_m_zm;
+
+  tmp = charge;
+
+  zp_m_zm = (position->x + G_I*position->y) -
+    (dst_node->center.x + G_I*dst_node->center.y);
+
+  /* a_0 = 0 */
+  multipole[0] += 0.;
+
+  for (i=1; i<aran_laurent_seriesd_get_negdeg (dst->multipole); i++)
+    {
+      /* a_i = (zp-zm)^(k-1) */
+      multipole[i] += tmp;
+      tmp *= zp_m_zm;
+    }
+}
+
+/**
  * aran_development2d_m2m:
  * @src_node: @src tree node info.
  * @src: an #AranDevelopment2d.
