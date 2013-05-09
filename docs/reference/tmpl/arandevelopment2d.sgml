@@ -21,6 +21,9 @@ problem.
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### MACRO ARAN_TYPE_DEVELOPMENT2D ##### -->
 <para>
 
@@ -109,7 +112,6 @@ problem.
 @src: 
 @dst_node: 
 @dst: 
-@Returns: 
 
 
 <!-- ##### FUNCTION aran_development2d_l2l ##### -->

@@ -21,6 +21,9 @@ particles.
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### STRUCT AranSolver2d ##### -->
 <para>
 
@@ -66,7 +69,6 @@ particles.
 @src: 
 @dst_node: 
 @dst: 
-@Returns: 
 
 
 <!-- ##### USER_FUNCTION AranLocal2LocalFunc2d ##### -->

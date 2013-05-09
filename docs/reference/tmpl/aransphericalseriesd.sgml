@@ -21,6 +21,9 @@ the <ulink url="http://mathworld.wolfram.com/SphericalHarmonicAdditionTheorem.ht
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### STRUCT AranSphericalSeriesd ##### -->
 <para>
 
@@ -131,32 +134,6 @@ the <ulink url="http://mathworld.wolfram.com/SphericalHarmonicAdditionTheorem.ht
 @ass: 
 @x: 
 @Returns: 
-
-
-<!-- ##### FUNCTION aran_spherical_seriesd_local_gradient_evaluate_internal ##### -->
-<para>
-
-</para>
-
-@ass: 
-@r: 
-@cost: 
-@sint: 
-@cosp: 
-@sinp: 
-@dr: 
-@dt: 
-@dp: 
-
-
-<!-- ##### FUNCTION aran_spherical_seriesd_local_gradient_evaluate ##### -->
-<para>
-
-</para>
-
-@ass: 
-@x: 
-@grad: 
 
 
 <!-- ##### FUNCTION aran_spherical_seriesd_translate ##### -->

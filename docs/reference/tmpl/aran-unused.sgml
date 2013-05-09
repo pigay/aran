@@ -1,3 +1,7 @@
+<!-- ##### SECTION ./tmpl/aran-unused.sgml:Image ##### -->
+
+
+
 <!-- ##### SECTION ./tmpl/aranccomplex.sgml:Long_Description ##### -->
 <para>
 
@@ -84,10 +88,6 @@ aranccomplex
 @dst_node: 
 @dst: 
 
-<!-- ##### SECTION Image ##### -->
-
-
-
 <!-- ##### FUNCTION aran_development2d_get_type ##### -->
 <para>
 
@@ -101,6 +101,30 @@ aranccomplex
 </para>
 
 @Returns: 
+
+<!-- ##### FUNCTION aran_spherical_seriesd_local_gradient_evaluate ##### -->
+<para>
+
+</para>
+
+@ass: 
+@x: 
+@grad: 
+
+<!-- ##### FUNCTION aran_spherical_seriesd_local_gradient_evaluate_internal ##### -->
+<para>
+
+</para>
+
+@ass: 
+@r: 
+@cost: 
+@sint: 
+@cosp: 
+@sinp: 
+@dr: 
+@dt: 
+@dp: 
 
 <!-- ##### FUNCTION gdouble ##### -->
 <para>
