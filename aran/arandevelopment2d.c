@@ -162,7 +162,7 @@ void aran_development2d_write (AranDevelopment2d *ad, FILE *file)
  * @dst_node: @dst tree node info.
  * @dst: an #AranDevelopment2d.
  *
- * compute some particle contribution to a Local expansion
+ * compute some particle contribution to a Multipole expansion
  */
 void aran_development2d_p2m (VsgVector2d *position, gdouble charge,
                              const VsgPRTree2dNodeInfo *dst_node,
@@ -185,6 +185,38 @@ void aran_development2d_p2m (VsgVector2d *position, gdouble charge,
       /* a_i = (zp-zm)^(k-1) */
       multipole[i] += tmp;
       tmp *= zp_m_zm;
+    }
+}
+
+/**
+ * aran_development2d_p2l:
+ * @position: particle position
+ * @charge: particle charge
+ * @dst_node: @dst tree node info.
+ * @dst: an #AranDevelopment2d.
+ *
+ * compute some particle contribution to a Local expansion
+ */
+void aran_development2d_p2l (VsgVector2d *position, gdouble charge,
+                             const VsgPRTree2dNodeInfo *dst_node,
+                             AranDevelopment2d *dst)
+{
+  guint i;
+  gcomplex128 *local = aran_laurent_seriesd_get_term (dst->local, 0);
+  gcomplex128 tmp, inv_zp_m_zl;
+
+  inv_zp_m_zl = 1./ ((position->x + G_I*position->y) -
+                     (dst_node->center.x + G_I*dst_node->center.y));
+
+  tmp = charge * inv_zp_m_zl;
+
+  for (i=0; i<=aran_laurent_seriesd_get_posdeg (dst->local); i++)
+    {
+      /* a_i = (zp-zl)^-(k+1) */
+      *local += tmp;
+      tmp *= inv_zp_m_zl;
+
+      local--;
     }
 }
 

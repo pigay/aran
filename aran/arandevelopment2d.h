@@ -60,6 +60,10 @@ void aran_development2d_p2m (VsgVector2d *position, gdouble charge,
                              const VsgPRTree2dNodeInfo *dst_node,
                              AranDevelopment2d *dst);
 
+void aran_development2d_p2l (VsgVector2d *position, gdouble charge,
+                             const VsgPRTree2dNodeInfo *dst_node,
+                             AranDevelopment2d *dst);
+
 void aran_development2d_m2m (const VsgPRTree2dNodeInfo *src_node,
 			     AranDevelopment2d *src,
 			     const VsgPRTree2dNodeInfo *dst_node,
