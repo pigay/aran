@@ -24,7 +24,7 @@
 #include <aran/aran.h>
 #include <aran/aranpoly1d.h>
 
-#define ARAN_PROFILE_DB_DEFAULT_GROUP "default"
+#define ARAN_PROFILE_DB_DEFAULT_GROUP "aran-profile"
 
 
 void aran_profile_db_set_verbose (gboolean verbose);
