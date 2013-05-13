@@ -4,6 +4,7 @@
 #include "aranprofiledb.h"
 #include "glib.h"
 #include "stdio.h"
+#include "string.h"
 #include "glib/gprintf.h"
 
 static gchar *_profiles_filename = NULL;
@@ -18,6 +19,15 @@ typedef gdouble (*AranPoly1dProfileFunc) (gpointer operator,
                                             GDestroyNotify _free,
                                             AranPoly1d *ap1d,
                                             gint nsamples);
+
+typedef gdouble (*AranPoly1dProfileSamplesFunc) (AranMultipole2LocalFunc2d m2l,
+                                                 AranZeroFunc init,
+                                                 AranDevelopmentNewFunc _new,
+                                                 GDestroyNotify _free,
+                                                 AranPoly1d *ap1d,
+                                                 gint nsamples,
+                                                 gdouble *abscissas,
+                                                 gdouble *samples);
 
 typedef struct _AranDevelopmentVTable AranDevelopmentVTable;
 struct _AranDevelopmentVTable {
@@ -43,7 +53,7 @@ typedef struct _ProfileData ProfileData;
 struct _ProfileData {
   gchar *name;
   gpointer operator;
-  AranPoly1dProfileFunc profile_func;
+  AranPoly1dProfileSamplesFunc profile_func;
   const AranDevelopmentVTable *vtable;
   gint degree;
 };
@@ -51,65 +61,80 @@ struct _ProfileData {
 static ProfileData _profiles[] = {
   /* 2D operators */
   {"aran_development2d_m2m", aran_development2d_m2m,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_m2m_2d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2m_2d_samples,
    &vtable_2d, 2},
   {"aran_development2d_m2l", aran_development2d_m2l,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_m2l_2d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2l_2d_samples,
    &vtable_2d, 2},
   {"aran_development2d_l2l", aran_development2d_l2l,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_l2l_2d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_l2l_2d_samples,
    &vtable_2d, 2},
 
   /* 3D operators */
   {"aran_development3d_m2m", aran_development3d_m2m,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_m2m_3d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2m_3d_samples,
    &vtable_3d, 4},
   {"aran_development3d_m2l", aran_development3d_m2l,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_m2l_3d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2l_3d_samples,
    &vtable_3d, 4},
   {"aran_development3d_l2l", aran_development3d_l2l,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_l2l_3d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_l2l_3d_samples,
    &vtable_3d, 4},
   {"aran_development3d_m2m_kkylin", aran_development3d_m2m_kkylin,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_m2m_3d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2m_3d_samples,
    &vtable_3d, 3},
   {"aran_development3d_m2l_kkylin", aran_development3d_m2l_kkylin,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_m2l_3d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2l_3d_samples,
    &vtable_3d, 3},
   {"aran_development3d_l2l_kkylin", aran_development3d_l2l_kkylin,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_l2l_3d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_l2l_3d_samples,
    &vtable_3d, 3},
   {"aran_development3d_m2m_rotate", aran_development3d_m2m_rotate,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_m2m_3d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2m_3d_samples,
    &vtable_3d, 3},
   {"aran_development3d_m2l_rotate", aran_development3d_m2l_rotate,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_m2l_3d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2l_3d_samples,
    &vtable_3d, 3},
   {"aran_development3d_l2l_rotate", aran_development3d_l2l_rotate,
-   (AranPoly1dProfileFunc) aran_poly1d_profile_l2l_3d,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_l2l_3d_samples,
    &vtable_3d, 3},
   {NULL,},
 };
 
 static void _profile (ProfileData pd)
 {
-  gchar comment[256];
-  GError *error;
+  const gint nsamples = 20;
+  const gint maxdeg = 50;
   gdouble ap1d_terms[pd.degree];
   AranPoly1d ap1d = {
     pd.degree,
     ap1d_terms,
   };
   gdouble chisq;
+  gint i;
+  gdouble abscissas[nsamples];
+  gdouble samples[nsamples];
+
+  for (i=0; i<nsamples; i ++)
+    {
+      gint deg = (maxdeg * i) / (nsamples-1);
+
+      abscissas[i] = (gdouble) deg;
+    }
 
   chisq =
     pd.profile_func (pd.operator, pd.vtable->zero_func, pd.vtable->new_func,
-                     pd.vtable->free_func, &ap1d, 20);
+                     pd.vtable->free_func, &ap1d, nsamples, abscissas, samples);
 
-  aran_poly1d_write_key_file (&ap1d, _profiles_file, _profiles_group, pd.name);
-  g_sprintf (comment, " \"%s\" function fitting: chisq=%g", pd.name, chisq);
-  g_key_file_set_comment (_profiles_file, _profiles_group, pd.name, comment,
-                          &error);
+  g_printerr ("%s:", pd.name);
+  for (i=0; i<nsamples; i ++)
+    g_printerr (" f(%g)=%g", abscissas[i], samples[i]);
+  g_printerr("\n");
+
+
+  aran_profile_key_file_poly1d_write (_profiles_file, _profiles_group,
+                                      pd.name, &ap1d, chisq, nsamples,
+                                      abscissas, samples);
 }
 
 static GOptionEntry entries[] =

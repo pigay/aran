@@ -76,6 +76,12 @@ gdouble aran_profile_l2p_2d (AranLocal2ParticleFunc2d l2p,
                              gpointer dst,
                              VsgPoint2 p);
 
+void aran_profile_key_file_poly1d_write (GKeyFile *profiles_file,
+                                         const gchar *profiles_group,
+                                         const gchar *key, AranPoly1d *ap1d,
+                                         gdouble chisq, gint nsamples,
+                                         gdouble *abscissas, gdouble *samples);
+
 gdouble aran_poly1d_profile_p2m_2d (AranParticle2MultipoleFunc2d p2m,
                                     AranZeroFunc init,
                                     VsgPoint2 p,
