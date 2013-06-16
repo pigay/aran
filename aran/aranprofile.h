@@ -25,8 +25,8 @@
 #include <aran/aransolver2d.h>
 #include <aran/aransolver3d.h>
 
-#include <aranrusage.h>
-#include <aranpoly1d.h>
+#include <aran/aranrusage.h>
+#include <aran/aranpoly1d.h>
 
 typedef void (*AranParticleInitFunc2d) (VsgPoint2 particle);
 typedef gpointer (*AranDevelopmentNewFunc) (guint8 posdeg, guint8 negdeg);

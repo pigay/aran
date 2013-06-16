@@ -10,8 +10,19 @@
 static gchar *_profiles_filename = NULL;
 static GKeyFile *_profiles_file = NULL;
 static const gchar *_profiles_group = NULL;
-/* static gboolean _verbose = FALSE; */
+static gboolean _verbose = FALSE;
 
+AranDevelopment3d *aran_development3d_new_1 (guint8 posdeg, guint8 negdeg)
+{
+  AranDevelopment3d *ret = aran_development3d_new (posdeg, negdeg);
+
+  if (negdeg > 0)
+    *aran_spherical_seriesd_get_term (ret->multipole, 0, 0) = 1.;
+  if (posdeg > 0)
+    *aran_spherical_seriesd_get_term (ret->local, 0, 0) = 1.;
+
+  return ret;
+}
 
 typedef gdouble (*AranPoly1dProfileFunc) (gpointer operator,
                                             AranZeroFunc init,
@@ -44,7 +55,7 @@ static const AranDevelopmentVTable vtable_2d = {
 
 static const AranDevelopmentVTable vtable_3d = {
   (AranZeroFunc) aran_development3d_set_zero,
-  (AranDevelopmentNewFunc) aran_development3d_new,
+  (AranDevelopmentNewFunc) aran_development3d_new_1,
   (GDestroyNotify) aran_development3d_free,
 };
 
@@ -103,8 +114,8 @@ static ProfileData _profiles[] = {
 
 static void _profile (ProfileData pd)
 {
-  const gint nsamples = 20;
-  const gint maxdeg = 50;
+  const gint nsamples = 21;
+  const gint maxdeg = 20;
   gdouble ap1d_terms[pd.degree];
   AranPoly1d ap1d = {
     pd.degree,
@@ -126,11 +137,13 @@ static void _profile (ProfileData pd)
     pd.profile_func (pd.operator, pd.vtable->zero_func, pd.vtable->new_func,
                      pd.vtable->free_func, &ap1d, nsamples, abscissas, samples);
 
-  g_printerr ("%s:", pd.name);
-  for (i=0; i<nsamples; i ++)
-    g_printerr (" f(%g)=%g", abscissas[i], samples[i]);
-  g_printerr("\n");
-
+  if (_verbose)
+    {
+      g_printerr ("%s:", pd.name);
+      for (i=0; i<nsamples; i ++)
+        g_printerr (" f(%g)=%g", abscissas[i], samples[i]);
+      g_printerr("\n");
+    }
 
   aran_profile_key_file_poly1d_write (_profiles_file, _profiles_group,
                                       pd.name, &ap1d, chisq, nsamples,
@@ -139,7 +152,7 @@ static void _profile (ProfileData pd)
 
 static GOptionEntry entries[] =
 {
-/*   { "verbose", 'v', 0, G_OPTION_ARG_NONE, &_verbose, "Be verbose", NULL }, */
+  { "verbose", 'v', 0, G_OPTION_ARG_NONE, &_verbose, "Be verbose", NULL },
   { "group", 'g', 0, G_OPTION_ARG_STRING, &_profiles_group, "Group name",
     NULL },
   { "file", 'f', 0, G_OPTION_ARG_STRING, &_profiles_filename, "Profile File",
@@ -174,8 +187,6 @@ int main (gint argc, gchar **argv)
       g_key_file_load_from_file (_profiles_file, _profiles_filename,
                                  G_KEY_FILE_KEEP_COMMENTS |
                                  G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
-
-      f = fopen (_profiles_filename, "w");
     }
 
   g_key_file_set_comment (_profiles_file, NULL, NULL,
@@ -186,6 +197,11 @@ int main (gint argc, gchar **argv)
     _profiles_group = g_getenv ("ARAN_PROFILE_GROUP");
   if (_profiles_group == NULL)
     _profiles_group = ARAN_PROFILE_DB_DEFAULT_GROUP;
+
+  {
+    AranSphericalSeriesd *tmp = aran_spherical_seriesd_new(128, 128);
+    aran_spherical_seriesd_free (tmp);
+  }
 
   i = 0;
   while (_profiles[i].name != NULL)
@@ -199,6 +215,9 @@ int main (gint argc, gchar **argv)
 
   g_key_file_free (_profiles_file);
 
+
+  if (_profiles_filename != NULL)
+    f = fopen (_profiles_filename, "w");
   g_fprintf (f, "%s", profiles_data);
 
   g_free (profiles_data);

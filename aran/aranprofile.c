@@ -2,6 +2,8 @@
 
 #include "aranpolynomialfit.h"
 
+#include "aranprofiledb.h"
+
 #include <glib/gprintf.h>
 
 #define _APVAR(var) _aran_profile_ ## var
@@ -52,9 +54,9 @@
   ARAN_PROFILE_CODE_NUMBASE(init,code,var,timebase,1)
 
 
-#define _TIMEBASE1 (.5)
-#define _TIMEBASE1_INIT (.1)
-#define _NUMBASE1 (1000)
+#define _TIMEBASE1 (.05)
+#define _TIMEBASE1_INIT (.01)
+#define _NUMBASE1 (100)
 
 static void _nop_init (gpointer arg)
 {
@@ -425,7 +427,7 @@ void aran_profile_key_file_poly1d_write (GKeyFile *profiles_file,
   g_sprintf (comment, " \"%s\" function fitting: chisq=%g", key, chisq);
   g_key_file_set_comment (profiles_file, profiles_group, key, comment, NULL);
 
-  g_sprintf(samples_key, "samples-%s", key);
+  g_sprintf(samples_key, ARAN_PROFILE_DB_SAMPLES_PREFIX "%s", key);
   _write_samples (profiles_file, profiles_group, samples_key, nsamples, abscissas, samples);
 }
 
