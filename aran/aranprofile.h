@@ -25,8 +25,8 @@
 #include <aran/aransolver2d.h>
 #include <aran/aransolver3d.h>
 
-#include <aranrusage.h>
-#include <aranpoly1d.h>
+#include <aran/aranrusage.h>
+#include <aran/aranpoly1d.h>
 
 typedef void (*AranParticleInitFunc2d) (VsgPoint2 particle);
 typedef gpointer (*AranDevelopmentNewFunc) (guint8 posdeg, guint8 negdeg);
@@ -75,6 +75,12 @@ gdouble aran_profile_l2p_2d (AranLocal2ParticleFunc2d l2p,
                              VsgPRTree2dNodeInfo *nodeinfo,
                              gpointer dst,
                              VsgPoint2 p);
+
+void aran_profile_key_file_poly1d_write (GKeyFile *profiles_file,
+                                         const gchar *profiles_group,
+                                         const gchar *key, AranPoly1d *ap1d,
+                                         gdouble chisq, gint nsamples,
+                                         gdouble *abscissas, gdouble *samples);
 
 gdouble aran_poly1d_profile_p2m_2d (AranParticle2MultipoleFunc2d p2m,
                                     AranZeroFunc init,

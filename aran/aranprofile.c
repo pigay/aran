@@ -2,6 +2,8 @@
 
 #include "aranpolynomialfit.h"
 
+#include "aranprofiledb.h"
+
 #include <glib/gprintf.h>
 
 #define _APVAR(var) _aran_profile_ ## var
@@ -10,6 +12,7 @@
   {                                                                     \
     GTimer *_APVAR (timer);                                             \
     gdouble _APVAR (time) = 0.;                                         \
+    gdouble _APVAR (t1);                                                \
     glong _APVAR (num) = 0;                                             \
     glong _APVAR (i);                                                   \
                                                                         \
@@ -18,21 +21,31 @@
                                                                         \
     _APVAR (timer) = g_timer_new ();                                    \
                                                                         \
-    ARAN_RUSAGE_PROFILE_BEGIN;                                          \
-    while (g_timer_elapsed (_APVAR (timer), NULL) < (timebase))         \
+    for (_APVAR (i)=0;                                                  \
+         _APVAR (i)<(numbase);                                          \
+         _APVAR (i) ++)                                                 \
       {                                                                 \
-        for (_APVAR (i)=0;                                              \
-             _APVAR (i)<(numbase);                                      \
-             _APVAR (i) ++)                                             \
-          {                                                             \
-            {init}                                                      \
-            {code}                                                      \
-          }                                                             \
-        _APVAR (num) ++;                                                \
+        {init}                                                          \
+        {code}                                                          \
       }                                                                 \
+    _APVAR (t1) = g_timer_elapsed (_APVAR (timer), NULL);               \
+    _APVAR(num) = ((timebase) * (numbase)) / _APVAR (t1);               \
+    _APVAR(num) = MAX((numbase), _APVAR (num));                         \
+    ARAN_RUSAGE_PROFILE_BEGIN;                                          \
+                                                                        \
+    for (_APVAR (i) = 0;                                                \
+         _APVAR (i) < _APVAR (num);                                     \
+         _APVAR (i) ++)                                                 \
+      {                                                                 \
+        {init}                                                          \
+        {code}                                                          \
+      }                                                                 \
+                                                                        \
     ARAN_RUSAGE_PROFILE_END ({_APVAR (time) =                           \
-                                 ARAN_RUSAGE_PROFILE_VAR (utime);});    \
-    (var) = _APVAR(time) / (_APVAR (num)*(numbase));                    \
+          ARAN_RUSAGE_PROFILE_VAR (utime) +                             \
+          ARAN_RUSAGE_PROFILE_VAR (stime);});                           \
+    (var) = _APVAR(time) / (_APVAR (num));                              \
+    /* g_printerr("%ld %g %g\n", _APVAR(num), _APVAR(time), g_timer_elapsed (_APVAR (timer), NULL)); */ \
     g_timer_destroy (_APVAR (timer));                                   \
   }
 
@@ -41,9 +54,9 @@
   ARAN_PROFILE_CODE_NUMBASE(init,code,var,timebase,1)
 
 
-#define _TIMEBASE1 (.5)
-#define _TIMEBASE1_INIT (.1)
-#define _NUMBASE1 (1000)
+#define _TIMEBASE1 (.05)
+#define _TIMEBASE1_INIT (.01)
+#define _NUMBASE1 (100)
 
 static void _nop_init (gpointer arg)
 {
@@ -380,10 +393,48 @@ gdouble aran_profile_l2p_3d (AranLocal2ParticleFunc3d l2p,
   return t - tinit;
 }
 
+static void _write_samples (GKeyFile *profiles_file, const gchar *profiles_group,
+                            const gchar *key, gint nsamples, gdouble *abscissas,
+                            gdouble *samples)
+{
+  gint len = 30 * nsamples;
+  gchar *str = alloca (len * sizeof (gchar));
+  gchar *str2 = str;
+  gint i;
+
+  for (i=0; i<nsamples; i++)
+    {
+      gint ret;
+      ret = g_snprintf (str2, len, "%g:%g;", abscissas[i], samples[i]);
+      len -= ret;
+      str2 += ret;
+    }
+
+  g_key_file_set_string (profiles_file, profiles_group, key, str);
+}
+
+void aran_profile_key_file_poly1d_write (GKeyFile *profiles_file,
+                                         const gchar *profiles_group,
+                                         const gchar *key, AranPoly1d *ap1d,
+                                         gdouble chisq, gint nsamples,
+                                         gdouble *abscissas, gdouble *samples)
+{
+  gchar comment[1024] = {'\0', };
+  gchar samples_key[1024] = {'\0', };
+
+  aran_poly1d_write_key_file (ap1d, profiles_file, profiles_group, key);
+
+  g_sprintf (comment, " \"%s\" function fitting: chisq=%g", key, chisq);
+  g_key_file_set_comment (profiles_file, profiles_group, key, comment, NULL);
+
+  g_sprintf(samples_key, ARAN_PROFILE_DB_SAMPLES_PREFIX "%s", key);
+  _write_samples (profiles_file, profiles_group, samples_key, nsamples, abscissas, samples);
+}
+
 #define MAXDEG (50)
-#define _TIMEBASE2 (.5)
-#define _TIMEBASE2_INIT (.1)
-#define _NUMBASE2 (10)
+#define _TIMEBASE2 (.05)
+#define _TIMEBASE2_INIT (.01)
+#define _NUMBASE2 (100)
 
 gdouble aran_poly1d_profile_p2m_2d (AranParticle2MultipoleFunc2d p2m,
                                     AranZeroFunc init,

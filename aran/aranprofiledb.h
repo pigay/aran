@@ -24,8 +24,9 @@
 #include <aran/aran.h>
 #include <aran/aranpoly1d.h>
 
-#define ARAN_PROFILE_DB_DEFAULT_GROUP "default"
+#define ARAN_PROFILE_DB_DEFAULT_GROUP "aran-profile"
 
+#define ARAN_PROFILE_DB_SAMPLES_PREFIX "samples-"
 
 void aran_profile_db_set_verbose (gboolean verbose);
 gboolean aran_profile_db_read_file (const gchar *filename, const gchar *group);
