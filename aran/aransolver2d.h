@@ -39,6 +39,10 @@ typedef void (*AranParticle2MultipoleFunc2d) (VsgPoint2 src,
                                               const VsgPRTree2dNodeInfo *dst_node,
                                               gpointer dst);
 
+typedef void (*AranParticle2MultipoleInternalFunc2d) (VsgVector2d *position, gdouble charge,
+                                                      const VsgPRTree2dNodeInfo *dst_node,
+                                                      AranDevelopment2d *dst);
+
 typedef void (*AranLocal2ParticleFunc2d) (const VsgPRTree2dNodeInfo *src_node,
                                           gpointer src,
                                           VsgPoint2 dst);

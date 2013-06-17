@@ -90,6 +90,15 @@ gdouble aran_poly1d_profile_p2m_2d (AranParticle2MultipoleFunc2d p2m,
                                     AranPoly1d *ap1d,
                                     gint nsamples);
 
+gdouble aran_poly1d_profile_p2mi_2d_samples (AranParticle2MultipoleInternalFunc2d p2mi,
+                                            AranZeroFunc init,
+                                            AranDevelopmentNewFunc _new,
+                                            GDestroyNotify _free,
+                                            AranPoly1d *ap1d,
+                                            gint nsamples,
+                                            gdouble *abscissas,
+                                             gdouble *samples);
+
 gdouble aran_poly1d_profile_p2m_2d_samples (AranParticle2MultipoleFunc2d p2m,
                                             AranZeroFunc init,
                                             VsgPoint2 p,
@@ -231,6 +240,15 @@ gdouble aran_poly1d_profile_p2m_3d_samples (AranParticle2MultipoleFunc3d p2m,
                                             gint nsamples,
                                             gdouble *abscissas,
                                             gdouble *samples);
+
+gdouble aran_poly1d_profile_p2mi_3d_samples (AranParticle2MultipoleInternalFunc3d p2m,
+                                             AranZeroFunc init,
+                                             AranDevelopmentNewFunc _new,
+                                             GDestroyNotify _free,
+                                             AranPoly1d *ap1d,
+                                             gint nsamples,
+                                             gdouble *abscissas,
+                                             gdouble *samples);
 
 gdouble aran_poly1d_profile_m2m_3d (AranMultipole2MultipoleFunc3d m2m,
                                     AranZeroFunc init,

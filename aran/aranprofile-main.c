@@ -31,7 +31,7 @@ typedef gdouble (*AranPoly1dProfileFunc) (gpointer operator,
                                             AranPoly1d *ap1d,
                                             gint nsamples);
 
-typedef gdouble (*AranPoly1dProfileSamplesFunc) (AranMultipole2LocalFunc2d m2l,
+typedef gdouble (*AranPoly1dProfileSamplesFunc) (gpointer operator,
                                                  AranZeroFunc init,
                                                  AranDevelopmentNewFunc _new,
                                                  GDestroyNotify _free,
@@ -71,6 +71,9 @@ struct _ProfileData {
 
 static ProfileData _profiles[] = {
   /* 2D operators */
+  {"aran_development2d_p2m", aran_development2d_p2m,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_p2mi_2d_samples,
+   &vtable_2d, 1},
   {"aran_development2d_m2m", aran_development2d_m2m,
    (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2m_2d_samples,
    &vtable_2d, 2},
@@ -82,6 +85,9 @@ static ProfileData _profiles[] = {
    &vtable_2d, 2},
 
   /* 3D operators */
+  {"aran_development3d_p2m", aran_development3d_p2m,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_p2mi_3d_samples,
+   &vtable_3d, 2},
   {"aran_development3d_m2m", aran_development3d_m2m,
    (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2m_3d_samples,
    &vtable_3d, 4},
