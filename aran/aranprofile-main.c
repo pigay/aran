@@ -144,8 +144,8 @@ static ProfileData _profiles[] = {
 
 static void _profile (ProfileData pd)
 {
-  const gint nsamples = 21;
   const gint maxdeg = 20;
+  const gint nsamples = 21;
   gdouble ap1d_terms[pd.degree];
   AranPoly1d ap1d = {
     pd.degree,

@@ -94,7 +94,6 @@ static void _profile_operators (const gchar *db_filename)
 {
   GKeyFile *profiles_file = g_key_file_new ();
   gchar *profiles_data;
-  gchar comment[1024] = {'\0', };
   PointAccum p1 = {{0.1, 0.1}, 0.1, 0., 0};
   PointAccum p2 = {{0.5, 0.5}, 0.1, 0., 1};
   gdouble chisq, t;
@@ -102,6 +101,19 @@ static void _profile_operators (const gchar *db_filename)
   gint maxbox = 100;
   const gchar *profiles_group;
   FILE *f = stdout;
+  const gint maxdeg = 20;
+  const gint nsamples = maxdeg+1;
+  gdouble abscissas[nsamples];
+  gdouble samples[nsamples];
+  int i;
+
+  for (i=0; i<nsamples; i ++)
+    {
+      gint deg = (maxdeg * i) / (nsamples-1);
+
+      abscissas[i] = (gdouble) deg;
+    }
+
 
   profiles_group = g_getenv ("ARAN_PROFILE_GROUP");
   if (profiles_group == NULL) profiles_group = ARAN_PROFILE_DB_DEFAULT_GROUP;
@@ -123,28 +135,31 @@ static void _profile_operators (const gchar *db_filename)
 
   ap1d->degree = 1;
   chisq =
-    aran_poly1d_profile_p2m_2d ((AranParticle2MultipoleFunc2d) p2m,
-                                (AranZeroFunc) aran_development2d_set_zero,
-                                &p1,
-                                (AranDevelopmentNewFunc)
-                                aran_development2d_new,
-                                (GDestroyNotify) aran_development2d_free,
-                                ap1d, 20);
-  aran_poly1d_write_key_file (ap1d, profiles_file, profiles_group, "p2m");
-  g_sprintf (comment, " \"%s\" function fitting: chisq=%g", "p2m", chisq);
-  g_key_file_set_comment (profiles_file, profiles_group, "p2m", comment,NULL);
+    aran_poly1d_profile_p2m_2d_samples ((AranParticle2MultipoleFunc2d) p2m,
+                                        (AranZeroFunc) aran_development2d_set_zero,
+                                        &p1,
+                                        (AranDevelopmentNewFunc)
+                                        aran_development2d_new,
+                                        (GDestroyNotify) aran_development2d_free,
+                                        ap1d, nsamples, abscissas, samples);
+
+  aran_profile_key_file_poly1d_write (profiles_file, profiles_group,
+                                      "p2m", ap1d, chisq, nsamples,
+                                      abscissas, samples);
 
   ap1d->degree = 1;
   t =
-    aran_poly1d_profile_l2p_2d ((AranLocal2ParticleFunc2d) l2p,
-                                NULL,
-                                &p1,
-                                (AranDevelopmentNewFunc) aran_development2d_new,
-                                (GDestroyNotify) aran_development2d_free,
-                                ap1d, 20);
-  aran_poly1d_write_key_file (ap1d, profiles_file, profiles_group, "l2p");
-  g_sprintf (comment, " \"%s\" function fitting: chisq=%g", "l2p", chisq);
-  g_key_file_set_comment (profiles_file, profiles_group, "l2p", comment,NULL);
+    aran_poly1d_profile_l2p_2d_samples ((AranLocal2ParticleFunc2d) l2p,
+                                        NULL,
+                                        &p1,
+                                        (AranDevelopmentNewFunc) aran_development2d_new,
+                                        (GDestroyNotify) aran_development2d_free,
+                                        ap1d, nsamples, abscissas, samples);
+
+  aran_profile_key_file_poly1d_write (profiles_file, profiles_group,
+                                      "l2p", ap1d, chisq, nsamples,
+                                      abscissas, samples);
+
   aran_poly1d_free (ap1d);
 
   profiles_data = g_key_file_to_data (profiles_file, NULL, NULL);
