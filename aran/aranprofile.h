@@ -204,6 +204,15 @@ gdouble aran_poly1d_profile_l2pi_2d_samples (AranLocal2ParticleInternalFunc2d l2
                                             gdouble *abscissas,
                                              gdouble *samples);
 
+gdouble aran_poly1d_profile_m2pi_2d_samples (AranMultipole2ParticleInternalFunc2d m2pi,
+                                             AranParticleInitFunc2d init,
+                                             AranDevelopmentNewFunc _new,
+                                             GDestroyNotify _free,
+                                             AranPoly1d *ap1d,
+                                             gint nsamples,
+                                             gdouble *abscissas,
+                                             gdouble *samples);
+
 typedef void (*AranParticleInitFunc3d) (VsgPoint3 particle);
 
 gdouble aran_profile_p2p_3d (AranParticle2ParticleFunc3d p2p,
@@ -381,4 +390,21 @@ gdouble aran_poly1d_profile_l2pvi_3d_samples (AranLocal2ParticleGradInternalFunc
                                               gdouble *abscissas,
                                               gdouble *samples);
 
+gdouble aran_poly1d_profile_m2pi_3d_samples (AranMultipole2ParticleInternalFunc3d m2pi,
+                                             AranParticleInitFunc3d init,
+                                             AranDevelopmentNewFunc _new,
+                                             GDestroyNotify _free,
+                                             AranPoly1d *ap1d,
+                                             gint nsamples,
+                                             gdouble *abscissas,
+                                             gdouble *samples);
+
+gdouble aran_poly1d_profile_m2pvi_3d_samples (AranMultipole2ParticleGradInternalFunc3d m2pvi,
+                                              AranParticleInitFunc3d init,
+                                              AranDevelopmentNewFunc _new,
+                                              GDestroyNotify _free,
+                                              AranPoly1d *ap1d,
+                                              gint nsamples,
+                                              gdouble *abscissas,
+                                              gdouble *samples);
 #endif /* __ARAN_PROFILE_H__ */

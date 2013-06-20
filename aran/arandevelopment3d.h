@@ -89,6 +89,10 @@ gcomplex128 aran_development3d_local_evaluate (const VsgPRTree3dNodeInfo *devel_
 					       AranDevelopment3d *devel,
 					       const VsgVector3d *pos);
 
+gcomplex128 aran_development3d_m2p (const VsgPRTree3dNodeInfo *devel_node,
+                                    AranDevelopment3d *devel,
+                                    const VsgVector3d *pos);
+
 gcomplex128 aran_development3d_l2p (const VsgPRTree3dNodeInfo *devel_node,
                                     AranDevelopment3d *devel,
                                     const VsgVector3d *pos);
@@ -105,11 +109,15 @@ aran_development3d_local_gradient_evaluate (const VsgPRTree3dNodeInfo *devel_nod
                                             const VsgVector3d *pos,
                                             VsgVector3d *grad);
 
-void
-aran_development3d_l2pv (const VsgPRTree3dNodeInfo *devel_node,
-                         AranDevelopment3d *devel,
-                         const VsgVector3d *pos,
-                         VsgVector3d *grad);
+void aran_development3d_m2pv (const VsgPRTree3dNodeInfo *devel_node,
+                              AranDevelopment3d *devel,
+                              const VsgVector3d *pos,
+                              VsgVector3d *grad);
+
+void aran_development3d_l2pv (const VsgPRTree3dNodeInfo *devel_node,
+                              AranDevelopment3d *devel,
+                              const VsgVector3d *pos,
+                              VsgVector3d *grad);
 
 void aran_development3d_m2m_kkylin (const VsgPRTree3dNodeInfo *src_node,
                                     AranDevelopment3d *src,

@@ -54,6 +54,9 @@ typedef gcomplex128 (*AranLocal2ParticleInternalFunc2d) (const VsgPRTree2dNodeIn
                                                          gpointer src,
                                                          VsgVector2d *dst_pos);
 
+typedef AranLocal2ParticleFunc2d AranMultipole2ParticleFunc2d;
+typedef AranLocal2ParticleInternalFunc2d AranMultipole2ParticleInternalFunc2d;
+
 /* Translation functions */
 typedef void (*AranMultipole2MultipoleFunc2d) (const VsgPRTree2dNodeInfo *src_node,
                                                 gpointer src,

@@ -88,6 +88,10 @@ gcomplex128 aran_development2d_local_evaluate (const VsgPRTree2dNodeInfo *devel_
 					       AranDevelopment2d *devel,
 					       const VsgVector2d *pos);
 
+gcomplex128 aran_development2d_m2p (const VsgPRTree2dNodeInfo *devel_node,
+                                    AranDevelopment2d *devel,
+                                    const VsgVector2d *pos);
+
 gcomplex128 aran_development2d_l2p (const VsgPRTree2dNodeInfo *devel_node,
                                     AranDevelopment2d *devel,
                                     const VsgVector2d *pos);
