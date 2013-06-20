@@ -135,7 +135,7 @@ static void _profile_operators (const gchar *db_filename)
   aran_poly1d_write_key_file (ap1d, profiles_file, profiles_group, "p2p");
 
 
-  ap1d->degree = 1;
+  ap1d->degree = 2;
   chisq =
     aran_poly1d_profile_p2m_3d ((AranParticle2MultipoleFunc3d) p2m,
                                 (AranZeroFunc) aran_development3d_set_zero,
@@ -148,7 +148,7 @@ static void _profile_operators (const gchar *db_filename)
   g_sprintf (comment, " \"%s\" function fitting: chisq=%g", "p2m", chisq);
   g_key_file_set_comment (profiles_file, profiles_group, "p2m", comment,NULL);
 
-  ap1d->degree = 1;
+  ap1d->degree = 2;
   t =
     aran_poly1d_profile_l2p_3d ((AranLocal2ParticleFunc3d) l2p,
                                 NULL,
@@ -164,8 +164,8 @@ static void _profile_operators (const gchar *db_filename)
   profiles_data = g_key_file_to_data (profiles_file, NULL, NULL);
   g_key_file_free (profiles_file);
 
-  g_free (profiles_data);
   g_fprintf (f, "%s", profiles_data);
+  g_free (profiles_data);
 
   if (db_filename != NULL) fclose (f);
 }

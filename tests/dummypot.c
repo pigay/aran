@@ -150,8 +150,8 @@ static void _profile_operators (const gchar *db_filename)
   profiles_data = g_key_file_to_data (profiles_file, NULL, NULL);
   g_key_file_free (profiles_file);
 
-  g_free (profiles_data);
   g_fprintf (f, "%s", profiles_data);
+  g_free (profiles_data);
 
   if (db_filename != NULL) fclose (f);
 }
