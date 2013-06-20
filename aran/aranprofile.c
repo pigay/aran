@@ -930,6 +930,55 @@ gdouble aran_poly1d_profile_l2p_2d_samples (AranLocal2ParticleFunc2d l2p,
 }
 
 
+gdouble aran_poly1d_profile_l2pi_2d_samples (AranLocal2ParticleInternalFunc2d l2pi,
+                                            AranParticleInitFunc2d init,
+                                            AranDevelopmentNewFunc _new,
+                                            GDestroyNotify _free,
+                                            AranPoly1d *ap1d,
+                                            gint nsamples,
+                                            gdouble *abscissas,
+                                            gdouble *samples)
+{
+  VsgPRTree2dNodeInfo dstinfo = {.center={0., 0.},};
+  VsgVector2d p = {0.1, 0.1};
+  gcomplex128 accum = 0.;
+  gdouble work_abscissas[nsamples];
+  gdouble work_samples[nsamples];
+  gdouble t, tinit = 0, chisq;
+  gint i;
+
+  if (init == NULL) init = _nop_init;
+
+  g_return_val_if_fail (abscissas != NULL, -1.);
+  if (samples == NULL) samples = work_samples;
+
+  for (i=0; i<nsamples; i ++)
+    {
+      gpointer dst;
+
+      dst = _new (0, (guint8) abscissas[i]);
+
+      ARAN_PROFILE_CODE_NUMBASE ({/* init (p); */}, {accum = l2pi (&dstinfo, dst, &p);},
+                                 t, _TIMEBASE2, _NUMBASE2);
+
+      /* ARAN_PROFILE_CODE_NUMBASE ({init (p);}, {}, */
+      /*                            tinit, _TIMEBASE2_INIT, _NUMBASE2); */
+
+      samples[i] = t - tinit;
+
+      work_abscissas[i] = abscissas[i];
+      work_samples[i] = samples[i];
+
+      _free (dst);
+    }
+
+  accum = cabs(accum);
+  chisq = aran_poly1d_fit (nsamples, work_abscissas, work_samples, ap1d);
+
+  return chisq;
+}
+
+
 gdouble aran_poly1d_profile_p2m_3d (AranParticle2MultipoleFunc3d p2m,
                                     AranZeroFunc init,
                                     VsgPoint3 p,
@@ -1409,6 +1458,105 @@ gdouble aran_poly1d_profile_l2p_3d_samples (AranLocal2ParticleFunc3d l2p,
                                  t, _TIMEBASE2, _NUMBASE2);
 
       ARAN_PROFILE_CODE_NUMBASE ({init (p);}, {},
+                                 tinit, _TIMEBASE2_INIT, _NUMBASE2);
+
+      samples[i] = t - tinit;
+
+      work_abscissas[i] = abscissas[i];
+      work_samples[i] = samples[i];
+
+      _free (dst);
+    }
+
+  chisq = aran_poly1d_fit (nsamples, work_abscissas, work_samples, ap1d);
+
+  return chisq;
+}
+
+gdouble aran_poly1d_profile_l2pi_3d_samples (AranLocal2ParticleInternalFunc3d l2pi,
+                                            AranParticleInitFunc3d init,
+                                            AranDevelopmentNewFunc _new,
+                                            GDestroyNotify _free,
+                                            AranPoly1d *ap1d,
+                                            gint nsamples,
+                                            gdouble *abscissas,
+                                            gdouble *samples)
+{
+  VsgPRTree3dNodeInfo dstinfo = {.center={0., 0., 0.},};
+  VsgVector3d p = {0.1, 0.1, 0.1};
+  gcomplex128 accum = 0.;
+  gdouble work_abscissas[nsamples];
+  gdouble work_samples[nsamples];
+  gdouble t, tinit = 0., chisq;
+  gint i;
+
+  if (init == NULL) init = _nop_init;
+
+  g_return_val_if_fail (abscissas != NULL, -1.);
+  if (samples == NULL) samples = work_samples;
+
+  for (i=0; i<nsamples; i ++)
+    {
+      gpointer dst;
+
+      dst = _new (0, (guint8) abscissas[i]);
+
+      ARAN_PROFILE_CODE_NUMBASE ({/* init (p); */}, {accum = l2pi (&dstinfo, dst, &p);},
+                                 t, _TIMEBASE2, _NUMBASE2);
+
+      /* ARAN_PROFILE_CODE_NUMBASE ({init (p);}, {}, */
+      /*                            tinit, _TIMEBASE2_INIT, _NUMBASE2); */
+
+      samples[i] = t - tinit;
+
+      work_abscissas[i] = abscissas[i];
+      work_samples[i] = samples[i];
+
+      accum = cabs (accum);
+
+      _free (dst);
+    }
+
+  chisq = aran_poly1d_fit (nsamples, work_abscissas, work_samples, ap1d);
+
+  return chisq;
+}
+
+void vsg_vector3d_set_zero (VsgVector3d *v)
+{
+  vsg_vector3d_set (v, 0., 0., 0.);
+}
+
+gdouble aran_poly1d_profile_l2pvi_3d_samples (AranLocal2ParticleGradInternalFunc3d l2pvi,
+                                              AranParticleInitFunc3d init,
+                                              AranDevelopmentNewFunc _new,
+                                              GDestroyNotify _free,
+                                              AranPoly1d *ap1d,
+                                              gint nsamples,
+                                              gdouble *abscissas,
+                                              gdouble *samples)
+{
+  VsgPRTree3dNodeInfo dstinfo = {.center={0., 0., 0.},};
+  VsgVector3d p = {0.1, 0.1, 0.1};
+  VsgVector3d g;
+  gdouble work_abscissas[nsamples];
+  gdouble work_samples[nsamples];
+  gdouble t, tinit = 0., chisq;
+  gint i;
+
+  g_return_val_if_fail (abscissas != NULL, -1.);
+  if (samples == NULL) samples = work_samples;
+
+  for (i=0; i<nsamples; i ++)
+    {
+      gpointer dst;
+
+      dst = _new (0, (guint8) abscissas[i]);
+
+      ARAN_PROFILE_CODE_NUMBASE ({vsg_vector3d_set_zero (&g);}, {l2pvi (&dstinfo, dst, &p, &g);},
+                                 t, _TIMEBASE2, _NUMBASE2);
+
+      ARAN_PROFILE_CODE_NUMBASE ({vsg_vector3d_set_zero (&g);}, {},
                                  tinit, _TIMEBASE2_INIT, _NUMBASE2);
 
       samples[i] = t - tinit;

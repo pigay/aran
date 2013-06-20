@@ -86,6 +86,9 @@ static ProfileData _profiles[] = {
   {"aran_development2d_l2l", aran_development2d_l2l,
    (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_l2l_2d_samples,
    &vtable_2d, 2},
+  {"aran_development2d_l2p", aran_development2d_l2p,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_l2pi_2d_samples,
+   &vtable_2d, 1},
 
   /* 3D operators */
   {"aran_development3d_p2m", aran_development3d_p2m,
@@ -103,6 +106,12 @@ static ProfileData _profiles[] = {
   {"aran_development3d_l2l", aran_development3d_l2l,
    (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_l2l_3d_samples,
    &vtable_3d, 4},
+  {"aran_development3d_l2p", aran_development3d_l2p,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_l2pi_3d_samples,
+   &vtable_3d, 2},
+  {"aran_development3d_l2pv", aran_development3d_l2p,
+   (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_l2pvi_3d_samples,
+   &vtable_3d, 2},
   {"aran_development3d_m2m_kkylin", aran_development3d_m2m_kkylin,
    (AranPoly1dProfileSamplesFunc) aran_poly1d_profile_m2m_3d_samples,
    &vtable_3d, 3},

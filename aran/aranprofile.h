@@ -195,6 +195,15 @@ gdouble aran_poly1d_profile_l2p_2d_samples (AranLocal2ParticleFunc2d l2p,
                                             gdouble *abscissas,
                                             gdouble *samples);
 
+gdouble aran_poly1d_profile_l2pi_2d_samples (AranLocal2ParticleInternalFunc2d l2pi,
+                                            AranParticleInitFunc2d init,
+                                            AranDevelopmentNewFunc _new,
+                                            GDestroyNotify _free,
+                                            AranPoly1d *ap1d,
+                                            gint nsamples,
+                                            gdouble *abscissas,
+                                             gdouble *samples);
+
 typedef void (*AranParticleInitFunc3d) (VsgPoint3 particle);
 
 gdouble aran_profile_p2p_3d (AranParticle2ParticleFunc3d p2p,
@@ -353,5 +362,23 @@ gdouble aran_poly1d_profile_l2p_3d_samples (AranLocal2ParticleFunc3d l2p,
                                             gint nsamples,
                                             gdouble *abscissas,
                                             gdouble *samples);
+
+gdouble aran_poly1d_profile_l2pi_3d_samples (AranLocal2ParticleInternalFunc3d l2pi,
+                                             AranParticleInitFunc3d init,
+                                             AranDevelopmentNewFunc _new,
+                                             GDestroyNotify _free,
+                                             AranPoly1d *ap1d,
+                                             gint nsamples,
+                                             gdouble *abscissas,
+                                             gdouble *samples);
+
+gdouble aran_poly1d_profile_l2pvi_3d_samples (AranLocal2ParticleGradInternalFunc3d l2pvi,
+                                              AranParticleInitFunc3d init,
+                                              AranDevelopmentNewFunc _new,
+                                              GDestroyNotify _free,
+                                              AranPoly1d *ap1d,
+                                              gint nsamples,
+                                              gdouble *abscissas,
+                                              gdouble *samples);
 
 #endif /* __ARAN_PROFILE_H__ */

@@ -50,6 +50,15 @@ typedef void (*AranLocal2ParticleFunc3d) (const VsgPRTree3dNodeInfo *src_node,
                                           gpointer src,
                                           VsgPoint3 dst);
 
+typedef gcomplex128 (*AranLocal2ParticleInternalFunc3d) (const VsgPRTree3dNodeInfo *src_node,
+                                                         gpointer src,
+                                                         VsgVector3d *dstpos);
+
+typedef void (*AranLocal2ParticleGradInternalFunc3d) (const VsgPRTree3dNodeInfo *src_node,
+                                                      gpointer src,
+                                                      VsgVector3d *dstpos,
+                                                      VsgVector3d *grad);
+
 /* Translation functions */
 typedef void (*AranMultipole2MultipoleFunc3d) (const VsgPRTree3dNodeInfo *src_node,
                                                 gpointer src,
