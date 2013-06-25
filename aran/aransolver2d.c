@@ -44,6 +44,10 @@ struct _AranSolver2d
   AranMultipole2LocalFunc2d m2l;
   AranLocal2LocalFunc2d l2l;
   AranLocal2ParticleFunc2d l2p;
+  AranParticle2LocalFunc2d p2l;
+  AranMultipole2ParticleFunc2d m2p;
+
+  guint semifar_threshold;
 
   glong zero_counter;
   glong p2p_counter;
@@ -52,6 +56,8 @@ struct _AranSolver2d
   glong m2l_counter;
   glong l2l_counter;
   glong l2p_counter;
+  glong p2l_counter;
+  glong m2p_counter;
 };
 
 #define ARAN_SOLVER2D_PREALLOC 4
@@ -166,6 +172,10 @@ static AranSolver2d *_solver2d_alloc ()
   solver->m2l = NULL;
   solver->l2l = NULL;
   solver->l2p = NULL;
+  solver->p2l = NULL;
+  solver->m2p = NULL;
+
+  solver->semifar_threshold = 0;
 
   aran_solver2d_reinit_stats (solver);
 
@@ -496,7 +506,7 @@ void aran_solver2d_set_development (AranSolver2d *solver,
  * @l2l: local 2 local function.
  * @l2p: local 2 particle function.
  *
- * Associates @solver with a set of FMM functions.
+ * Associates @solver with a minimal set of FMM functions.
  */
 void aran_solver2d_set_functions (AranSolver2d *solver,
                                   AranParticle2ParticleFunc2d p2p,
@@ -505,6 +515,37 @@ void aran_solver2d_set_functions (AranSolver2d *solver,
                                   AranMultipole2LocalFunc2d m2l,
                                   AranLocal2LocalFunc2d l2l,
                                   AranLocal2ParticleFunc2d l2p)
+{
+  aran_solver2d_set_functions_full (solver, p2p, p2m, m2m, m2l, l2l, l2p,
+                                    NULL, NULL, 0);
+}
+
+/**
+ * aran_solver2d_set_functions_full:
+ * @solver: an #AranSolver2d.
+ * @p2p: particle 2 particle function.
+ * @p2m: particle 2 multipole function.
+ * @m2m: multipole 2 multipole function.
+ * @m2l: multipole 2 local function.
+ * @l2l: local 2 local function.
+ * @l2p: local 2 particle function.
+ * @p2l: particle 2 local function.
+ * @m2p: multipole 2 particle function.
+ * @semifar_threshold: beyond this number of particles, @p2l and @m2p
+ * can be called instead of @p2p. if zero, @p2p will always be called.
+ *
+ * Associates @solver with a complete set of FMM functions.
+ */
+void aran_solver2d_set_functions_full (AranSolver2d *solver,
+                                       AranParticle2ParticleFunc2d p2p,
+                                       AranParticle2MultipoleFunc2d p2m,
+                                       AranMultipole2MultipoleFunc2d m2m,
+                                       AranMultipole2LocalFunc2d m2l,
+                                       AranLocal2LocalFunc2d l2l,
+                                       AranLocal2ParticleFunc2d l2p,
+                                       AranParticle2LocalFunc2d p2l,
+                                       AranMultipole2ParticleFunc2d m2p,
+                                       guint semifar_threshold)
 {
   g_return_if_fail (solver != NULL);
 
@@ -515,6 +556,10 @@ void aran_solver2d_set_functions (AranSolver2d *solver,
   solver->m2l = m2l;
   solver->l2l = l2l;
   solver->l2p = l2p;
+  solver->p2l = p2l;
+  solver->m2p = m2p;
+
+  solver->semifar_threshold = semifar_threshold;
 }
 
 /**
@@ -535,6 +580,8 @@ void aran_solver2d_reinit_stats (AranSolver2d *solver)
   solver->m2l_counter = 0;
   solver->l2l_counter = 0;
   solver->l2p_counter = 0;
+  solver->p2l_counter = 0;
+  solver->m2p_counter = 0;
 }
 
 /**
@@ -547,6 +594,8 @@ void aran_solver2d_reinit_stats (AranSolver2d *solver)
  * @m2l: multipole 2 local function count result.
  * @l2l: local 2 local function count result.
  * @l2p: local 2 particle function count result.
+ * @p2l: particle 2 localfunction count result.
+ * @m2p: multipole 2 particle function count result.
  *
  * Retrieves count values for @solver differents functions. Each value
  * represents the number of calls of the corresponding functino since
@@ -555,7 +604,8 @@ void aran_solver2d_reinit_stats (AranSolver2d *solver)
 void aran_solver2d_get_stats (AranSolver2d *solver, glong *zero_count,
                               glong *p2p_count, glong *p2m_count,
                               glong *m2m_count, glong *m2l_count,
-                              glong *l2l_count, glong *l2p_count)
+                              glong *l2l_count, glong *l2p_count,
+                              glong *p2l_count, glong *m2p_count)
 {
   g_return_if_fail (solver != NULL);
 
@@ -566,6 +616,8 @@ void aran_solver2d_get_stats (AranSolver2d *solver, glong *zero_count,
   *m2l_count = solver->m2l_counter;
   *l2l_count = solver->l2l_counter;
   *l2p_count = solver->l2p_counter;
+  *p2l_count = solver->p2l_counter;
+  *m2p_count = solver->m2p_counter;
 }
 
 /**

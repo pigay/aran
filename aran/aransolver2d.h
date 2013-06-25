@@ -96,11 +96,23 @@ void aran_solver2d_set_functions (AranSolver2d *solver,
 				  AranLocal2LocalFunc2d l2l,
 				  AranLocal2ParticleFunc2d l2p);
 
+void aran_solver2d_set_functions_full (AranSolver2d *solver,
+                                       AranParticle2ParticleFunc2d p2p,
+                                       AranParticle2MultipoleFunc2d p2m,
+                                       AranMultipole2MultipoleFunc2d m2m,
+                                       AranMultipole2LocalFunc2d m2l,
+                                       AranLocal2LocalFunc2d l2l,
+                                       AranLocal2ParticleFunc2d l2p,
+                                       AranParticle2LocalFunc2d p2l,
+                                       AranMultipole2ParticleFunc2d m2p,
+                                       guint semifar_threshold);
+
 void aran_solver2d_reinit_stats (AranSolver2d *solver);
 void aran_solver2d_get_stats (AranSolver2d *solver, glong *zero_count,
 			      glong *p2p_count, glong *p2m_count,
 			      glong *m2m_count, glong *m2l_count,
-			      glong *l2l_count, glong *l2p_count);
+			      glong *l2l_count, glong *l2p_count,
+                              glong *p2l_count, glong *m2p_count);
 
 gdouble aran_solver2d_get_tolerance (AranSolver2d *solver);
 

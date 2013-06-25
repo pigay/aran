@@ -102,11 +102,23 @@ void aran_solver3d_set_functions (AranSolver3d *solver,
 				  AranLocal2LocalFunc3d l2l,
 				  AranLocal2ParticleFunc3d l2p);
 
+void aran_solver3d_set_functions_full (AranSolver3d *solver,
+                                       AranParticle2ParticleFunc3d p2p,
+                                       AranParticle2MultipoleFunc3d p2m,
+                                       AranMultipole2MultipoleFunc3d m2m,
+                                       AranMultipole2LocalFunc3d m2l,
+                                       AranLocal2LocalFunc3d l2l,
+                                       AranLocal2ParticleFunc3d l2p,
+                                       AranParticle2LocalFunc3d p2l,
+                                       AranMultipole2ParticleFunc3d m2p,
+                                       guint semifar_threshold);
+
 void aran_solver3d_reinit_stats (AranSolver3d *solver);
 void aran_solver3d_get_stats (AranSolver3d *solver, glong *zero_count,
 			      glong *p2p_count, glong *p2m_count,
 			      glong *m2m_count, glong *m2l_count,
 			      glong *l2l_count, glong *l2p_count,
+                              glong *p2l_count, glong *m2p_count,
                               glong *p2p_remote_count, glong *m2l_remote_count);
 
 gdouble aran_solver3d_get_tolerance (AranSolver3d *solver);

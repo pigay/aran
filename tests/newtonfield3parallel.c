@@ -1269,13 +1269,14 @@ int main (int argc, char **argv)
 
       {
         glong zero_count, p2p_count, p2m_count, m2m_count;
-        glong m2l_count, l2l_count, l2p_count;
+        glong m2l_count, l2l_count, l2p_count, p2l_count, m2p_count;
         glong p2p_remote_count, m2l_remote_count;
 
         aran_solver3d_get_stats (solver, &zero_count,
                                  &p2p_count, &p2m_count,
                                  &m2m_count, &m2l_count,
                                  &l2l_count, &l2p_count,
+                                 &p2l_count, &m2p_count,
                                  &p2p_remote_count,
                                  &m2l_remote_count);
 
@@ -1288,6 +1289,8 @@ int main (int argc, char **argv)
         g_printerr ("%d : m2l remote count=%ld\n", rk, m2l_remote_count);
         g_printerr ("%d : l2l count=%ld\n", rk, l2l_count);
         g_printerr ("%d : l2p count=%ld\n", rk, l2p_count);
+        g_printerr ("%d : p2l count=%ld\n", rk, p2l_count);
+        g_printerr ("%d : m2p count=%ld\n", rk, m2p_count);
       }
     }
 
