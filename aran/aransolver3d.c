@@ -319,6 +319,44 @@ static void far_func (const VsgPRTree3dNodeInfo *one_info,
 }
 
 
+static void semifar_func (const VsgPRTree3dNodeInfo *one_info,
+                          const VsgPRTree3dNodeInfo *other_info,
+                          AranSolver3d *solver)
+{
+  const VsgPRTree3dNodeInfo *info;
+  GSList *list;
+  gpointer dev = one_info->user_data;
+  guint point_count = 0;
+
+  if (one_info->depth > other_info->depth)
+    {
+      info = one_info;
+      list = other_info->point_list;
+      dev = one_info->user_data;
+    }
+  else
+    {
+      info = other_info;
+      list = one_info->point_list;
+      dev = other_info->user_data;
+    }
+
+  while (list)
+    {
+      VsgPoint3 point = (VsgPoint3) list->data;
+
+      solver->p2l (point, info, dev);
+      solver->m2p (info, dev, point);
+
+      point_count ++;
+      list = g_slist_next (list);
+    }
+
+  solver->p2l_counter += point_count;
+  solver->m2p_counter += point_count;
+}
+
+
 static void clear_func (const VsgPRTree3dNodeInfo *node_info,
                         AranSolver3d *solver)
 {
@@ -850,6 +888,7 @@ void aran_solver3d_solve (AranSolver3d *solver)
 {
   VsgPRTree3dFarInteractionFunc far;
   VsgPRTree3dInteractionFunc near;
+  VsgPRTree3dSemifarInteractionFunc semifar;
   g_return_if_fail (solver != NULL);
 
   VSG_TIMING_START (solve, vsg_prtree3d_get_communicator (solver->prtree));
@@ -861,6 +900,8 @@ void aran_solver3d_solve (AranSolver3d *solver)
   near = (VsgPRTree3dInteractionFunc)
     ((solver->p2p != NULL) ? near_func : nop_near_func);
 
+  semifar = (VsgPRTree3dSemifarInteractionFunc)
+    ((solver->p2l != NULL) && (solver->m2p != NULL) ? semifar_func : NULL);
 
   /* clear multipole and local developments before the big work */
   vsg_prtree3d_traverse (solver->prtree, G_POST_ORDER,
@@ -888,7 +929,7 @@ void aran_solver3d_solve (AranSolver3d *solver)
   VSG_TIMING_END (up, stderr);
 
   /* transmit info from Multipole to Local developments */
-  vsg_prtree3d_near_far_traversal (solver->prtree, far, near, solver);
+  vsg_prtree3d_near_far_traversal_full (solver->prtree, far, near, semifar, solver->semifar_threshold, solver);
 
   VSG_TIMING_START (down, vsg_prtree3d_get_communicator (solver->prtree));
 

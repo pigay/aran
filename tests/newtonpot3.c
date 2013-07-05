@@ -90,6 +90,19 @@ void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
 							&particle->vector);
 }
 
+void p2l (PointAccum *particle, const VsgPRTree3dNodeInfo *dst_node,
+          AranDevelopment3d *dst)
+{
+  aran_development3d_p2l (&particle->vector, particle->density, dst_node, dst);
+}
+
+void m2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
+          PointAccum *particle)
+{
+  particle->accum += aran_development3d_multipole_evaluate (devel_node, devel,
+                                                            &particle->vector);
+}
+
 static void _direct (PointAccum **points, guint np)
 {
   guint i, j;
@@ -190,12 +203,17 @@ static void _random_distribution (PointAccum **points,
 static void _grid_distribution (PointAccum **points,
                                 AranSolver3d *solver);
 
+static void _plummer_fill (PointAccum **points,
+                           AranSolver3d *solver);
+
 static gdouble err_lim = 1.E-3;
 static guint np = 12;
 static guint order = 20;
 static gboolean check = TRUE;
 static gboolean direct = FALSE;
 static guint maxbox = 1;
+static guint semifar_threshold = G_MAXUINT;
+static gboolean verbose = FALSE;
 
 static AranMultipole2MultipoleFunc3d m2m =
 (AranMultipole2MultipoleFunc3d) aran_development3d_m2m;
@@ -278,6 +296,18 @@ void parse_args (int argc, char **argv)
 	  else
 	    g_printerr ("Invalid error limit value (-err %s)\n", arg);
 	}
+      else if (g_ascii_strcasecmp (arg, "-semifar") == 0)
+	{
+	  guint tmp = 0;
+	  iarg ++;
+
+	  arg = (iarg<argc) ? argv[iarg] : NULL;
+
+	  if (sscanf (arg, "%u", &tmp) == 1)
+	      semifar_threshold = tmp;
+	  else
+	    g_printerr ("Invalid semifar threshold (-semifar %s)\n", arg);
+	}
       else if (g_ascii_strcasecmp (arg, "-nocheck") == 0)
 	{
 	  check = FALSE;
@@ -308,6 +338,10 @@ void parse_args (int argc, char **argv)
 	  else if (g_ascii_strcasecmp (arg, "grid") == 0)
 	    {
 	      _distribution = _grid_distribution;
+	    }
+	  else if (g_ascii_strcasecmp (arg, "plummer") == 0)
+	    {
+	      _distribution = _plummer_fill;
 	    }
 	  else 
 	    {
@@ -350,6 +384,10 @@ void parse_args (int argc, char **argv)
 	    {
 	      g_printerr ("Invalid translation name (-translation %s)\n", arg);
 	    }
+	}
+      else if (g_ascii_strcasecmp (arg, "--verbose") == 0)
+	{
+	  verbose = TRUE;
 	}
       else if (g_ascii_strcasecmp (arg, "--version") == 0)
 	{
@@ -476,6 +514,73 @@ static void _grid_distribution (PointAccum **points,
     }
 }
 
+static guint32 _random_seed = 0;
+
+static void _plummer_fill (PointAccum **points,
+                           AranSolver3d *solver)
+{
+  gdouble rmax = 300.;
+  guint i, real_np = 0;
+  PointAccum lb, ub;
+  PointAccum *point;
+  GRand *rand = g_rand_new_with_seed (_random_seed);
+
+  point = g_malloc0 (sizeof (PointAccum));
+
+  ub.vector.x = rmax;
+  ub.vector.y = rmax;
+  ub.vector.z = rmax;
+
+  lb.vector.x = - rmax;
+  lb.vector.y = - rmax;
+  lb.vector.z = - rmax;
+
+  aran_solver3d_insert_point (solver, &ub);
+  aran_solver3d_insert_point (solver, &lb);
+
+  aran_solver3d_remove_point (solver, &lb);
+  aran_solver3d_remove_point (solver, &ub);
+
+  for (i=0; i<np; i++)
+    {
+      gdouble x1, x2, x3, r, tmp;
+
+      x1 = g_rand_double_range (rand, 0., 1.);
+      x2 = g_rand_double_range (rand, 0., 1.);
+      x3 = g_rand_double_range (rand, 0., 1.);
+
+      r = 1./ sqrt (pow (x1, -2./3.) -1.);
+
+      point->vector.z = R * (1. - (x2+x2)) * r;
+
+      tmp = sqrt (r*r - point->vector.z*point->vector.z);
+
+      point->vector.x = R * tmp * cos (2.*G_PI * x3);
+      point->vector.y = R * tmp * sin (2.*G_PI * x3);
+
+      if (fabs (point->vector.x) > rmax) continue;
+      if (fabs (point->vector.y) > rmax) continue;
+      if (fabs (point->vector.z) > rmax) continue;
+
+      point->density = 1./np;
+      point->accum = 0.;
+      point->id = real_np;
+
+      aran_solver3d_insert_point (solver, point);
+      points[real_np] = point;
+
+      point = g_malloc0 (sizeof (PointAccum));
+      real_np ++;
+
+    }
+
+  np = real_np;
+
+  g_free (point);
+
+  g_rand_free (rand);
+}
+
 int main (int argc, char **argv)
 {
   VsgVector3d lbound = {-TR, -TR, -TR};
@@ -505,14 +610,29 @@ int main (int argc, char **argv)
 			      (AranZeroFunc) aran_development3d_set_zero);
 
   aran_solver3d_set_functions (solver,
-			       (AranParticle2ParticleFunc3d) p2p,
-			       (AranParticle2MultipoleFunc3d) p2m,
+                               (AranParticle2ParticleFunc3d) p2p,
+                               (AranParticle2MultipoleFunc3d) p2m,
                                m2m,
-			       m2l,
-			       l2l,
-			       (AranLocal2ParticleFunc3d)l2p);
+                               m2l,
+                               l2l,
+                               (AranLocal2ParticleFunc3d)l2p);
+
+  if (semifar_threshold < G_MAXUINT)
+    {
+      aran_solver3d_set_functions_full (solver,
+                                        (AranParticle2ParticleFunc3d) p2p,
+                                        (AranParticle2MultipoleFunc3d) p2m,
+                                        m2m,
+                                        m2l,
+                                        l2l,
+                                        (AranLocal2ParticleFunc3d) l2p,
+                                        (AranParticle2LocalFunc3d) p2l,
+                                        (AranMultipole2ParticleFunc3d) m2p,
+                                        semifar_threshold);
+    }
 
   _distribution (points, solver);
+
 
 /*    g_printerr ("ok depth = %d size = %d\n", */
 /*                aran_solver3d_depth (solver), */
@@ -522,6 +642,36 @@ int main (int argc, char **argv)
   else aran_solver3d_solve (solver);
 
 /*   vsg_prtree3d_write (prtree, stderr); */
+
+  if (verbose)
+    {
+      glong zero_count, p2p_count, p2m_count, m2m_count;
+      glong m2l_count, l2l_count, l2p_count, p2l_count, m2p_count;
+      glong p2p_remote_count, m2l_remote_count;
+
+      g_printerr ("particle count=%d\n\n", np);
+
+
+      aran_solver3d_get_stats (solver, &zero_count,
+                               &p2p_count, &p2m_count,
+                               &m2m_count, &m2l_count,
+                               &l2l_count, &l2p_count,
+                               &p2l_count, &m2p_count,
+                               &p2p_remote_count,
+                               &m2l_remote_count);
+
+      g_printerr ("zero count=%ld\n", zero_count);
+      g_printerr ("p2p count=%ld\n", p2p_count);
+      g_printerr ("p2p remote count=%ld\n", p2p_remote_count);
+      g_printerr ("p2m count=%ld\n", p2m_count);
+      g_printerr ("m2m count=%ld\n", m2m_count);
+      g_printerr ("m2l count=%ld\n", m2l_count);
+      g_printerr ("m2l remote count=%ld\n", m2l_remote_count);
+      g_printerr ("l2l count=%ld\n", l2l_count);
+      g_printerr ("l2p count=%ld\n", l2p_count);
+      g_printerr ("p2l count=%ld\n", p2l_count);
+      g_printerr ("m2p count=%ld\n", m2p_count);
+    }
 
   aran_solver3d_free (solver);
 
