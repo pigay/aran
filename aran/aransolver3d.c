@@ -330,16 +330,20 @@ static void semifar_func (const VsgPRTree3dNodeInfo *one_info,
 
   if (one_info->depth > other_info->depth)
     {
-      info = one_info;
       list = other_info->point_list;
+      info = one_info;
       dev = one_info->user_data;
     }
   else
     {
-      info = other_info;
       list = one_info->point_list;
+      info = other_info;
       dev = other_info->user_data;
     }
+
+  /* g_printerr ("semifar one[%#lx %#lx %#lx %d] other[%#lx %#lx %#lx %d]\n", */
+  /*             one_info->id.x, one_info->id.y, one_info->id.z, one_info->depth, */
+  /*             other_info->id.x, other_info->id.y, other_info->id.z, other_info->depth); */
 
   while (list)
     {
@@ -581,7 +585,8 @@ void aran_solver3d_set_functions (AranSolver3d *solver,
  * @p2l: particle 2 local function.
  * @m2p: multipole 2 particle function.
  * @semifar_threshold: beyond this number of particles, @p2l and @m2p
- * can be called instead of @p2p. if zero, @p2p will always be called.
+ * can be called instead of @p2p. If @semifar_threshold is #G_MAXUINT,
+ * @p2p will always be called.
  *
  * Associates @solver with a complete set of FMM functions.
  */

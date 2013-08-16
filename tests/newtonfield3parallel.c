@@ -49,7 +49,6 @@ struct _PointAccum
   gdouble density;
 
   VsgVector3d field;
-/*   gcomplex128 accum; */
 
   guint id;
 };
@@ -120,7 +119,7 @@ void p2p (PointAccum *one, PointAccum *other)
           vsg_vector3d_scalp (&tmp, inv_r3*one->density, &tmp2);
           vsg_vector3d_add (&other->field, &tmp2, &other->field);
 
-/*           g_printerr ("%d : p2p %d %d ", rk, one->id, other->id); */
+          /* g_printerr ("%d : p2p %d %d  \n", rk, one->id, other->id); */
 /*           vsg_vector3d_write (&one->vector, stderr); */
 /*           g_printerr (" "); */
 /*           vsg_vector3d_write (&one->field, stderr); */
@@ -145,6 +144,30 @@ void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
                                               &tmp);
 
   vsg_vector3d_add (&particle->field, &tmp, &particle->field);
+}
+
+void p2l (PointAccum *particle, const VsgPRTree3dNodeInfo *dst_node,
+          AranDevelopment3d *dst)
+{
+  /* g_printerr ("%d : p2l %d / %#lx %#lx %#lx %d\n", rk, particle->id, dst_node->id.x, dst_node->id.y, dst_node->id.z, dst_node->id.depth); */
+
+  aran_development3d_p2l(&particle->vector, particle->density, dst_node, dst);
+}
+
+void m2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
+          PointAccum *particle)
+{
+  VsgVector3d tmp;
+
+  /* g_printerr ("%d : m2p %d \n", rk, particle->id); */
+
+  aran_development3d_m2pv (devel_node, devel, &particle->vector, &tmp);
+
+  vsg_vector3d_add (&particle->field, &tmp, &particle->field);
+
+  /* g_printerr (" f="); */
+  /* vsg_vector3d_write (&particle->field, stderr); */
+  /* g_printerr (" \n"); */
 }
 
 PointAccum *point_accum_alloc (gboolean resident, gpointer user_data)
@@ -193,6 +216,7 @@ void point_accum_migrate_unpack (PointAccum *pt, VsgPackedMsg *pm,
 void point_accum_visit_fw_pack (PointAccum *pt, VsgPackedMsg *pm,
                                 gpointer user_data)
 {
+  /* g_printerr ("%d : fw pack %d %p\n", rk, pt->id, pt); */
 /*   g_printerr ("%d : fw pack d=%e v=", */
 /*               rk, */
 /*               pt->density); */
@@ -201,6 +225,7 @@ void point_accum_visit_fw_pack (PointAccum *pt, VsgPackedMsg *pm,
 
   vsg_packed_msg_send_append (pm, &pt->vector, 1, VSG_MPI_TYPE_VECTOR3D);
   vsg_packed_msg_send_append (pm, &pt->density, 1, MPI_DOUBLE);
+  vsg_packed_msg_send_append (pm, &pt->id, 1, MPI_INT);
 }
 
 void point_accum_visit_fw_unpack (PointAccum *pt, VsgPackedMsg *pm,
@@ -209,13 +234,10 @@ void point_accum_visit_fw_unpack (PointAccum *pt, VsgPackedMsg *pm,
   vsg_packed_msg_recv_read (pm, &pt->vector, 1, VSG_MPI_TYPE_VECTOR3D);
   vsg_packed_msg_recv_read (pm, &pt->density, 1, MPI_DOUBLE);
   pt->field = VSG_V3D_ZERO;
-  pt->id = -1;
+  vsg_packed_msg_recv_read (pm, &pt->id, 1, MPI_INT);
+  pt->id = -pt->id;
 
-/*   g_printerr ("%d : fw unpack d=%e v=", */
-/*               rk, */
-/*               pt->density); */
-/*   vsg_vector3d_write (&pt->vector, stderr); */
-/*   g_printerr ("\n"); */
+  /* g_printerr ("%d : fw unpack %d\n", rk, pt->id); */
 }
 
 /* visit forward pack/unpack functions */
@@ -223,10 +245,7 @@ void point_accum_visit_fw_unpack (PointAccum *pt, VsgPackedMsg *pm,
 void point_accum_visit_bw_pack (PointAccum *pt, VsgPackedMsg *pm,
                                 gpointer user_data)
 {
-/*   g_printerr ("%d : bw pack v=",rk); */
-/*   vsg_vector3d_write (&pt->field, stderr); */
-/*   g_printerr ("\n"); */
-/*   fflush (stderr); */
+  /* g_printerr ("%d : bw pack %d\n",rk, pt->id); */
 
   vsg_packed_msg_send_append (pm, &pt->field, 1, VSG_MPI_TYPE_VECTOR3D);
 
@@ -235,12 +254,9 @@ void point_accum_visit_bw_pack (PointAccum *pt, VsgPackedMsg *pm,
 void point_accum_visit_bw_unpack (PointAccum *pt, VsgPackedMsg *pm,
                                   gpointer user_data)
 {
-  vsg_packed_msg_recv_read (pm, &pt->field, 1, VSG_MPI_TYPE_VECTOR3D);
 
-/*   g_printerr ("%d : bw unpack v=", rk); */
-/*   vsg_vector3d_write (&pt->field, stderr); */
-/*   g_printerr ("\n"); */
-/*   fflush (stderr); */
+  /* g_printerr ("%d : bw unpack %d %p\n",rk, pt->id, pt); */
+  vsg_packed_msg_recv_read (pm, &pt->field, 1, VSG_MPI_TYPE_VECTOR3D);
 }
 
 void point_accum_visit_bw_reduce (PointAccum *a, PointAccum *b,
@@ -287,29 +303,46 @@ static void _traverse_count_local_nodes (VsgPRTree3dNodeInfo *node_info,
     }
 }
 
-static void _pt_write (PointAccum *pt, FILE *file)
+typedef struct _FileAndIndent FileAndIndent;
+struct _FileAndIndent {
+  FILE *file;
+  gchar *indent;
+};
+
+static void _pt_write (PointAccum *pt, FileAndIndent *fai)
 {
-  fprintf (file, "i=%d v=", pt->id);
-  vsg_vector3d_write (&pt->vector, file);
-  fprintf (file, " d=%e ", pt->density);
-  vsg_vector3d_write (&pt->field, file);
-  fprintf (file, "\n");
+  fprintf (fai->file, "%si=%d v=", fai->indent, pt->id);
+  vsg_vector3d_write (&pt->vector, fai->file);
+  fprintf (fai->file, " d=%e ", pt->density);
+  vsg_vector3d_write (&pt->field, fai->file);
+  fprintf (fai->file, "\n");
 }
 
 static void _traverse_fg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
 {
-  fprintf (file, "node c=");
-  vsg_vector3d_write (&node_info->center, file);
-  fprintf (file, " dev=");
+  gchar *indent = alloca (node_info->depth * 2 * sizeof (gchar)+1);
+  memset (indent, ' ', node_info->depth * 2 * sizeof (gchar));
+  indent[node_info->depth * 2 * sizeof (gchar)] = '\0';
+
+  fprintf (file, "%snode c=", indent);
+  vsg_prtree_key3d_write (&node_info->id, file);
 
   if (!VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info))
     {
-      aran_development3d_write ((AranDevelopment3d *) node_info->user_data,
-                                file);
-      fprintf (file, "\n");
+      FileAndIndent fai = {file, indent};
+      /* fprintf (file, " dev="); */
+      /* aran_development3d_write ((AranDevelopment3d *) node_info->user_data, */
+      /*                           file); */
+      /* fprintf (file, "\n"); */
 
-      g_slist_foreach (node_info->point_list, (GFunc) _pt_write, file);
+      if (node_info->point_count >0)
+        {
+          fprintf (file, "\n");
+          g_slist_foreach (node_info->point_list, (GFunc) _pt_write, &fai);
+        }
     }
+  else
+    fprintf (file, "remote");
 
   fprintf (file, "\n");
 }
@@ -422,6 +455,7 @@ static void _one_circle_fill (AranSolver3d *solver);
 static void _random_fill (AranSolver3d *solver);
 
 static void _random2_fill (AranSolver3d *solver);
+static void _unbalanced_fill (AranSolver3d *solver);
 
 static void _plummer_fill (AranSolver3d *solver);
 
@@ -442,6 +476,7 @@ static guint virtual_maxbox = 0;
 static gboolean _verbose = FALSE;
 static gboolean _write = FALSE;
 static gboolean _hilbert = FALSE;
+static guint semifar_threshold = G_MAXUINT;
 
 static AranMultipole2MultipoleFunc3d m2m =
 (AranMultipole2MultipoleFunc3d) aran_development3d_m2m;
@@ -521,11 +556,23 @@ void parse_args (int argc, char **argv)
 
           arg = (iarg<argc) ? argv[iarg] : NULL;
 
-          if (sscanf (arg, "%lf", &tmp) == 1 && tmp > 0.)
+          if (sscanf (arg, "%lf", &tmp) == 1)
               err_lim = tmp;
           else
             g_printerr ("Invalid error limit value (-err %s)\n", arg);
         }
+      else if (g_ascii_strcasecmp (arg, "-semifar") == 0)
+	{
+	  guint tmp = 0;
+	  iarg ++;
+
+	  arg = (iarg<argc) ? argv[iarg] : NULL;
+
+	  if (sscanf (arg, "%u", &tmp) == 1)
+	      semifar_threshold = tmp;
+	  else
+	    g_printerr ("Invalid semifar threshold (-semifar %s)\n", arg);
+	}
       else if (g_ascii_strcasecmp (arg, "-nocheck") == 0)
         {
           check = FALSE;
@@ -552,6 +599,10 @@ void parse_args (int argc, char **argv)
           else if (g_ascii_strcasecmp (arg, "random2") == 0)
             {
               _fill = _random2_fill;
+            }
+          else if (g_ascii_strcasecmp (arg, "unbalanced") == 0)
+            {
+              _fill = _unbalanced_fill;
             }
           else if (g_ascii_strcasecmp (arg, "random") == 0)
             {
@@ -786,6 +837,10 @@ static void _random2_fill (AranSolver3d *solver)
       point->field = VSG_V3D_ZERO;
       point->id = i;
 
+      /* if (i == 3) point->density = 0.; */
+      /* if (i == 4) point->density = 0.; */
+      /* if (i == 5) point->density = 0.; */
+
       if (check) memcpy (&check_points[i], point, sizeof (PointAccum));
 
       if (aran_solver3d_insert_point_local (solver, point))
@@ -801,10 +856,41 @@ static void _random2_fill (AranSolver3d *solver)
   point_accum_destroy (point, TRUE, NULL);
 
 #ifdef VSG_HAVE_MPI
+  aran_solver3d_migrate_flush (solver);
   aran_solver3d_distribute_contiguous_leaves (solver);
 #endif /* VSG_HAVE_MPI */
 
   g_rand_free (rand);
+}
+
+
+static void _unbalanced_fill (AranSolver3d *solver)
+{
+  PointAccum *point;
+
+  np --;
+
+  _random2_fill (solver);
+
+  point = point_accum_alloc (TRUE, NULL);
+  point->vector.x = -2. * R;
+  point->vector.y = 0.;
+  point->vector.z = 0.;
+
+  point->density = 1.;
+  point->field = VSG_V3D_ZERO;
+  point->id = np;
+
+  if (check) memcpy (&check_points[np], point, sizeof (PointAccum));
+  if (!aran_solver3d_insert_point_local (solver, point))
+      point_accum_destroy (point, TRUE, NULL);
+
+  np ++;
+
+#ifdef VSG_HAVE_MPI
+  aran_solver3d_migrate_flush (solver);
+  aran_solver3d_distribute_contiguous_leaves (solver);
+#endif /* VSG_HAVE_MPI */
 }
 
 static void _plummer_fill (AranSolver3d *solver)
@@ -1101,12 +1187,12 @@ void check_point_field (PointAccum *point, gint *ret)
                   check->field.x, check->field.y, check->field.z);
       (*ret) ++;
     }
-/*   else */
-/*     { */
-/*       g_printerr ("%d : Field simulation ok: %d relative=(%e) exact=(%f,%f,%f)\n", */
-/*                   rk, i, fabs(err), check->field.x, check->field.y, check->field.z); */
+  /* else */
+  /*   { */
+  /*     g_printerr ("%d : Field simulation ok: %d relative=(%e) exact=(%f,%f,%f)\n", */
+  /*                 rk, i, fabs(err), check->field.x, check->field.y, check->field.z); */
 
-/*     } */
+  /*   } */
 }
 
 void check_parallel_points (AranSolver3d *solver)
@@ -1136,6 +1222,21 @@ void check_parallel_points (AranSolver3d *solver)
                                m2l,
                                l2l,
                                (AranLocal2ParticleFunc3d) l2p);
+
+
+  if (semifar_threshold < G_MAXUINT)
+    {
+      aran_solver3d_set_functions_full (solver2,
+                                        (AranParticle2ParticleFunc3d) p2p,
+                                        (AranParticle2MultipoleFunc3d) p2m,
+                                        m2m,
+                                        m2l,
+                                        l2l,
+                                        (AranLocal2ParticleFunc3d) l2p,
+                                        (AranParticle2LocalFunc3d) p2l,
+                                        (AranMultipole2ParticleFunc3d) m2p,
+                                        semifar_threshold);
+    }
 
   if (_hilbert)
     {
@@ -1230,6 +1331,20 @@ int main (int argc, char **argv)
                                m2l,
                                l2l,
                                (AranLocal2ParticleFunc3d) l2p);
+
+  if (semifar_threshold < G_MAXUINT)
+    {
+      aran_solver3d_set_functions_full (solver,
+                                        (AranParticle2ParticleFunc3d) p2p,
+                                        (AranParticle2MultipoleFunc3d) p2m,
+                                        m2m,
+                                        m2l,
+                                        l2l,
+                                        (AranLocal2ParticleFunc3d) l2p,
+                                        (AranParticle2LocalFunc3d) p2l,
+                                        (AranMultipole2ParticleFunc3d) m2p,
+                                        semifar_threshold);
+    }
 
   if (_hilbert)
     {
@@ -1326,7 +1441,6 @@ int main (int argc, char **argv)
                       p2p_one_way (pi, pj);
                     }
                 }
-
             }
         }
       else
