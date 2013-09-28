@@ -227,7 +227,7 @@ gboolean aran_profile_db_read_file (const gchar *filename, const gchar *group)
           if (strv == NULL) continue;
 
           if (_verbose)
-          g_debug ("read samples %s\n", keys[i] + strlen (ARAN_PROFILE_DB_SAMPLES_PREFIX));
+            g_debug ("read samples %s\n", keys[i] + strlen (ARAN_PROFILE_DB_SAMPLES_PREFIX));
 
           samples = _read_samples (strv);
 
