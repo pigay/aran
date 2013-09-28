@@ -243,7 +243,7 @@ gdouble aran_profile_p2p_3d (AranParticle2ParticleFunc3d p2p,
   ARAN_PROFILE_CODE_NUMBASE ({init (p1); init (p2);}, {},
                              tinit, _TIMEBASE1_INIT, _NUMBASE1);
 
-  g_printerr ("p2p3d detail tinit=%g t=%g\n", tinit, t);
+  /* g_printerr ("p2p3d detail tinit=%g t=%g\n", tinit, t); */
 
   return t - tinit;
 }
@@ -302,6 +302,26 @@ gdouble aran_profile_p2m_3d (AranParticle2MultipoleFunc3d p2m,
 
   ARAN_PROFILE_CODE_NUMBASE ({init (dst);}, {
                                p2m (p, nodeinfo, dst);
+                             },
+                             t, _TIMEBASE1, _NUMBASE1);
+  ARAN_PROFILE_CODE_NUMBASE ({init (dst);}, {},
+                             tinit, _TIMEBASE1_INIT, _NUMBASE1);
+
+  return t - tinit;
+}
+
+gdouble aran_profile_p2l_3d (AranParticle2LocalFunc3d p2l,
+                             AranZeroFunc init,
+                             VsgPoint3 p,
+                             VsgPRTree3dNodeInfo *nodeinfo,
+                             gpointer dst)
+{
+  gdouble t = 0., tinit = 0.;
+
+  if (init == NULL) init = _nop_init;
+
+  ARAN_PROFILE_CODE_NUMBASE ({init (dst);}, {
+                               p2l (p, nodeinfo, dst);
                              },
                              t, _TIMEBASE1, _NUMBASE1);
   ARAN_PROFILE_CODE_NUMBASE ({init (dst);}, {},
@@ -385,6 +405,26 @@ gdouble aran_profile_l2p_3d (AranLocal2ParticleFunc3d l2p,
 
   ARAN_PROFILE_CODE_NUMBASE ({init (p);}, {
                                l2p (nodeinfo, dst, p);
+                             },
+                             t, _TIMEBASE1, _NUMBASE1);
+  ARAN_PROFILE_CODE_NUMBASE ({init (p);}, {},
+                             tinit, _TIMEBASE1_INIT, _NUMBASE1);
+
+  return t - tinit;
+}
+
+gdouble aran_profile_m2p_3d (AranMultipole2ParticleFunc3d m2p,
+                             AranParticleInitFunc3d init,
+                             VsgPRTree3dNodeInfo *nodeinfo,
+                             gpointer dst,
+                             VsgPoint3 p)
+{
+  gdouble t = 0., tinit = 0.;
+
+  if (init == NULL) init = _nop_init;
+
+  ARAN_PROFILE_CODE_NUMBASE ({init (p);}, {
+                               m2p (nodeinfo, dst, p);
                              },
                              t, _TIMEBASE1, _NUMBASE1);
   ARAN_PROFILE_CODE_NUMBASE ({init (p);}, {},
@@ -1605,6 +1645,52 @@ gdouble aran_poly1d_profile_l2pvi_3d_samples (AranLocal2ParticleGradInternalFunc
                                  t, _TIMEBASE2, _NUMBASE2);
 
       ARAN_PROFILE_CODE_NUMBASE ({vsg_vector3d_set_zero (&g);}, {},
+                                 tinit, _TIMEBASE2_INIT, _NUMBASE2);
+
+      samples[i] = t - tinit;
+
+      work_abscissas[i] = abscissas[i];
+      work_samples[i] = samples[i];
+
+      _free (dst);
+    }
+
+  chisq = aran_poly1d_fit (nsamples, work_abscissas, work_samples, ap1d);
+
+  return chisq;
+}
+
+gdouble aran_poly1d_profile_m2p_3d_samples (AranMultipole2ParticleFunc3d m2p,
+                                            AranParticleInitFunc3d init,
+                                            VsgPoint3 p,
+                                            AranDevelopmentNewFunc _new,
+                                            GDestroyNotify _free,
+                                            AranPoly1d *ap1d,
+                                            gint nsamples,
+                                            gdouble *abscissas,
+                                            gdouble *samples)
+{
+  VsgPRTree3dNodeInfo dstinfo = {.center={0., 0., 0.},};
+  gdouble work_abscissas[nsamples];
+  gdouble work_samples[nsamples];
+  gdouble t, tinit, chisq;
+  gint i;
+
+  if (init == NULL) init = _nop_init;
+
+  g_return_val_if_fail (abscissas != NULL, -1.);
+  if (samples == NULL) samples = work_samples;
+
+  for (i=0; i<nsamples; i ++)
+    {
+      gpointer dst;
+
+      dst = _new (0, (guint8) abscissas[i]);
+
+      ARAN_PROFILE_CODE_NUMBASE ({init (p);}, {m2p (&dstinfo, dst, p);},
+                                 t, _TIMEBASE2, _NUMBASE2);
+
+      ARAN_PROFILE_CODE_NUMBASE ({init (p);}, {},
                                  tinit, _TIMEBASE2_INIT, _NUMBASE2);
 
       samples[i] = t - tinit;

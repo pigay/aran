@@ -31,6 +31,7 @@
 #include "aran/aran.h"
 #include "aran/aransolver3d.h"
 #include "aran/aranbinomial.h"
+#include "aran/aranprofiledb.h"
 
 
 /* tree bbox size */
@@ -65,6 +66,11 @@ static gint _flush_interval = 1000;
 
 
 static const gdouble epsilon = 1.e-5;
+
+static void point_accum_clear_accum (PointAccum *pa)
+{
+  vsg_vector3d_set (&pa->field, 0., 0., 0.);
+}
 
 static void p2p_one_way (PointAccum *one, const PointAccum *other)
 {
@@ -1226,6 +1232,11 @@ void check_parallel_points (AranSolver3d *solver)
 
   if (semifar_threshold < G_MAXUINT)
     {
+      /* if optimal threshold was requested, we need to compare with the same value */
+      if (semifar_threshold == 0)
+        aran_solver3d_get_functions_full (solver, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                          &semifar_threshold);
+
       aran_solver3d_set_functions_full (solver2,
                                         (AranParticle2ParticleFunc3d) p2p,
                                         (AranParticle2MultipoleFunc3d) p2m,
@@ -1344,6 +1355,22 @@ int main (int argc, char **argv)
                                         (AranParticle2LocalFunc3d) p2l,
                                         (AranMultipole2ParticleFunc3d) m2p,
                                         semifar_threshold);
+
+      if (semifar_threshold == 0)
+        {
+          PointAccum p1 = {{0.1, 0.1, 0.1}, 0.1, {0., 0., 0.}, 0};
+          PointAccum p2 = {{-0.1, -0.1, -0.1}, 0.1, {0., 0., 0.}, 1};
+
+          /* compute operators timings to be able to compute optimal solver parameters */
+          aran_solver3d_profile_operators (solver, (AranParticleInitFunc3d) point_accum_clear_accum,
+                                           &p1, &p2);
+
+          /* alternatively, we could get timings from profile databases */
+          /* aran_profile_db_read_file ("./profiledb-newtonfield3.ini", NULL); */
+          /* aran_solver3d_db_profile_operators (solver, (gdouble) order); */
+
+        }
+      
     }
 
   if (_hilbert)

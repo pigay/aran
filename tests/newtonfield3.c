@@ -136,6 +136,22 @@ void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
   vsg_vector3d_add (&particle->field, &tmp, &particle->field);
 }
 
+void p2l (PointAccum *particle, const VsgPRTree3dNodeInfo *dst_node,
+          AranDevelopment3d *dst)
+{
+  aran_development3d_p2l(&particle->vector, particle->density, dst_node, dst);
+}
+
+void m2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
+          PointAccum *particle)
+{
+  VsgVector3d tmp;
+
+  aran_development3d_m2pv (devel_node, devel, &particle->vector, &tmp);
+
+  vsg_vector3d_add (&particle->field, &tmp, &particle->field);
+}
+
 static void _direct (PointAccum **points, guint np)
 {
   guint i, j;
@@ -207,7 +223,7 @@ static void _profile_operators (const gchar *db_filename)
                                       abscissas, samples);
 
   ap1d->degree = 2;
-  t =
+  chisq =
     aran_poly1d_profile_l2p_3d_samples ((AranLocal2ParticleFunc3d) l2p,
                                         NULL,
                                         &p1,
@@ -217,6 +233,33 @@ static void _profile_operators (const gchar *db_filename)
 
   aran_profile_key_file_poly1d_write (profiles_file, profiles_group,
                                       "l2p", ap1d, chisq, nsamples,
+                                      abscissas, samples);
+
+  ap1d->degree = 2;
+  chisq =
+    aran_poly1d_profile_p2l_3d_samples ((AranParticle2LocalFunc3d) p2l,
+                                        (AranZeroFunc) aran_development3d_set_zero,
+                                        &p1,
+                                        (AranDevelopmentNewFunc)
+                                        aran_development3d_new,
+                                        (GDestroyNotify) aran_development3d_free,
+                                        ap1d, nsamples, abscissas, samples);
+
+  aran_profile_key_file_poly1d_write (profiles_file, profiles_group,
+                                      "p2l", ap1d, chisq, nsamples,
+                                      abscissas, samples);
+
+  ap1d->degree = 2;
+  chisq =
+    aran_poly1d_profile_m2p_3d_samples ((AranMultipole2ParticleFunc3d) m2p,
+                                        NULL,
+                                        &p1,
+                                        (AranDevelopmentNewFunc) aran_development3d_new,
+                                        (GDestroyNotify) aran_development3d_free,
+                                        ap1d, nsamples, abscissas, samples);
+
+  aran_profile_key_file_poly1d_write (profiles_file, profiles_group,
+                                      "m2p", ap1d, chisq, nsamples,
                                       abscissas, samples);
 
   aran_poly1d_free (ap1d);

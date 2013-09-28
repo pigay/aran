@@ -17,16 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "aransolver3d.h"
-
 #include "aran-config.h"
+
+#include <string.h>
 
 #include <glib-object.h>
 /* #include <vsg/vsgd-inline.h> */
 
 #include <vsg/vsgtiming.h>
 
-#include <string.h>
+#include "aransolver3d.h"
+#include "aranprofile.h"
+#include "aranprofiledb.h"
 
 /**
  * AranSolver3d:
@@ -35,7 +37,7 @@
  */
 struct _AranSolver3d
 {
-  VsgPRTree3d *prtree;
+ VsgPRTree3d *prtree;
 
   GType devel_type;
   gpointer devel;
@@ -62,6 +64,15 @@ struct _AranSolver3d
   glong l2p_counter;
   glong p2l_counter;
   glong m2p_counter;
+
+  gdouble p2p_time;
+  gdouble p2m_time;
+  gdouble m2m_time;
+  gdouble m2l_time;
+  gdouble l2l_time;
+  gdouble l2p_time;
+  gdouble p2l_time;
+  gdouble m2p_time;
 };
 
 #define ARAN_SOLVER3D_PREALLOC 4
@@ -181,6 +192,15 @@ static AranSolver3d *_solver3d_alloc ()
   solver->semifar_threshold = 0;
 
   aran_solver3d_reinit_stats (solver);
+
+  solver->p2p_time = -1.;
+  solver->p2m_time = -1.;
+  solver->m2m_time = -1.;
+  solver->m2l_time = -1.;
+  solver->l2l_time = -1.;
+  solver->l2p_time = -1.;
+  solver->p2l_time = -1.;
+  solver->m2p_time = -1.;
 
   return solver;
 }
@@ -603,6 +623,15 @@ void aran_solver3d_set_functions_full (AranSolver3d *solver,
 {
   g_return_if_fail (solver != NULL);
 
+  if (solver->p2p != p2p) solver->p2p_time = -1.;
+  if (solver->p2m != p2m) solver->p2m_time = -1.;
+  if (solver->m2m != m2m) solver->m2m_time = -1.;
+  if (solver->m2l != m2l) solver->m2l_time = -1.;
+  if (solver->l2l != l2l) solver->l2l_time = -1.;
+  if (solver->l2p != l2p) solver->l2p_time = -1.;
+  if (solver->p2l != p2l) solver->p2l_time = -1.;
+  if (solver->m2p != m2p) solver->m2p_time = -1.;
+
   solver->p2p = p2p;
 
   solver->p2m = p2m;
@@ -614,6 +643,166 @@ void aran_solver3d_set_functions_full (AranSolver3d *solver,
   solver->m2p = m2p;
 
   solver->semifar_threshold = semifar_threshold;
+}
+
+void aran_solver3d_get_functions_full (AranSolver3d *solver,
+                                       AranParticle2ParticleFunc3d *p2p,
+                                       AranParticle2MultipoleFunc3d *p2m,
+                                       AranMultipole2MultipoleFunc3d *m2m,
+                                       AranMultipole2LocalFunc3d *m2l,
+                                       AranLocal2LocalFunc3d *l2l,
+                                       AranLocal2ParticleFunc3d *l2p,
+                                       AranParticle2LocalFunc3d *p2l,
+                                       AranMultipole2ParticleFunc3d *m2p,
+                                       guint *semifar_threshold)
+{
+  g_return_if_fail (solver != NULL);
+
+  if (p2m) *p2m = solver->p2m;
+  if (m2m) *m2m = solver->m2m;
+  if (m2l) *m2l = solver->m2l;
+  if (l2l) *l2l = solver->l2l;
+  if (l2p) *l2p = solver->l2p;
+  if (p2l) *p2l = solver->p2l;
+  if (m2p) *m2p = solver->m2p;
+
+  if (semifar_threshold) *semifar_threshold = solver->semifar_threshold;
+}
+
+void aran_solver3d_db_profile_operators (AranSolver3d *solver, gdouble order)
+{
+  g_return_if_fail (solver != NULL);
+
+  if (solver->p2p)
+    {
+      solver->p2p_time = aran_profile_db_address_eval (solver->p2p, 0.);
+    }
+
+  if (solver->p2m)
+    {
+      solver->p2m_time = aran_profile_db_address_eval (solver->p2m, order);
+    }
+
+  if (solver->p2l)
+    {
+      solver->p2l_time = aran_profile_db_address_eval (solver->p2l, order);
+    }
+
+  if (solver->l2p)
+    {
+      solver->l2p_time = aran_profile_db_address_eval (solver->p2p, order);
+    }
+
+  if (solver->m2p)
+    {
+      solver->m2p_time = aran_profile_db_address_eval (solver->m2p, order);
+    }
+
+  if (solver->m2m)
+    {
+      solver->m2m_time = aran_profile_db_address_eval (solver->m2m, order);
+    }
+
+  if (solver->m2l)
+    {
+      solver->m2l_time = aran_profile_db_address_eval (solver->m2l, order);
+    }
+
+  if (solver->l2l)
+    {
+      solver->l2l_time = aran_profile_db_address_eval (solver->l2l, order);
+    }
+
+  g_printerr ("db_p2p_time %p = %g\n", solver->p2p, solver->p2p_time);
+  g_printerr ("db_p2m_time %p = %g\n", solver->p2m, solver->p2m_time);
+  g_printerr ("db_p2l_time %p = %g\n", solver->p2l, solver->p2l_time);
+  g_printerr ("db_m2m_time %p = %g\n", solver->m2m, solver->m2m_time);
+  g_printerr ("db_m2l_time %p = %g\n", solver->m2l, solver->m2l_time);
+  g_printerr ("db_l2l_time %p = %g\n", solver->l2l, solver->l2l_time);
+  g_printerr ("db_l2p_time %p = %g\n", solver->l2p, solver->l2p_time);
+  g_printerr ("db_m2p_time %p = %g\n", solver->m2p, solver->m2p_time);
+
+}
+void aran_solver3d_profile_operators (AranSolver3d *solver,
+                                      AranParticleInitFunc3d point_init,
+                                      gpointer p1, gpointer p2)
+{
+  gdouble t;
+  guint maxbox;
+  VsgPRTree3dNodeInfo nodeinfo1 = {{0., 0., 0.},};
+  VsgPRTree3dNodeInfo nodeinfo2 = {{1., 1., 1.},};
+  gpointer dev1, dev2;
+
+  g_return_if_fail (solver != NULL);
+
+  maxbox = vsg_prtree3d_get_max_point (solver->prtree);
+
+  if (solver->p2p)
+    {
+      t = aran_profile_nearfunc_3d (solver->p2p, point_init, p1, p2, maxbox);
+      solver->p2p_time = t / (maxbox * maxbox);;
+    }
+
+  dev1 = g_boxed_copy (solver->devel_type, solver->devel);
+
+  if (solver->p2m)
+    {
+      t = aran_profile_p2m_3d (solver->p2m, solver->zero, p1, &nodeinfo1, dev1);
+      solver->p2m_time = t;
+    }
+
+  if (solver->l2p)
+    {
+      t = aran_profile_l2p_3d (solver->l2p, point_init, &nodeinfo1, dev1, p1);
+      solver->l2p_time = t;
+    }
+  if (solver->p2l)
+    {
+      t = aran_profile_p2l_3d (solver->p2l, solver->zero, p1, &nodeinfo1, dev1);
+      solver->p2l_time = t;
+    }
+
+  if (solver->m2p)
+    {
+      t = aran_profile_m2p_3d (solver->m2p, point_init, &nodeinfo1, dev1, p1);
+      solver->m2p_time = t;
+    }
+
+  dev2 = g_boxed_copy (solver->devel_type, solver->devel);
+
+  if (solver->m2m)
+    {
+      t = aran_profile_m2m_3d (solver->m2m, solver->zero, &nodeinfo1, dev1,
+                               &nodeinfo2, dev2);
+      solver->m2m_time = t;
+    }
+
+  if (solver->m2l)
+    {
+      t = aran_profile_m2l_3d (solver->m2l, solver->zero, &nodeinfo1, dev1,
+                               &nodeinfo2, dev2);
+      solver->m2l_time = t;
+    }
+
+  if (solver->l2l)
+    {
+      t = aran_profile_l2l_3d (solver->l2l, solver->zero, &nodeinfo1, dev1,
+                               &nodeinfo2, dev2);
+      solver->l2l_time = t;
+    }
+
+  g_boxed_free (solver->devel_type, dev1);
+  g_boxed_free (solver->devel_type, dev2);
+
+  /* g_printerr ("p2p_time = %g\n", solver->p2p_time); */
+  /* g_printerr ("p2m_time = %g\n", solver->p2m_time); */
+  /* g_printerr ("p2l_time = %g\n", solver->p2l_time); */
+  /* g_printerr ("m2m_time = %g\n", solver->m2m_time); */
+  /* g_printerr ("m2l_time = %g\n", solver->m2l_time); */
+  /* g_printerr ("l2l_time = %g\n", solver->l2l_time); */
+  /* g_printerr ("l2p_time = %g\n", solver->l2p_time); */
+  /* g_printerr ("m2p_time = %g\n", solver->m2p_time); */
+
 }
 
 /**
@@ -883,6 +1072,45 @@ void aran_solver3d_foreach_point_custom (AranSolver3d *solver,
                                      func, user_data);
 }
 
+guint aran_solver3d_optimal_semifar_threshold (AranSolver3d *solver)
+{
+  guint semifar_threshold;
+
+  g_return_val_if_fail (solver != NULL, G_MAXUINT);
+
+  if (solver->p2l_time < 0. || solver->m2p_time < 0. || solver->p2p_time <= 0.)
+    {
+      semifar_threshold = G_MAXUINT;
+    }
+  else
+    {
+      semifar_threshold = (solver->p2l_time + solver->m2p_time) / solver->p2p_time;
+    }
+
+#ifdef VSG_HAVE_MPI
+  /* semifar threshold values are to be consistent across all processors */
+  {
+    MPI_Comm communicator = vsg_prtree3d_get_communicator (solver->prtree);
+
+    if (communicator != MPI_COMM_NULL)
+      {
+        guint tmp;
+        gint sz;
+
+        MPI_Comm_size (communicator, &sz);
+
+        if (sz > 1)
+          {
+            MPI_Allreduce (&semifar_threshold, &tmp, 1, MPI_UNSIGNED, MPI_MAX, communicator);
+            semifar_threshold = tmp;
+          }
+      }
+  }
+#endif
+
+  return semifar_threshold;
+}
+
 /**
  * aran_solver3d_solve:
  * @solver: an #AranSolver3d.
@@ -894,6 +1122,7 @@ void aran_solver3d_solve (AranSolver3d *solver)
   VsgPRTree3dFarInteractionFunc far;
   VsgPRTree3dInteractionFunc near;
   VsgPRTree3dSemifarInteractionFunc semifar;
+
   g_return_if_fail (solver != NULL);
 
   VSG_TIMING_START (solve, vsg_prtree3d_get_communicator (solver->prtree));
@@ -907,6 +1136,14 @@ void aran_solver3d_solve (AranSolver3d *solver)
 
   semifar = (VsgPRTree3dSemifarInteractionFunc)
     ((solver->p2l != NULL) && (solver->m2p != NULL) ? semifar_func : NULL);
+
+  if (semifar != NULL && solver->semifar_threshold == 0)
+    {
+      /* find optimal semifar_threshold */
+      solver->semifar_threshold = aran_solver3d_optimal_semifar_threshold (solver);
+
+      g_printerr ("semifar threshold: %u\n", solver->semifar_threshold);
+    }
 
   /* clear multipole and local developments before the big work */
   vsg_prtree3d_traverse (solver->prtree, G_POST_ORDER,
@@ -934,7 +1171,8 @@ void aran_solver3d_solve (AranSolver3d *solver)
   VSG_TIMING_END (up, stderr);
 
   /* transmit info from Multipole to Local developments */
-  vsg_prtree3d_near_far_traversal_full (solver->prtree, far, near, semifar, solver->semifar_threshold, solver);
+  vsg_prtree3d_near_far_traversal_full (solver->prtree, far, near, semifar,
+                                        solver->semifar_threshold, solver);
 
   VSG_TIMING_START (down, vsg_prtree3d_get_communicator (solver->prtree));
 
@@ -964,6 +1202,15 @@ void aran_solver3d_set_children_order_default (AranSolver3d *solver)
 }
 
 #ifdef VSG_HAVE_MPI
+
+MPI_Comm
+aran_solver3d_get_communicator (AranSolver3d *solver)
+{
+  g_return_val_if_fail (solver != NULL, NULL);
+
+  return vsg_prtree3d_get_communicator (solver->prtree);
+}
+
 
 void aran_solver3d_set_parallel (AranSolver3d *solver,
                                  VsgPRTreeParallelConfig *pconfig)

@@ -29,6 +29,7 @@
 #include <aran/aranpoly1d.h>
 
 typedef void (*AranParticleInitFunc2d) (VsgPoint2 particle);
+
 typedef gpointer (*AranDevelopmentNewFunc) (guint8 posdeg, guint8 negdeg);
 
 gdouble aran_profile_p2p_2d (AranParticle2ParticleFunc2d p2p,
@@ -213,8 +214,6 @@ gdouble aran_poly1d_profile_m2pi_2d_samples (AranMultipole2ParticleInternalFunc2
                                              gdouble *abscissas,
                                              gdouble *samples);
 
-typedef void (*AranParticleInitFunc3d) (VsgPoint3 particle);
-
 gdouble aran_profile_p2p_3d (AranParticle2ParticleFunc3d p2p,
                              AranParticleInitFunc3d init,
                              VsgPoint3 p1,
@@ -227,6 +226,12 @@ gdouble aran_profile_nearfunc_3d (AranParticle2ParticleFunc3d p2p,
                                   gint maxbox);
 
 gdouble aran_profile_p2m_3d (AranParticle2MultipoleFunc3d p2m,
+                             AranZeroFunc init,
+                             VsgPoint3 p,
+                             VsgPRTree3dNodeInfo *nodeinfo,
+                             gpointer dst);
+
+gdouble aran_profile_p2l_3d (AranParticle2LocalFunc3d p2l,
                              AranZeroFunc init,
                              VsgPoint3 p,
                              VsgPRTree3dNodeInfo *nodeinfo,
@@ -255,6 +260,12 @@ gdouble aran_profile_l2l_3d (AranLocal2LocalFunc3d l2l,
                              gpointer dst);
 
 gdouble aran_profile_l2p_3d (AranLocal2ParticleFunc3d l2p,
+                             AranParticleInitFunc3d init,
+                             VsgPRTree3dNodeInfo *nodeinfo,
+                             gpointer dst,
+                             VsgPoint3 p);
+
+gdouble aran_profile_m2p_3d (AranMultipole2ParticleFunc3d m2p,
                              AranParticleInitFunc3d init,
                              VsgPRTree3dNodeInfo *nodeinfo,
                              gpointer dst,
@@ -389,6 +400,16 @@ gdouble aran_poly1d_profile_l2pvi_3d_samples (AranLocal2ParticleGradInternalFunc
                                               gint nsamples,
                                               gdouble *abscissas,
                                               gdouble *samples);
+
+gdouble aran_poly1d_profile_m2p_3d_samples (AranMultipole2ParticleFunc3d m2p,
+                                            AranParticleInitFunc3d init,
+                                            VsgPoint3 p,
+                                            AranDevelopmentNewFunc _new,
+                                            GDestroyNotify _free,
+                                            AranPoly1d *ap1d,
+                                            gint nsamples,
+                                            gdouble *abscissas,
+                                            gdouble *samples);
 
 gdouble aran_poly1d_profile_m2pi_3d_samples (AranMultipole2ParticleInternalFunc3d m2pi,
                                              AranParticleInitFunc3d init,
