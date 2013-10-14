@@ -146,6 +146,10 @@ struct _AranSolver2d
  * particle @dst.
  */
 
+#define _USE_G_SLICES GLIB_CHECK_VERSION (2, 10, 0)
+
+#if ! _USE_G_SLICES
+
 static GMemChunk *aran_solver2d_mem_chunk = 0;
 static guint aran_solver2d_instances_count = 0;
 
@@ -161,11 +165,15 @@ static void aran_solver2d_finalize ()
       aran_solver2d_mem_chunk = 0;
     }
 }
+#endif /* ! _USE_G_SLICES */
 
 static AranSolver2d *_solver2d_alloc ()
 {
   AranSolver2d *solver;
 
+#if _USE_G_SLICES
+  solver = g_slice_new(AranSolver2d);
+#else
   if (!aran_solver2d_mem_chunk)
     {
       aran_solver2d_mem_chunk = g_mem_chunk_create (AranSolver2d,
@@ -176,6 +184,7 @@ static AranSolver2d *_solver2d_alloc ()
   aran_solver2d_instances_count ++;
 
   solver = g_chunk_new (AranSolver2d, aran_solver2d_mem_chunk);
+#endif /* _USE_G_SLICES */
 
   solver->devel = NULL;
   solver->zero = NULL;
@@ -208,17 +217,22 @@ static AranSolver2d *_solver2d_alloc ()
 
 static void _solver2d_dealloc (AranSolver2d *solver)
 {
+#if _USE_G_SLICES
+  g_slice_free (AranSolver2d, solver);
+#else
   g_chunk_free (solver, aran_solver2d_mem_chunk);
 
   aran_solver2d_instances_count --;
 
   if (aran_solver2d_instances_count == 0)
     aran_solver2d_finalize ();
+#endif /* _USE_G_SLICES */
 }
 
 /* private function */
 void aran_solver2d_init ()
 {
+#if ! _USE_G_SLICES
   static gboolean wasinit = FALSE;
 
   if (! wasinit)
@@ -226,6 +240,7 @@ void aran_solver2d_init ()
       wasinit = TRUE;
       g_atexit (aran_solver2d_finalize);
     }
+#endif /* ! _USE_G_SLICES */
 }
 
 

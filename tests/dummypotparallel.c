@@ -378,8 +378,8 @@ void parse_args (int argc, char **argv)
 	{
 	  _hilbert = TRUE;
 	}
-      else if (g_strncasecmp (arg, "-v", 2) == 0 ||
-               g_strncasecmp (arg, "--verbose", 9) == 0)
+      else if (g_ascii_strncasecmp (arg, "-v", 2) == 0 ||
+               g_ascii_strncasecmp (arg, "--verbose", 9) == 0)
         {
           _verbose = TRUE;
         }
