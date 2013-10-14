@@ -61,7 +61,10 @@ static PointAccum *check_points = NULL;
 static guint32 _random_seed = 0;
 static gint _flush_interval = 1000;
 
-
+static void point_accum_clear_accum (PointAccum *pa)
+{
+  pa->accum = 0.;
+}
 
 void p2p (PointAccum *one, PointAccum *other)
 {
@@ -102,6 +105,18 @@ void l2p (const VsgPRTree2dNodeInfo *devel_node, AranDevelopment2d *devel,
 /*   g_printerr (" accum=(%e,%e)\n", creal (particle->accum), */
 /*               cimag (particle->accum)); */
 
+}
+
+void p2l (PointAccum *particle, const VsgPRTree2dNodeInfo *dst_node,
+          AranDevelopment2d *dst)
+{
+  aran_development2d_p2l (&particle->vector, particle->density, dst_node, dst);
+}
+
+void m2p (const VsgPRTree2dNodeInfo *devel_node, AranDevelopment2d *devel,
+          PointAccum *particle)
+{
+  particle->accum += aran_development2d_m2p (devel_node, devel, &particle->vector);
 }
 
 PointAccum *point_accum_alloc (gboolean resident, gpointer user_data)
@@ -226,6 +241,7 @@ VsgParallelVTable point_accum_vtable = {
 static void _one_circle_distribution (GPtrArray *points, AranSolver2d *solver);
 static void _random_distribution (GPtrArray *points, AranSolver2d *solver);
 static void _random2_distribution (GPtrArray *points, AranSolver2d *solver);
+static void _unbalanced_distribution (GPtrArray *points, AranSolver2d *solver);
 
 static gdouble err_lim = 1.E-6;
 static guint np = 12;
@@ -235,6 +251,7 @@ static guint maxbox = 1;
 static guint virtual_maxbox = 0;
 static gboolean _verbose = FALSE;
 static gboolean _hilbert = FALSE;
+static guint semifar_threshold = G_MAXUINT;
 
 static void (*_distribution) (GPtrArray *, AranSolver2d *solver) =
 _one_circle_distribution;
@@ -310,6 +327,18 @@ void parse_args (int argc, char **argv)
 	  else
 	    g_printerr ("Invalid error limit value (-err %s)\n", arg);
 	}
+      else if (g_ascii_strcasecmp (arg, "-semifar") == 0)
+	{
+	  guint tmp = 0;
+	  iarg ++;
+
+	  arg = (iarg<argc) ? argv[iarg] : NULL;
+
+	  if (sscanf (arg, "%u", &tmp) == 1)
+	      semifar_threshold = tmp;
+	  else
+	    g_printerr ("Invalid semifar threshold (-semifar %s)\n", arg);
+	}
       else if (g_ascii_strcasecmp (arg, "-nocheck") == 0)
 	{
 	  check = FALSE;
@@ -336,6 +365,10 @@ void parse_args (int argc, char **argv)
 	    {
 	      _distribution = _random2_distribution;
 	    }
+          else if (g_ascii_strcasecmp (arg, "unbalanced") == 0)
+            {
+              _distribution = _unbalanced_distribution;
+            }
 	  else 
 	    {
 	      g_printerr ("Invalid distribution name (-dist %s)\n", arg);
@@ -529,6 +562,35 @@ static void _random2_distribution (GPtrArray *points,
   g_rand_free (rand);
 }
 
+static void _unbalanced_distribution (GPtrArray *points,
+                              AranSolver2d *solver)
+{
+  PointAccum *point;
+
+  np --;
+
+  _random2_distribution (points, solver);
+
+  point = point_accum_alloc (TRUE, NULL);
+  point->vector.x = -2. * R;
+  point->vector.y = 0.;
+
+  point->density = 1.;
+  point->accum = 0.;
+  point->id = np;
+
+  if (check) memcpy (&check_points[np], point, sizeof (PointAccum));
+  if (!aran_solver2d_insert_point_local (solver, point))
+      point_accum_destroy (point, TRUE, NULL);
+
+  np ++;
+
+#ifdef VSG_HAVE_MPI
+  aran_solver2d_migrate_flush (solver);
+  aran_solver2d_distribute_contiguous_leaves (solver);
+#endif /* VSG_HAVE_MPI */
+}
+
 void empty_array (gpointer var, gpointer data)
 {
   g_free (var);
@@ -591,6 +653,25 @@ void check_parallel_points (AranSolver2d *tocheck)
 			       (AranLocal2LocalFunc2d) aran_development2d_l2l,
 			       (AranLocal2ParticleFunc2d)l2p);
 
+  if (semifar_threshold < G_MAXUINT)
+    {
+      /* if optimal threshold was requested, we need to compare with the same value */
+      if (semifar_threshold == 0)
+        aran_solver2d_get_functions_full (tocheck, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                          &semifar_threshold);
+
+      aran_solver2d_set_functions_full (solver,
+                                        (AranParticle2ParticleFunc2d) p2p,
+                                        (AranParticle2MultipoleFunc2d) p2m,
+                                        (AranMultipole2MultipoleFunc2d) aran_development2d_m2m,
+                                        (AranMultipole2LocalFunc2d) aran_development2d_m2l,
+                                        (AranLocal2LocalFunc2d) aran_development2d_l2l,
+                                        (AranLocal2ParticleFunc2d) l2p,
+                                        (AranParticle2LocalFunc2d) p2l,
+                                        (AranMultipole2ParticleFunc2d) m2p,
+                                        semifar_threshold);
+    }
+
   if (_hilbert)
     {
       /* configure for hilbert curve order traversal */
@@ -607,14 +688,14 @@ void check_parallel_points (AranSolver2d *tocheck)
   aran_solver2d_free (solver);
 }
 
-gboolean _nf_isleaf_virtual_maxbox (const VsgPRTree3dNodeInfo *node_info,
+gboolean _nf_isleaf_virtual_maxbox (const VsgPRTree2dNodeInfo *node_info,
                                     gpointer virtual_maxbox)
 {
   /* shared nodes shouldn't be considered as virtual leaves in this case
    * because point_count is only a local count. For example, a shared node
    * without any local child would be considered as a virtual leaf whatever is
    * its global point_count */
-  if (VSG_PRTREE3D_NODE_INFO_IS_SHARED (node_info)) return FALSE;
+  if (VSG_PRTREE2D_NODE_INFO_IS_SHARED (node_info)) return FALSE;
 
   return node_info->point_count <= * ((guint *) virtual_maxbox);
 }
@@ -685,6 +766,36 @@ int main (int argc, char **argv)
 			       (AranLocal2LocalFunc2d) aran_development2d_l2l,
 			       (AranLocal2ParticleFunc2d)l2p);
 
+  if (semifar_threshold < G_MAXUINT)
+    {
+      aran_solver2d_set_functions_full (solver,
+                                        (AranParticle2ParticleFunc2d) p2p,
+                                        (AranParticle2MultipoleFunc2d) p2m,
+                                        (AranMultipole2MultipoleFunc2d) aran_development2d_m2m,
+                                        (AranMultipole2LocalFunc2d) aran_development2d_m2l,
+                                        (AranLocal2LocalFunc2d) aran_development2d_l2l,
+                                        (AranLocal2ParticleFunc2d) l2p,
+                                        (AranParticle2LocalFunc2d) p2l,
+                                        (AranMultipole2ParticleFunc2d) m2p,
+                                        semifar_threshold);
+
+      if (semifar_threshold == 0)
+        {
+          PointAccum p1 = {{0.1, 0.1}, 0.1, 0., 0};
+          PointAccum p2 = {{-0.1, -0.1}, 0.1, 0., 1};
+
+          /* compute operators timings to be able to compute optimal solver parameters */
+          aran_solver2d_profile_operators (solver, (AranParticleInitFunc2d) point_accum_clear_accum,
+                                           &p1, &p2);
+
+          /* alternatively, we could get timings from profile databases */
+          /* aran_profile_db_read_file ("./profiledb-newtonfield3.ini", NULL); */
+          /* aran_solver2d_db_profile_operators (solver, (gdouble) order); */
+
+        }
+
+      
+    }
   if (_hilbert)
     {
       /* configure for hilbert curve order traversal */

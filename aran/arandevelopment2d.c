@@ -208,13 +208,13 @@ void aran_development2d_p2l (VsgVector2d *position, gdouble charge,
   inv_zp_m_zl = 1./ ((position->x + G_I*position->y) -
                      (dst_node->center.x + G_I*dst_node->center.y));
 
-  tmp = charge * inv_zp_m_zl;
+  tmp = - charge;
 
   for (i=0; i<=aran_laurent_seriesd_get_posdeg (dst->local); i++)
     {
       /* a_i = (zp-zl)^-(k+1) */
-      *local += tmp;
       tmp *= inv_zp_m_zl;
+      (*local) += tmp;
 
       local--;
     }

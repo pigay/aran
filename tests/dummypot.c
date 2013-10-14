@@ -90,6 +90,19 @@ void l2p (const VsgPRTree2dNodeInfo *devel_node, AranDevelopment2d *devel,
 							&particle->vector);
 }
 
+void p2l (PointAccum *particle, const VsgPRTree2dNodeInfo *dst_node,
+          AranDevelopment2d *dst)
+{
+  aran_development2d_p2l (&particle->vector, particle->density, dst_node, dst);
+}
+
+void m2p (const VsgPRTree2dNodeInfo *devel_node, AranDevelopment2d *devel,
+          PointAccum *particle)
+{
+  particle->accum += aran_development2d_m2p (devel_node, devel, &particle->vector);
+
+}
+
 static void _profile_operators (const gchar *db_filename)
 {
   GKeyFile *profiles_file = g_key_file_new ();
@@ -148,7 +161,7 @@ static void _profile_operators (const gchar *db_filename)
                                       abscissas, samples);
 
   ap1d->degree = 1;
-  t =
+  chisq =
     aran_poly1d_profile_l2p_2d_samples ((AranLocal2ParticleFunc2d) l2p,
                                         NULL,
                                         &p1,
@@ -158,6 +171,33 @@ static void _profile_operators (const gchar *db_filename)
 
   aran_profile_key_file_poly1d_write (profiles_file, profiles_group,
                                       "l2p", ap1d, chisq, nsamples,
+                                      abscissas, samples);
+
+  ap1d->degree = 1;
+  chisq =
+    aran_poly1d_profile_p2l_2d_samples ((AranParticle2LocalFunc2d) p2l,
+                                        (AranZeroFunc) aran_development2d_set_zero,
+                                        &p1,
+                                        (AranDevelopmentNewFunc)
+                                        aran_development2d_new,
+                                        (GDestroyNotify) aran_development2d_free,
+                                        ap1d, nsamples, abscissas, samples);
+
+  aran_profile_key_file_poly1d_write (profiles_file, profiles_group,
+                                      "p2l", ap1d, chisq, nsamples,
+                                      abscissas, samples);
+
+  ap1d->degree = 1;
+  chisq =
+    aran_poly1d_profile_m2p_2d_samples ((AranMultipole2ParticleFunc2d) m2p,
+                                        NULL,
+                                        &p1,
+                                        (AranDevelopmentNewFunc) aran_development2d_new,
+                                        (GDestroyNotify) aran_development2d_free,
+                                        ap1d, nsamples, abscissas, samples);
+
+  aran_profile_key_file_poly1d_write (profiles_file, profiles_group,
+                                      "m2p", ap1d, chisq, nsamples,
                                       abscissas, samples);
 
   aran_poly1d_free (ap1d);

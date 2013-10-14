@@ -33,6 +33,8 @@ G_BEGIN_DECLS;
 typedef struct _AranSolver2d AranSolver2d;
 
 /* Particle functions */
+typedef void (*AranParticleInitFunc2d) (VsgPoint2 particle);
+
 typedef void (*AranParticle2ParticleFunc2d) (VsgPoint2 src, VsgPoint2 dst);
 
 typedef void (*AranParticle2MultipoleFunc2d) (VsgPoint2 src,
@@ -107,6 +109,25 @@ void aran_solver2d_set_functions_full (AranSolver2d *solver,
                                        AranMultipole2ParticleFunc2d m2p,
                                        guint semifar_threshold);
 
+void aran_solver2d_get_functions_full (AranSolver2d *solver,
+                                       AranParticle2ParticleFunc2d *p2p,
+                                       AranParticle2MultipoleFunc2d *p2m,
+                                       AranMultipole2MultipoleFunc2d *m2m,
+                                       AranMultipole2LocalFunc2d *m2l,
+                                       AranLocal2LocalFunc2d *l2l,
+                                       AranLocal2ParticleFunc2d *l2p,
+                                       AranParticle2LocalFunc2d *p2l,
+                                       AranMultipole2ParticleFunc2d *m2p,
+                                       guint *semifar_threshold);
+
+void aran_solver2d_db_profile_operators (AranSolver2d *solver, gdouble order);
+
+void aran_solver2d_profile_operators (AranSolver2d *solver,
+                                      AranParticleInitFunc2d point_init,
+                                      gpointer p1, gpointer p2);
+
+guint aran_solver2d_optimal_semifar_threshold (AranSolver2d *solver);
+
 void aran_solver2d_reinit_stats (AranSolver2d *solver);
 void aran_solver2d_get_stats (AranSolver2d *solver, glong *zero_count,
 			      glong *p2p_count, glong *p2m_count,
@@ -162,6 +183,9 @@ void aran_solver2d_set_children_order_default (AranSolver2d *solver);
 void aran_solver2d_solve (AranSolver2d *solver);
 
 #ifdef VSG_HAVE_MPI
+
+MPI_Comm
+aran_solver2d_get_communicator (AranSolver2d *solver);
 
 void aran_solver2d_set_parallel (AranSolver2d *solver,
                                  VsgPRTreeParallelConfig *pconfig);

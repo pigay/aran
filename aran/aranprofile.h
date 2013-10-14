@@ -49,6 +49,12 @@ gdouble aran_profile_p2m_2d (AranParticle2MultipoleFunc2d p2m,
                              VsgPRTree2dNodeInfo *nodeinfo,
                              gpointer dst);
 
+gdouble aran_profile_p2l_2d (AranParticle2LocalFunc2d p2l,
+                             AranZeroFunc init,
+                             VsgPoint2 p,
+                             VsgPRTree2dNodeInfo *nodeinfo,
+                             gpointer dst);
+
 gdouble aran_profile_m2m_2d (AranMultipole2MultipoleFunc2d m2m,
                              AranZeroFunc init,
                              VsgPRTree2dNodeInfo *srcinfo,
@@ -82,6 +88,12 @@ void aran_profile_key_file_poly1d_write (GKeyFile *profiles_file,
                                          const gchar *key, AranPoly1d *ap1d,
                                          gdouble chisq, gint nsamples,
                                          gdouble *abscissas, gdouble *samples);
+
+gdouble aran_profile_m2p_2d (AranMultipole2ParticleFunc2d m2p,
+                             AranParticleInitFunc2d init,
+                             VsgPRTree2dNodeInfo *nodeinfo,
+                             gpointer dst,
+                             VsgPoint2 p);
 
 gdouble aran_poly1d_profile_p2m_2d (AranParticle2MultipoleFunc2d p2m,
                                     AranZeroFunc init,
@@ -204,6 +216,16 @@ gdouble aran_poly1d_profile_l2pi_2d_samples (AranLocal2ParticleInternalFunc2d l2
                                             gint nsamples,
                                             gdouble *abscissas,
                                              gdouble *samples);
+
+gdouble aran_poly1d_profile_m2p_2d_samples (AranMultipole2ParticleFunc2d m2p,
+                                            AranParticleInitFunc2d init,
+                                            VsgPoint2 p,
+                                            AranDevelopmentNewFunc _new,
+                                            GDestroyNotify _free,
+                                            AranPoly1d *ap1d,
+                                            gint nsamples,
+                                            gdouble *abscissas,
+                                            gdouble *samples);
 
 gdouble aran_poly1d_profile_m2pi_2d_samples (AranMultipole2ParticleInternalFunc2d m2pi,
                                              AranParticleInitFunc2d init,
