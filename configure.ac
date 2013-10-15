@@ -12,7 +12,7 @@
 #
 m4_define([aran_major_version], [0])
 m4_define([aran_minor_version], [3])
-m4_define([aran_micro_version], [0])
+m4_define([aran_micro_version], [1])
 m4_define([aran_interface_age], [0])
 m4_define([aran_binary_age],
           [m4_eval(100 * aran_minor_version + aran_micro_version)])
