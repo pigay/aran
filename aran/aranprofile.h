@@ -28,8 +28,6 @@
 #include <aran/aranrusage.h>
 #include <aran/aranpoly1d.h>
 
-typedef void (*AranParticleInitFunc2d) (VsgPoint2 particle);
-
 typedef gpointer (*AranDevelopmentNewFunc) (guint8 posdeg, guint8 negdeg);
 
 gdouble aran_profile_p2p_2d (AranParticle2ParticleFunc2d p2p,
