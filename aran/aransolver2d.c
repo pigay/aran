@@ -56,10 +56,10 @@ struct _AranSolver2d
   guint semifar_threshold;
 
   glong zero_counter;
-  glong p2p_counter;
+  glong p2p_counter, p2p_remote_counter;
   glong p2m_counter;
   glong m2m_counter;
-  glong m2l_counter;
+  glong m2l_counter, m2l_remote_counter;
   glong l2l_counter;
   glong l2p_counter;
   glong p2l_counter;
@@ -277,6 +277,9 @@ static void near_func_default (const VsgPRTree2dNodeInfo *one_info,
     }
 
   solver->p2p_counter +=one_info->point_count * other_info->point_count;
+  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (one_info) ||
+      VSG_PRTREE2D_NODE_INFO_IS_REMOTE (other_info))
+    solver->p2p_remote_counter +=one_info->point_count * other_info->point_count;
 }
 
 /* near_func algorithm for reflexive interaction (one_info == other_info */
@@ -306,6 +309,9 @@ static void near_func_reflexive (const VsgPRTree2dNodeInfo *one_info,
 
   solver->p2p_counter +=
     (one_info->point_count * (one_info->point_count+1)) / 2;
+
+  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (one_info))
+    solver->p2p_remote_counter +=one_info->point_count * other_info->point_count;
 }
 
 static void near_func (const VsgPRTree2dNodeInfo *one_info,
@@ -343,6 +349,10 @@ static void far_func (const VsgPRTree2dNodeInfo *one_info,
       solver->m2l (other_info, other_dev, one_info, one_dev);
 
       solver->m2l_counter ++;
+
+      if (VSG_PRTREE3D_NODE_INFO_IS_REMOTE (one_info) ||
+          VSG_PRTREE3D_NODE_INFO_IS_REMOTE (other_info))
+        solver->m2l_remote_counter += 2;
     }
 }
 
@@ -824,10 +834,12 @@ void aran_solver2d_reinit_stats (AranSolver2d *solver)
 
   solver->zero_counter = 0;
   solver->p2p_counter = 0;
+  solver->p2p_remote_counter = 0;
 
   solver->p2m_counter = 0;
   solver->m2m_counter = 0;
   solver->m2l_counter = 0;
+  solver->m2l_remote_counter = 0;
   solver->l2l_counter = 0;
   solver->l2p_counter = 0;
   solver->p2l_counter = 0;
@@ -846,6 +858,8 @@ void aran_solver2d_reinit_stats (AranSolver2d *solver)
  * @l2p: local 2 particle function count result.
  * @p2l: particle 2 localfunction count result.
  * @m2p: multipole 2 particle function count result.
+ * @p2p_remote: number of p2p calls with remote nodes.
+ * @m2l_remote: number of m2l calls with remote nodes.
  *
  * Retrieves count values for @solver differents functions. Each value
  * represents the number of calls of the corresponding functino since
@@ -855,15 +869,18 @@ void aran_solver2d_get_stats (AranSolver2d *solver, glong *zero_count,
                               glong *p2p_count, glong *p2m_count,
                               glong *m2m_count, glong *m2l_count,
                               glong *l2l_count, glong *l2p_count,
-                              glong *p2l_count, glong *m2p_count)
+                              glong *p2l_count, glong *m2p_count,
+                              glong *p2p_remote_count, glong *m2l_remote_count)
 {
   g_return_if_fail (solver != NULL);
 
   *zero_count = solver->zero_counter;
   *p2p_count = solver->p2p_counter;
+  *p2p_remote_count = solver->p2p_remote_counter;
   *p2m_count = solver->p2m_counter;
   *m2m_count = solver->m2m_counter;
   *m2l_count = solver->m2l_counter;
+  *m2l_remote_count = solver->m2l_remote_counter;
   *l2l_count = solver->l2l_counter;
   *l2p_count = solver->l2p_counter;
   *p2l_count = solver->p2l_counter;

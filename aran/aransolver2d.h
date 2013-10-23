@@ -133,7 +133,8 @@ void aran_solver2d_get_stats (AranSolver2d *solver, glong *zero_count,
 			      glong *p2p_count, glong *p2m_count,
 			      glong *m2m_count, glong *m2l_count,
 			      glong *l2l_count, glong *l2p_count,
-                              glong *p2l_count, glong *m2p_count);
+                              glong *p2l_count, glong *m2p_count,
+                              glong *p2p_remote_count, glong *m2l_remote_count);
 
 gdouble aran_solver2d_get_tolerance (AranSolver2d *solver);
 
