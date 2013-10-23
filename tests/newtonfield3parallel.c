@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <complex.h>
 
@@ -57,7 +58,7 @@ struct _PointAccum
 static gint rk = 0;
 static gint sz = 1;
 
-static GPtrArray *points = NULL;
+/* static GPtrArray *points = NULL; */
 static PointAccum *check_points = NULL;
 static guint _cp_size = 0;
 
@@ -176,13 +177,19 @@ void m2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
   /* g_printerr (" \n"); */
 }
 
+#define _USE_G_SLICES GLIB_CHECK_VERSION (2, 10, 0)
+
 PointAccum *point_accum_alloc (gboolean resident, gpointer user_data)
 {
   PointAccum *ret;
+#if _USE_G_SLICES
+  ret = g_slice_new0 (PointAccum);
+#else
   ret = g_malloc0 (sizeof (PointAccum));
+#endif
 
-  if (resident)
-    g_ptr_array_add (points, ret);
+  /* if (resident) */
+  /*   g_ptr_array_add (points, ret); */
 
   return ret;
 }
@@ -190,10 +197,14 @@ PointAccum *point_accum_alloc (gboolean resident, gpointer user_data)
 void point_accum_destroy (PointAccum *data, gboolean resident,
                  gpointer user_data)
 {
-  if (resident)
-    g_ptr_array_remove (points, data);
+  /* if (resident) */
+  /*   g_ptr_array_remove (points, data); */
 
+#if _USE_G_SLICES
+  g_slice_free (PointAccum, data);
+#else
   g_free (data);
+#endif
 }
 
 #ifdef VSG_HAVE_MPI
@@ -1277,6 +1288,27 @@ gboolean _nf_isleaf_virtual_maxbox (const VsgPRTree3dNodeInfo *node_info,
   return node_info->point_count <= * ((guint *) virtual_maxbox);
 }
 
+guint getpeak(pid_t pid)
+{
+  char statusfile[1024], line[1024], unit[12];
+  FILE *f;
+  guint peak;
+
+  if (pid == 0) pid = getpid();
+
+  sprintf(statusfile, "/proc/%d/status", pid);
+  f = fopen(statusfile, "r");
+
+  while (fscanf(f, "%[^\n]\n", line) != EOF)
+    {
+      if (sscanf(line, "VmPeak: %u %s", &peak, unit) > 1)
+        break;
+    }
+  fclose (f);
+
+  return peak;
+}
+
 int main (int argc, char **argv)
 {
 #ifdef VSG_HAVE_MPI
@@ -1309,7 +1341,7 @@ int main (int argc, char **argv)
   aran_development3d_vtable_init (&pconfig.node_data, 0, order);
 #endif
 
-  points = g_ptr_array_new ();
+  /* points = g_ptr_array_new (); */
 
   if (check)
     {
@@ -1379,15 +1411,41 @@ int main (int argc, char **argv)
       aran_solver3d_set_children_order_hilbert (solver);
     }
 
+  if (_verbose)
+    {
+      g_printerr ("%d : fill begin\n", rk);
+      g_printerr ("%d : memory peak1 count = %u\n", rk, getpeak(0));
+
+
+#ifdef VSG_HAVE_MPI
+      MPI_Barrier (MPI_COMM_WORLD);
+#endif
+
+      timer = g_timer_new ();
+    }
+
   _fill (solver);
 
-/*   g_printerr ("ok depth = %d size = %d\n", */
-/*               aran_solver3d_depth (solver), */
-/*               aran_solver3d_point_count (solver)); */
+  if (_verbose)
+    {
+      g_printerr ("%d : fill elapsed=%f seconds\n", rk,
+                  g_timer_elapsed (timer, NULL));
+
+      g_printerr ("%d : tree depth = %d\n", rk,
+                  aran_solver3d_depth (solver));
+
+      g_printerr ("%d : particle count=%d\n", rk,
+                  aran_solver3d_point_count (solver));
+
+      g_timer_destroy (timer);
+  /* g_mem_profile(); */
+    }
 
   if (_verbose)
     {
       g_printerr ("%d : solve begin\n", rk);
+      g_printerr ("%d : memory peak2 count = %u\n", rk, getpeak(0));
+
 
 #ifdef VSG_HAVE_MPI
       MPI_Barrier (MPI_COMM_WORLD);
@@ -1406,6 +1464,8 @@ int main (int argc, char **argv)
 
       g_printerr ("%d : solve ok elapsed=%f seconds\n", rk,
                   g_timer_elapsed (timer, NULL));
+      g_printerr ("%d : memory peak3 count = %u\n", rk, getpeak(0));
+
 
       g_timer_destroy (timer);
 
@@ -1487,7 +1547,7 @@ int main (int argc, char **argv)
   aran_development3d_vtable_clear (&pconfig.node_data);
 #endif
 
-  g_ptr_array_free (points, TRUE);
+  /* g_ptr_array_free (points, TRUE); */
 
   if (_load_file != NULL) g_free (_load_file);
 
