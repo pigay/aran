@@ -58,7 +58,6 @@ struct _PointAccum
 static gint rk = 0;
 static gint sz = 1;
 
-/* static GPtrArray *points = NULL; */
 static PointAccum *check_points = NULL;
 static guint64 _cp_size = 0;
 
@@ -188,18 +187,12 @@ PointAccum *point_accum_alloc (gboolean resident, gpointer user_data)
   ret = g_malloc0 (sizeof (PointAccum));
 #endif
 
-  /* if (resident) */
-  /*   g_ptr_array_add (points, ret); */
-
   return ret;
 }
 
 void point_accum_destroy (PointAccum *data, gboolean resident,
                  gpointer user_data)
 {
-  /* if (resident) */
-  /*   g_ptr_array_remove (points, data); */
-
 #if _USE_G_SLICES
   g_slice_free (PointAccum, data);
 #else
@@ -314,7 +307,7 @@ VsgParallelVTable point_accum_vtable = {
 static void _traverse_count_local_nodes (VsgPRTree3dNodeInfo *node_info,
                                          gint *count)
 {
-  if (! VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info))
+  if (! VSG_PRTREE3D_NODE_INFO_IS_PRIVATE_REMOTE (node_info))
     {
       (*count) ++;
     }
@@ -344,7 +337,7 @@ static void _traverse_fg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
   fprintf (file, "%snode c=", indent);
   vsg_prtree_key3d_write (&node_info->id, file);
 
-  if (!VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info))
+  if (!VSG_PRTREE3D_NODE_INFO_IS_PRIVATE_REMOTE (node_info))
     {
       FileAndIndent fai = {file, indent};
       /* fprintf (file, " dev="); */
@@ -387,7 +380,7 @@ static void _vtp_pt_write (PointAccum *pt, FILE *file)
 
 static void _vtp_traverse_bg_write (VsgPRTree3dNodeInfo *node_info, FILE *file)
 {
-  if (! VSG_PRTREE3D_NODE_INFO_IS_REMOTE (node_info))
+  if (! VSG_PRTREE3D_NODE_INFO_IS_PRIVATE_REMOTE (node_info))
     {
       gdouble x = node_info->center.x;
       gdouble y = node_info->center.y;
@@ -1175,7 +1168,7 @@ static void _grid_fill (AranSolver3d *solver)
 /*               if (!direct) */
 /*                 aran_solver3d_insert_point (solver, point); */
 
-/*               points[cptr] = point; */
+/*               check_points[cptr] = point; */
 
 /*               cptr ++; */
 /*             } */
@@ -1383,8 +1376,6 @@ int main (int argc, char **argv)
   aran_development3d_vtable_init (&pconfig.node_data, 0, order);
 #endif
 
-  /* points = g_ptr_array_new (); */
-
   if (check)
     {
       _cp_size = MAX (np, 128);
@@ -1479,15 +1470,14 @@ int main (int argc, char **argv)
       g_printerr ("%d : particle count=%d\n", rk,
                   aran_solver3d_point_count (solver));
 
+      g_printerr ("%d : memory peak2 count = %u\n", rk, getpeak(0));
+
       g_timer_destroy (timer);
-  /* g_mem_profile(); */
     }
 
   if (_verbose)
     {
       g_printerr ("%d : solve begin\n", rk);
-      g_printerr ("%d : memory peak2 count = %u\n", rk, getpeak(0));
-
 
 #ifdef VSG_HAVE_MPI
       MPI_Barrier (MPI_COMM_WORLD);
@@ -1595,8 +1585,6 @@ int main (int argc, char **argv)
 #ifdef VSG_HAVE_MPI
   aran_development3d_vtable_clear (&pconfig.node_data);
 #endif
-
-  /* g_ptr_array_free (points, TRUE); */
 
   if (_load_file != NULL) g_free (_load_file);
 

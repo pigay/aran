@@ -277,8 +277,8 @@ static void near_func_default (const VsgPRTree2dNodeInfo *one_info,
     }
 
   solver->p2p_counter +=one_info->point_count * other_info->point_count;
-  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (one_info) ||
-      VSG_PRTREE2D_NODE_INFO_IS_REMOTE (other_info))
+  if (VSG_PRTREE2D_NODE_INFO_IS_PRIVATE_REMOTE (one_info) ||
+      VSG_PRTREE2D_NODE_INFO_IS_PRIVATE_REMOTE (other_info))
     solver->p2p_remote_counter +=one_info->point_count * other_info->point_count;
 }
 
@@ -310,7 +310,7 @@ static void near_func_reflexive (const VsgPRTree2dNodeInfo *one_info,
   solver->p2p_counter +=
     (one_info->point_count * (one_info->point_count+1)) / 2;
 
-  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (one_info))
+  if (VSG_PRTREE2D_NODE_INFO_IS_PRIVATE_REMOTE (one_info))
     solver->p2p_remote_counter +=one_info->point_count * other_info->point_count;
 }
 
@@ -350,8 +350,8 @@ static void far_func (const VsgPRTree2dNodeInfo *one_info,
 
       solver->m2l_counter ++;
 
-      if (VSG_PRTREE3D_NODE_INFO_IS_REMOTE (one_info) ||
-          VSG_PRTREE3D_NODE_INFO_IS_REMOTE (other_info))
+      if (VSG_PRTREE3D_NODE_INFO_IS_PRIVATE_REMOTE (one_info) ||
+          VSG_PRTREE3D_NODE_INFO_IS_PRIVATE_REMOTE (other_info))
         solver->m2l_remote_counter += 2;
     }
 }
@@ -404,7 +404,7 @@ static void clear_func (const VsgPRTree2dNodeInfo *node_info,
   gpointer node_dev = node_info->user_data;
 
 #ifdef VSG_HAVE_MPI
-  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (node_info)) return;
+  if (VSG_PRTREE2D_NODE_INFO_IS_PRIVATE_REMOTE (node_info)) return;
 #endif
 
   solver->zero (node_dev);
@@ -417,7 +417,7 @@ static void up_func (const VsgPRTree2dNodeInfo *node_info,
   gpointer node_dev = node_info->user_data;
 
 #ifdef VSG_HAVE_MPI
-  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (node_info)) return;
+  if (VSG_PRTREE2D_NODE_INFO_IS_PRIVATE_REMOTE (node_info)) return;
 #endif
 
   if (node_info->isleaf)
@@ -457,7 +457,7 @@ static void down_func (const VsgPRTree2dNodeInfo *node_info,
   gpointer node_dev = node_info->user_data;
 
 #ifdef VSG_HAVE_MPI
-  if (VSG_PRTREE2D_NODE_INFO_IS_REMOTE (node_info)) return;
+  if (VSG_PRTREE2D_NODE_INFO_IS_PRIVATE_REMOTE (node_info)) return;
 #endif
 
   if (solver->l2l != NULL && node_info->point_count != 0 &&
