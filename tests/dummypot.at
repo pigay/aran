@@ -23,13 +23,13 @@ AT_TESTED([dummypot])
 
 AT_SETUP(Dummy potential addition solver)
 
-AT_CHECK(dummypot, 0)
-AT_CHECK(dummypot -np 2400 -pr 20, 0)
-AT_CHECK(dummypot -np 240 -pr 40 -err 1.E-8, 0)
-AT_CHECK(dummypot -np 240 -dist random, 0)
+AT_CHECK(env VSG_TIMING_SUPPRESS_OUPUT=1 dummypot, 0)
+AT_CHECK(env VSG_TIMING_SUPPRESS_OUPUT=1 dummypot -np 2400 -pr 20, 0)
+AT_CHECK(env VSG_TIMING_SUPPRESS_OUPUT=1 dummypot -np 240 -pr 40 -err 1.E-8, 0)
+AT_CHECK(env VSG_TIMING_SUPPRESS_OUPUT=1 dummypot -np 240 -dist random, 0)
 
-AT_CHECK(dummypot -np 240 -pr 20 -s 10 -err 1.E-8, 0)
-AT_CHECK(dummypot -np 2400 -pr 20 -s 10, 0)
+AT_CHECK(env VSG_TIMING_SUPPRESS_OUPUT=1 dummypot -np 240 -pr 20 -s 10 -err 1.E-8, 0)
+AT_CHECK(env VSG_TIMING_SUPPRESS_OUPUT=1 dummypot -np 2400 -pr 20 -s 10, 0)
 
 
 AT_CLEANUP
