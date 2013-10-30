@@ -52,7 +52,7 @@ struct _PointAccum
 
   VsgVector3d field;
 
-  guint id;
+  guint64 id;
 };
 
 static gint rk = 0;
@@ -60,7 +60,7 @@ static gint sz = 1;
 
 /* static GPtrArray *points = NULL; */
 static PointAccum *check_points = NULL;
-static guint _cp_size = 0;
+static guint64 _cp_size = 0;
 
 static guint32 _random_seed = 0;
 static gint _flush_interval = 1000;
@@ -126,7 +126,7 @@ void p2p (PointAccum *one, PointAccum *other)
           vsg_vector3d_scalp (&tmp, inv_r3*one->density, &tmp2);
           vsg_vector3d_add (&other->field, &tmp2, &other->field);
 
-          /* g_printerr ("%d : p2p %d %d  \n", rk, one->id, other->id); */
+          /* g_printerr ("%d : p2p %lu %lu  \n", rk, one->id, other->id); */
 /*           vsg_vector3d_write (&one->vector, stderr); */
 /*           g_printerr (" "); */
 /*           vsg_vector3d_write (&one->field, stderr); */
@@ -156,7 +156,7 @@ void l2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
 void p2l (PointAccum *particle, const VsgPRTree3dNodeInfo *dst_node,
           AranDevelopment3d *dst)
 {
-  /* g_printerr ("%d : p2l %d / %#lx %#lx %#lx %d\n", rk, particle->id, dst_node->id.x, dst_node->id.y, dst_node->id.z, dst_node->id.depth); */
+  /* g_printerr ("%d : p2l %lu / %#lx %#lx %#lx %d\n", rk, particle->id, dst_node->id.x, dst_node->id.y, dst_node->id.z, dst_node->id.depth); */
 
   aran_development3d_p2l(&particle->vector, particle->density, dst_node, dst);
 }
@@ -166,7 +166,7 @@ void m2p (const VsgPRTree3dNodeInfo *devel_node, AranDevelopment3d *devel,
 {
   VsgVector3d tmp;
 
-  /* g_printerr ("%d : m2p %d \n", rk, particle->id); */
+  /* g_printerr ("%d : m2p %lu \n", rk, particle->id); */
 
   aran_development3d_m2pv (devel_node, devel, &particle->vector, &tmp);
 
@@ -216,7 +216,7 @@ void point_accum_migrate_pack (PointAccum *pt, VsgPackedMsg *pm,
   vsg_packed_msg_send_append (pm, &pt->vector, 1, VSG_MPI_TYPE_VECTOR3D);
   vsg_packed_msg_send_append (pm, &pt->density, 1, MPI_DOUBLE);
   vsg_packed_msg_send_append (pm, &pt->field, 1, VSG_MPI_TYPE_VECTOR3D);
-  vsg_packed_msg_send_append (pm, &pt->id, 1, MPI_INT);
+  vsg_packed_msg_send_append (pm, &pt->id, 1, MPI_UNSIGNED_LONG);
 }
 
 void point_accum_migrate_unpack (PointAccum *pt, VsgPackedMsg *pm,
@@ -225,7 +225,7 @@ void point_accum_migrate_unpack (PointAccum *pt, VsgPackedMsg *pm,
   vsg_packed_msg_recv_read (pm, &pt->vector, 1, VSG_MPI_TYPE_VECTOR3D);
   vsg_packed_msg_recv_read (pm, &pt->density, 1, MPI_DOUBLE);
   vsg_packed_msg_recv_read (pm, &pt->field, 1, VSG_MPI_TYPE_VECTOR3D);
-  vsg_packed_msg_recv_read (pm, &pt->id, 1, MPI_INT);
+  vsg_packed_msg_recv_read (pm, &pt->id, 1, MPI_UNSIGNED_LONG);
 }
 
 /* visit forward pack/unpack functions */
@@ -233,7 +233,7 @@ void point_accum_migrate_unpack (PointAccum *pt, VsgPackedMsg *pm,
 void point_accum_visit_fw_pack (PointAccum *pt, VsgPackedMsg *pm,
                                 gpointer user_data)
 {
-  /* g_printerr ("%d : fw pack %d %p\n", rk, pt->id, pt); */
+  /* g_printerr ("%d : fw pack %lu %p\n", rk, pt->id, pt); */
 /*   g_printerr ("%d : fw pack d=%e v=", */
 /*               rk, */
 /*               pt->density); */
@@ -242,7 +242,7 @@ void point_accum_visit_fw_pack (PointAccum *pt, VsgPackedMsg *pm,
 
   vsg_packed_msg_send_append (pm, &pt->vector, 1, VSG_MPI_TYPE_VECTOR3D);
   vsg_packed_msg_send_append (pm, &pt->density, 1, MPI_DOUBLE);
-  vsg_packed_msg_send_append (pm, &pt->id, 1, MPI_INT);
+  vsg_packed_msg_send_append (pm, &pt->id, 1, MPI_UNSIGNED_LONG);
 }
 
 void point_accum_visit_fw_unpack (PointAccum *pt, VsgPackedMsg *pm,
@@ -251,10 +251,10 @@ void point_accum_visit_fw_unpack (PointAccum *pt, VsgPackedMsg *pm,
   vsg_packed_msg_recv_read (pm, &pt->vector, 1, VSG_MPI_TYPE_VECTOR3D);
   vsg_packed_msg_recv_read (pm, &pt->density, 1, MPI_DOUBLE);
   pt->field = VSG_V3D_ZERO;
-  vsg_packed_msg_recv_read (pm, &pt->id, 1, MPI_INT);
+  vsg_packed_msg_recv_read (pm, &pt->id, 1, MPI_UNSIGNED_LONG);
   pt->id = -pt->id;
 
-  /* g_printerr ("%d : fw unpack %d\n", rk, pt->id); */
+  /* g_printerr ("%d : fw unpack %lu\n", rk, pt->id); */
 }
 
 /* visit forward pack/unpack functions */
@@ -262,7 +262,7 @@ void point_accum_visit_fw_unpack (PointAccum *pt, VsgPackedMsg *pm,
 void point_accum_visit_bw_pack (PointAccum *pt, VsgPackedMsg *pm,
                                 gpointer user_data)
 {
-  /* g_printerr ("%d : bw pack %d\n",rk, pt->id); */
+  /* g_printerr ("%d : bw pack %lu\n",rk, pt->id); */
 
   vsg_packed_msg_send_append (pm, &pt->field, 1, VSG_MPI_TYPE_VECTOR3D);
 
@@ -272,14 +272,14 @@ void point_accum_visit_bw_unpack (PointAccum *pt, VsgPackedMsg *pm,
                                   gpointer user_data)
 {
 
-  /* g_printerr ("%d : bw unpack %d %p\n",rk, pt->id, pt); */
+  /* g_printerr ("%d : bw unpack %lu %p\n",rk, pt->id, pt); */
   vsg_packed_msg_recv_read (pm, &pt->field, 1, VSG_MPI_TYPE_VECTOR3D);
 }
 
 void point_accum_visit_bw_reduce (PointAccum *a, PointAccum *b,
                                   gpointer user_data)
 {
-/*   g_printerr ("%d : bw red id=%d a=", */
+/*   g_printerr ("%d : bw red id=%lu a=", */
 /*               rk, b->id); */
 /*   vsg_vector3d_write (&a->field, stderr); */
 /*   g_printerr (" b="); */
@@ -328,7 +328,7 @@ struct _FileAndIndent {
 
 static void _pt_write (PointAccum *pt, FileAndIndent *fai)
 {
-  fprintf (fai->file, "%si=%d v=", fai->indent, pt->id);
+  fprintf (fai->file, "%si=%lu v=", fai->indent, pt->id);
   vsg_vector3d_write (&pt->vector, fai->file);
   fprintf (fai->file, " d=%e ", pt->density);
   vsg_vector3d_write (&pt->field, fai->file);
@@ -416,9 +416,9 @@ static void _vtp_tree_write (AranSolver3d *solver, gchar *prefix)
 {
   gchar fn[1024];
   FILE *f;
-  gint np = aran_solver3d_point_count (solver);
+  guint64 np = aran_solver3d_point_count (solver);
   gint nn = 0;
-  gint i;
+  guint64 i;
 
   g_sprintf (fn, "%s%03d.vtp", prefix, rk);
   f = fopen (fn, "w");
@@ -430,7 +430,7 @@ static void _vtp_tree_write (AranSolver3d *solver, gchar *prefix)
   fprintf (f, "<?xml version=\"1.0\" ?>\n"                       \
            "<VTKFile type=\"PolyData\" version=\"0.1\">\n"       \
            "<PolyData>\n"                                        \
-           "<Piece NumberOfPoints=\"%d\" NumberOfVerts=\"%d\" "  \
+           "<Piece NumberOfPoints=\"%lu\" NumberOfVerts=\"%lu\" "  \
            "NumberOfLines=\"%d\" NumberOfStrips=\"0\" "          \
            "NumberOfPolys=\"0\">\n",
            np + 6*nn, np, 3*nn);
@@ -448,18 +448,18 @@ static void _vtp_tree_write (AranSolver3d *solver, gchar *prefix)
 
   fprintf (f, "<Verts>\n");
   fprintf (f, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
-  for (i=0; i<np; i++) fprintf (f, "%d ", i);
+  for (i=0; i<np; i++) fprintf (f, "%lu ", i);
   fprintf (f, "\n</DataArray>\n");
   fprintf (f, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\" >");
-  for (i=0; i<np; i++) fprintf (f, "%d ", i+1);
+  for (i=0; i<np; i++) fprintf (f, "%lu ", i+1);
   fprintf (f, "\n</DataArray>\n</Verts>\n");
 
   fprintf (f, "<Lines>\n");
   fprintf (f, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
-  for (i=0; i<3*nn; i++) fprintf (f, "%d %d ", np + 2*i, np + 2*i+1);
+  for (i=0; i<3*nn; i++) fprintf (f, "%lu %lu ", np + 2*i, np + 2*i+1);
   fprintf (f, "\n</DataArray>\n");
   fprintf (f, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\" >");
-  for (i=0; i<3*nn; i++) fprintf (f, "%d ", 2*(i+1));
+  for (i=0; i<3*nn; i++) fprintf (f, "%lu ", 2*(i+1));
   fprintf (f, "\n</DataArray>\n</Lines>\n");
 
   fprintf (f, "\n</Piece>\n");
@@ -484,7 +484,7 @@ static void _load_fill (AranSolver3d *solver);
 static void _grid_fill (AranSolver3d *solver);
 
 static gdouble err_lim = 1.E-3;
-static guint np = 12;
+static guint64 np = 12;
 static guint order = 20;
 static gboolean check = TRUE;
 static gboolean direct = FALSE;
@@ -507,7 +507,6 @@ static AranLocal2LocalFunc3d l2l =
 static void (*_fill) (AranSolver3d *solver) =
 _one_circle_fill;
 
-
 static
 void parse_args (int argc, char **argv)
 {
@@ -520,12 +519,12 @@ void parse_args (int argc, char **argv)
 
       if (g_ascii_strcasecmp (arg, "-np") == 0)
         {
-          guint tmp = 0;
+          guint64 tmp = 0;
           iarg ++;
 
           arg = (iarg<argc) ? argv[iarg] : NULL;
 
-          if (sscanf (arg, "%u", &tmp) == 1)
+          if (sscanf (arg, "%lu", &tmp) == 1)
               np = tmp;
           else
             g_printerr ("Invalid particles number (-np %s)\n", arg);
@@ -718,7 +717,7 @@ void parse_args (int argc, char **argv)
 
 static void _one_circle_fill (AranSolver3d *solver)
 {
-  guint i;
+  guint64 i;
   PointAccum *point;
 
   for (i=0; i<np; i++)
@@ -732,7 +731,7 @@ static void _one_circle_fill (AranSolver3d *solver)
           if (i%(_flush_interval*10) == 0)
             {
               if (_verbose && rk == 0)
-                g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
+                g_printerr ("%d: contiguous dist before %luth point\n", rk, i);
 
               aran_solver3d_distribute_contiguous_leaves (solver);
               _flush_interval *=2;
@@ -753,7 +752,7 @@ static void _one_circle_fill (AranSolver3d *solver)
       if (i%sz != rk) continue;
 
       if (i % 10000 == 0 && _verbose)
-        g_printerr ("%d: insert %dth point\n", rk, i);
+        g_printerr ("%d: insert %luth point\n", rk, i);
 
       point = point_accum_alloc (TRUE, NULL);
 
@@ -769,7 +768,7 @@ static void _one_circle_fill (AranSolver3d *solver)
 
 static void _random_fill (AranSolver3d *solver)
 {
-  guint i;
+  guint64 i;
   PointAccum *point;
   GRand *rand = g_rand_new_with_seed (_random_seed);
 
@@ -784,7 +783,7 @@ static void _random_fill (AranSolver3d *solver)
           if (i%(_flush_interval*10) == 0)
             {
               if (_verbose && rk == 0)
-                g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
+                g_printerr ("%d: contiguous dist before %luth point\n", rk, i);
 
               aran_solver3d_distribute_contiguous_leaves (solver);
               _flush_interval *=2;
@@ -804,7 +803,7 @@ static void _random_fill (AranSolver3d *solver)
       if (i%sz != rk) continue;
 
       if (i % 10000 == 0 && _verbose)
-        g_printerr ("%d: insert %dth point\n", rk, i);
+        g_printerr ("%d: insert %luth point\n", rk, i);
 
       point = point_accum_alloc (TRUE, NULL);
 
@@ -823,7 +822,7 @@ static void _random_fill (AranSolver3d *solver)
 
 static void _random2_fill (AranSolver3d *solver)
 {
-  guint i;
+  guint64 i;
   PointAccum *point;
   GRand *rand = g_rand_new_with_seed (_random_seed);
 
@@ -839,7 +838,7 @@ static void _random2_fill (AranSolver3d *solver)
           if (i%(_flush_interval*10) == 0)
             {
               if (_verbose && rk == 0)
-                g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
+                g_printerr ("%d: contiguous dist before %luth point\n", rk, i);
 
               aran_solver3d_distribute_contiguous_leaves (solver);
               _flush_interval *=2;
@@ -850,7 +849,7 @@ static void _random2_fill (AranSolver3d *solver)
       point->vector.x = g_rand_double_range (rand, -R, R);;
       point->vector.y = g_rand_double_range (rand, -R, R);;
       point->vector.z = g_rand_double_range (rand, -R, R);;
-      point->density = 1.;
+      point->density = 1./np;
       point->field = VSG_V3D_ZERO;
       point->id = i;
 
@@ -863,7 +862,7 @@ static void _random2_fill (AranSolver3d *solver)
       if (aran_solver3d_insert_point_local (solver, point))
         {
           if (i % 10000 == 0 && _verbose)
-            g_printerr ("%d: insert %dth point\n", rk, i);
+            g_printerr ("%d: insert %luth point\n", rk, i);
 
           point = point_accum_alloc (TRUE, NULL);
         }
@@ -913,7 +912,7 @@ static void _unbalanced_fill (AranSolver3d *solver)
 static void _plummer_fill (AranSolver3d *solver)
 {
   gdouble rmax = 300.;
-  guint i, real_np = 0;
+  guint64 i, real_np = 0;
   PointAccum lb, ub;
   PointAccum *point;
   GRand *rand = g_rand_new_with_seed (_random_seed);
@@ -950,7 +949,7 @@ static void _plummer_fill (AranSolver3d *solver)
           if (i%(_flush_interval*10) == 0)
             {
               if (_verbose && rk == 0)
-                g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
+                g_printerr ("%d: contiguous dist before %luth point\n", rk, i);
 
               aran_solver3d_distribute_contiguous_leaves (solver);
               _flush_interval *=2;
@@ -986,13 +985,13 @@ static void _plummer_fill (AranSolver3d *solver)
       if (aran_solver3d_insert_point_local (solver, point))
         {
           if (i % 10000 == 0 && _verbose)
-            g_printerr ("%d: insert %dth point\n", rk, i);
+            g_printerr ("%d: insert %luth point\n", rk, i);
 
           point = point_accum_alloc (TRUE, NULL);
         }
     }
 
-  g_printerr ("%d : real_np %d\n", rk, real_np);
+  g_printerr ("%d : real_np %lu\n", rk, real_np);
 
   np = real_np;
 
@@ -1009,13 +1008,13 @@ static void _plummer_fill (AranSolver3d *solver)
 static void _load_fill (AranSolver3d *solver)
 {
   gdouble x, y, z, d;
-  guint i;
+  guint64 i;
   PointAccum *point;
   FILE *file = fopen (_load_file, "r");
 
   point = point_accum_alloc (TRUE, NULL);
 
-  while (fscanf (file, "%d %lf %lf %lf %lf", &i, &x, &y, &z, &d) != EOF)
+  while (fscanf (file, "%lu %lf %lf %lf %lf", &i, &x, &y, &z, &d) != EOF)
     {
 
 /*       g_printerr ("%d : loaded point %d\n", rk, i); */
@@ -1027,7 +1026,7 @@ static void _load_fill (AranSolver3d *solver)
           if (i%(_flush_interval*10) == 0)
             {
               if (_verbose && rk == 0)
-                g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
+                g_printerr ("%d: contiguous dist before %luth point\n", rk, i);
 
               aran_solver3d_distribute_contiguous_leaves (solver);
               _flush_interval *=2;
@@ -1058,7 +1057,7 @@ static void _load_fill (AranSolver3d *solver)
       if (aran_solver3d_insert_point_local (solver, point))
         {
           if (i % 10000 == 0 && _verbose)
-            g_printerr ("%d: insert %dth point\n", rk, i);
+            g_printerr ("%d: insert %luth point\n", rk, i);
 
           point = point_accum_alloc (TRUE, NULL);
         }
@@ -1076,7 +1075,7 @@ static void _load_fill (AranSolver3d *solver)
 /* UV sphere fill */
 static void _uvsphere_fill (AranSolver3d *solver)
 {
-  gint i;
+  guint64 i;
   PointAccum *point;
   VsgVector3d lb, ub;
   GRand *rand = g_rand_new_with_seed (_random_seed);
@@ -1104,7 +1103,7 @@ static void _uvsphere_fill (AranSolver3d *solver)
       if (aran_solver3d_insert_point_local (solver, point))
         {
           if (i % 10000 == 0 && _verbose)
-            g_printerr ("%d: insert %dth point\n", rk, i);
+            g_printerr ("%d: insert %luth point\n", rk, i);
 
           point = point_accum_alloc (TRUE, NULL);
         }
@@ -1113,7 +1112,7 @@ static void _uvsphere_fill (AranSolver3d *solver)
       if (i%(_flush_interval*10) == 0)
         {
           if (_verbose && rk == 0)
-            g_printerr ("%d: contiguous dist before %dth point\n", rk, i);
+            g_printerr ("%d: contiguous dist before %luth point\n", rk, i);
           aran_solver3d_distribute_contiguous_leaves (solver);
 
           _flush_interval *=2;
@@ -1132,7 +1131,7 @@ static void _uvsphere_fill (AranSolver3d *solver)
 
 static void _grid_fill (AranSolver3d *solver)
 {
-/*   guint i, j, k, size, cptr = 0; */
+/*   guint64 i, j, k, size, cptr = 0; */
 /*   gdouble x, y, z, density; */
 
 /*   size = floor (pow (np, 1./3.)); */
@@ -1171,11 +1170,13 @@ static void _grid_fill (AranSolver3d *solver)
 /*     } */
 }
 
+
+
 gdouble maxerr = 0.;
 
 void check_point_field (PointAccum *point, gint *ret)
 {
-  gint i;
+  guint64 i;
   gdouble err;
   gdouble denom;
   PointAccum *check;
@@ -1194,7 +1195,7 @@ void check_point_field (PointAccum *point, gint *ret)
 
   if (fabs (err) > err_lim || !finite (err))
     {
-      g_printerr ("%d : Field simulation error: %d relative=(%e) "
+      g_printerr ("%d : Field simulation error: %lu relative=(%e) "
                   "pos=(%f,%f,%f)\n"
                   "                        computed=(%f,%f,%f) "
                   "exact=(%f,%f,%f)\n",
@@ -1206,7 +1207,7 @@ void check_point_field (PointAccum *point, gint *ret)
     }
   /* else */
   /*   { */
-  /*     g_printerr ("%d : Field simulation ok: %d relative=(%e) exact=(%f,%f,%f)\n", */
+  /*     g_printerr ("%d : Field simulation ok: %lu relative=(%e) exact=(%f,%f,%f)\n", */
   /*                 rk, i, fabs(err), check->field.x, check->field.y, check->field.z); */
 
   /*   } */
@@ -1218,7 +1219,7 @@ void check_parallel_points (AranSolver3d *solver)
   VsgVector3d ubound;
   VsgPRTree3d *prtree;
   AranSolver3d *solver2;
-  int i;
+  guint64 i;
 
   aran_solver3d_get_bounds (solver, &lbound, &ubound);
 
@@ -1512,7 +1513,7 @@ int main (int argc, char **argv)
 
   if (check)
     {
-      gint i, j;
+      guint64 i, j;
 
       if (sz == 1)
         {
