@@ -507,6 +507,9 @@ static AranLocal2LocalFunc3d l2l =
 static void (*_fill) (AranSolver3d *solver) =
 _one_circle_fill;
 
+static void aran_solver3d_write_fma (AranSolver3d *solver, FILE *file);
+static gchar *_save_fma_filename = NULL;
+
 static
 void parse_args (int argc, char **argv)
 {
@@ -691,6 +694,16 @@ void parse_args (int argc, char **argv)
       else if (g_ascii_strcasecmp (arg, "-hilbert") == 0)
         {
           _hilbert = TRUE;
+        }
+      else if (g_ascii_strncasecmp (arg, "--save-fma", 10) == 0)
+        {
+          iarg ++;
+
+          arg = (iarg<argc) ? argv[iarg] : NULL;
+          _save_fma_filename = arg;
+
+          if (arg == NULL)
+            g_printerr ("Invalid FMA save file name (--save-fma %s)\n", arg);
         }
       else if (g_ascii_strncasecmp (arg, "-v", 2) == 0 ||
                g_ascii_strncasecmp (arg, "--verbose", 9) == 0)
@@ -1171,6 +1184,34 @@ static void _grid_fill (AranSolver3d *solver)
 }
 
 
+static void _fma_save_point (PointAccum *point, FILE *file)
+{
+  fprintf (file, "%g %g %g %g\n",
+           point->vector.x, point->vector.y, point->vector.z,
+           point->density);
+}
+
+static void aran_solver3d_write_fma (AranSolver3d *solver, FILE *file)
+{
+  guint64 np;
+  VsgVector3d center, lb, ub;
+  gdouble box_size;
+
+  aran_solver3d_get_bounds (solver, &lb, &ub);
+
+  vsg_vector3d_lerp (&lb, &ub, 0.5, &center);
+
+  box_size = ub.x - center.x;
+  box_size = MAX (box_size, ub.y - center.y);
+  box_size = MAX (box_size, ub.z - center.z);
+
+  np = aran_solver3d_point_count (solver);
+
+  fprintf (file, "%lu %g %g %g %g\n", np, box_size, center.x, center.y, center.z);
+
+  aran_solver3d_foreach_point (solver, (GFunc) _fma_save_point, file);
+
+}
 
 gdouble maxerr = 0.;
 
@@ -1509,6 +1550,13 @@ int main (int argc, char **argv)
 
       _tree_write (prtree, "solv");
       _vtp_tree_write (solver, "solv");
+    }
+
+  if (_save_fma_filename != NULL)
+    {
+      FILE *file = fopen (_save_fma_filename, "w");
+      aran_solver3d_write_fma (solver, file);
+      fclose (file);
     }
 
   if (check)
