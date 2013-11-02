@@ -24,9 +24,12 @@
 
 #include <aran/aranwigner.h>
 
-AranWigner *aran_wigner_repo_lookup (gdouble beta);
-AranWigner *aran_wigner_repo_steal (gdouble beta);
-void aran_wigner_repo_forget (gdouble beta);
+AranWigner *aran_wigner_repo_lookup (gdouble alpha, gdouble beta,
+                                     gdouble gamma);
+AranWigner *aran_wigner_repo_steal (gdouble alpha, gdouble beta,
+                                    gdouble gamma);
+void aran_wigner_repo_forget (gdouble alpha, gdouble beta,
+                              gdouble gamma);
 void aran_wigner_repo_forget_all ();
 
 #endif /* __ARAN_WIGNER_REPO_H__ */

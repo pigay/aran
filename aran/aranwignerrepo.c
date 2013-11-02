@@ -21,17 +21,23 @@
 
 #include "aranwigner-private.h"
 
+#include "arancomplex.h"
+
 #include <math.h>
+
+#define PHASE(m) (((m)%2 == 0) ? 1. : -1.)
 
 static GTree *repo = NULL;
 static gdouble epsilon = 1.e-3;
 
 static gint _angle_compare (gdouble *a, gdouble *b)
 {
-  gdouble diff = *a-*b;
+  gdouble adiff = a[0]-b[0];
+  gdouble bdiff = a[1]-b[1];
+  gdouble gdiff = a[2]-b[2];
 
-  if (diff < -epsilon) return -1;
-  if (diff > epsilon) return 1;
+  if (adiff < -epsilon || bdiff < -epsilon || gdiff < -epsilon) return -1;
+  if (adiff > epsilon || bdiff > epsilon || gdiff > epsilon) return 1;
 
   return 0;
 }
@@ -39,16 +45,20 @@ static gint _angle_compare (gdouble *a, gdouble *b)
 
 /**
  * aran_wigner_repo_lookup:
+ * @alpha: an angle in radians.
  * @beta: an angle in radians.
+ * @gamma: an angle in radians.
  *
  * Looks for corresponding #AranWigner structure in the repository. Creates
  * it if necessary.
  *
  * Returns: the #AranWigner corresponding to a rotation of angle @beta.
  */
-AranWigner *aran_wigner_repo_lookup (gdouble beta)
+AranWigner *aran_wigner_repo_lookup (gdouble alpha, gdouble beta,
+                                     gdouble gamma)
 {
   AranWigner *ret;
+  gdouble abg[3] = {alpha, beta, gamma};
 
   if (repo == NULL)
     {
@@ -58,32 +68,37 @@ AranWigner *aran_wigner_repo_lookup (gdouble beta)
       g_atexit (aran_wigner_repo_forget_all);
     }
 
-  ret = g_tree_lookup (repo, &beta);
+  ret = g_tree_lookup (repo, abg);
 
   if (ret == NULL)
     {
-      ret = aran_wigner_new (beta, 0);
-      g_tree_insert (repo, &(ret->beta), ret);
+      ret = aran_wigner_new (alpha, beta, gamma, 0);
+      g_tree_insert (repo, &(ret->alpha), ret);
     }
+
+  /* g_printerr ("wigner repo lookup %g,%g,%g %g,%g,%g\n", alpha, beta, gamma, ret->alpha, ret->beta, ret->gamma); */
 
   return ret;
 }
 
 /**
  * aran_wigner_repo_steal:
+ * @alpha: an angle in radians.
  * @beta: an angle in radians.
+ * @gamma: an angle in radians.
  *
  * Removes the corresponding #AranWigner structure from the repository.
  *
  * Returns: the #AranWigner corresponding to a rotation of angle @beta.
  */
-AranWigner *aran_wigner_repo_steal (gdouble beta)
+AranWigner *aran_wigner_repo_steal (gdouble alpha, gdouble beta,
+                                    gdouble gamma)
 {
   AranWigner *ret;
 
   g_return_val_if_fail (repo != NULL, NULL);
 
-  ret = aran_wigner_repo_lookup (beta);
+  ret = aran_wigner_repo_lookup (alpha, beta, gamma);
 
   g_tree_steal (repo, &beta);
 
@@ -92,16 +107,21 @@ AranWigner *aran_wigner_repo_steal (gdouble beta)
 
 /**
  * aran_wigner_repo_forget:
+ * @alpha: an angle in radians.
  * @beta: an angle in radians.
+ * @gamma: an angle in radians.
  *
  * Destroys the corresponding #AranWigner structure in the repository if it is
  * present. Returns quietly otherwise.
  */
-void aran_wigner_repo_forget (gdouble beta)
+void aran_wigner_repo_forget (gdouble alpha, gdouble beta,
+                              gdouble gamma)
 {
+  gdouble abg[3] = {alpha, beta, gamma};
+
   g_return_if_fail (repo != NULL);
 
-  g_tree_remove (repo, &beta);
+  g_tree_remove (repo, abg);
 }
 
 /**

@@ -23,14 +23,18 @@
 #include <glib.h>
 #include <stdio.h>
 
+#include <aran/arancomplex.h>
+
 typedef struct _AranWigner AranWigner;
 
-AranWigner *aran_wigner_new (gdouble beta, gint l);
+AranWigner *aran_wigner_new (gdouble alpha, gdouble beta, gdouble gamma, gint l);
 void aran_wigner_free (AranWigner * aw);
+
+void aran_wigner_copy (AranWigner *src, AranWigner *dst);
 
 void aran_wigner_require (AranWigner * aw, guint l);
 
-gdouble *aran_wigner_term (AranWigner * aw, guint l, guint m1, gint m2);
+gcomplex128 *aran_wigner_term (AranWigner * aw, guint l, guint mprime, gint m);
 
 void aran_wigner_write (AranWigner * aw, FILE * file);
 

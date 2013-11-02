@@ -22,14 +22,15 @@
 
 #include <aran/aranwigner.h>
 
-
 struct _AranWigner
 {
   gint lmax;
+  gdouble alpha;
   gdouble beta;
-  gdouble *l_m1_m2_terms;
-  gdouble **l_m1_terms;
-  gdouble ***l_terms;
+  gdouble gamma;
+  gcomplex128 *l_mprime_m_terms;
+  gcomplex128 **l_mprime_terms;
+  gcomplex128 ***l_terms;
 };
 
 #endif /* __ARAN_WIGNER_PRIVATE_H__ */

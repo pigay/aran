@@ -27,8 +27,276 @@
 #include <string.h>
 #include <math.h>
 
-/* functions */
+typedef struct _AranSquareBufferd AranSquareBufferd;
+typedef gdouble (*AranSquareBufferdGenerator) (guint l, guint m,
+                                                  AranSquareBufferd *buf);
+struct _AranSquareBufferd {
+  gint l;
+  gdouble *buffer;
+  gdouble **direct;
+  AranSquareBufferdGenerator generator;
+};
 
+void aran_square_bufferd_require (AranSquareBufferd *buf,
+                                  guint max);
+
+AranSquareBufferd *
+aran_square_bufferd_new (AranSquareBufferdGenerator generator,
+                             guint l)
+{
+  AranSquareBufferd *ret;
+
+  g_return_val_if_fail (generator != NULL, NULL);
+
+  ret = g_malloc (sizeof (AranSquareBufferd));
+
+  ret->l = -1;
+  ret->generator = generator;
+  ret->buffer = NULL;
+  ret->direct = NULL;
+
+  aran_square_bufferd_require (ret, l);
+
+  return ret;
+}
+void aran_square_bufferd_free (AranSquareBufferd *buf)
+{
+  if (buf != NULL)
+    {
+      if (buf->buffer != NULL)
+        g_free (buf->buffer);
+
+      if (buf->direct != NULL)
+        g_free (buf->direct);
+
+      buf->buffer = NULL;
+      buf->direct = NULL;
+
+      g_free (buf);
+    }
+}
+void aran_square_bufferd_require (AranSquareBufferd *buf,
+                                    guint max)
+{
+  guint l, size;
+  gint i, j;
+
+  g_return_if_fail (buf != NULL);
+
+  if (buf->l >= (gint) max) return;
+
+  l = MAX (buf->l, 1);
+
+  while (l < (gint) max) l *= 2;
+
+  size = ((l+1)*(l+1));
+
+  buf->direct = g_realloc (buf->direct, (l+1) * sizeof (gdouble *));
+  buf->buffer = g_realloc (buf->buffer, size * sizeof (gdouble));
+
+  for (i=0; i<=l; i ++)
+    {
+      buf->direct[i] = buf->buffer + (i*(l+1));
+    }
+
+  buf->l = l;
+
+  for (i=0; i<=l; i ++)
+    {
+      for (j=0; j<=l; j ++)
+        buf->direct[i][j] = buf->generator (i, j, buf);
+    }
+}
+gdouble *aran_square_bufferd_get_unsafe (AranSquareBufferd *buf,
+                                            guint l, guint m)
+{
+  return &(buf->direct[l][m]);
+}
+
+
+static AranSquareBufferd *_betal_over_betan_buffer = NULL;
+
+static gdouble _betal_over_betan_generator (guint l, guint n, AranSquareBufferd * buf)
+{
+  return aran_spherical_seriesd_beta (l) /
+    aran_spherical_seriesd_beta (n);
+}
+
+static void _atexit ()
+{
+  aran_square_bufferd_free (_betal_over_betan_buffer);
+  _betal_over_betan_buffer = NULL;
+}
+
+static void _betal_over_betan_require (guint deg)
+{
+  aran_spherical_seriesd_beta_require (deg);
+ 
+  if (_betal_over_betan_buffer == NULL)
+    {
+      _betal_over_betan_buffer = aran_square_bufferd_new (_betal_over_betan_generator, deg);
+
+      g_atexit (_atexit);
+    }
+  else
+    {
+      aran_square_bufferd_require (_betal_over_betan_buffer, deg);
+    }
+}
+
+static gdouble _betal_over_betan (guint l, guint n)
+{
+  return *aran_square_bufferd_get_unsafe (_betal_over_betan_buffer, l, n);
+}
+
+typedef struct _AranTranslateBufferd AranTranslateBufferd;
+typedef gdouble (*AranTranslateBufferdGenerator) (guint l, guint m, guint n,
+                                                  AranTranslateBufferd *buf);
+struct _AranTranslateBufferd {
+  gint l;
+  gdouble *buffer;
+  gdouble **direct2;
+  gdouble ***direct1;
+  AranTranslateBufferdGenerator generator;
+};
+
+static void aran_translate_bufferd_require (AranTranslateBufferd *buf,
+                                            guint max);
+
+static AranTranslateBufferd *
+aran_translate_bufferd_new (AranTranslateBufferdGenerator generator,
+                            guint l)
+{
+  AranTranslateBufferd *ret;
+
+  g_return_val_if_fail (generator != NULL, NULL);
+
+  ret = g_malloc (sizeof (AranTranslateBufferd));
+
+  ret->l = -1;
+  ret->generator = generator;
+  ret->buffer = NULL;
+  ret->direct2 = NULL;
+  ret->direct1 = NULL;
+
+  aran_translate_bufferd_require (ret, l);
+
+  return ret;
+}
+
+static void aran_translate_bufferd_free (AranTranslateBufferd *buf)
+{
+  if (buf != NULL)
+    {
+      if (buf->buffer != NULL)
+        g_free (buf->buffer);
+
+      if (buf->direct1 != NULL)
+        g_free (buf->direct1);
+
+      if (buf->direct2 != NULL)
+        g_free (buf->direct2);
+
+      buf->buffer = NULL;
+      buf->direct1 = NULL;
+      buf->direct2 = NULL;
+
+      g_free (buf);
+    }
+}
+
+static void aran_translate_bufferd_require (AranTranslateBufferd *buf,
+                                            guint max)
+{
+  guint l, size;
+  gint i, j, k;
+
+  g_return_if_fail (buf != NULL);
+
+  if (buf->l >= (gint) max) return;
+
+  l = MAX (buf->l, 1);
+
+  while (l < (gint) max) l *= 2;
+
+  size = ((l+1)*(l+1)*(l+2))/2;
+
+  buf->direct1 = g_realloc (buf->direct1, (l+1) * sizeof (gdouble *));
+  buf->direct2 = g_realloc (buf->direct2, ((l+1)*(l+2))/2 * sizeof (gdouble *));
+  buf->buffer = g_realloc (buf->buffer, size * sizeof (gdouble));
+
+  for (i=0; i<=l; i ++)
+    {
+      for (j=0; j<=i; j++)
+        buf->direct2[(i*(i+1))/2 + j] = buf->buffer + (l+1)*((i*(i+1))/2+j);
+
+      buf->direct1[i] = buf->direct2 + (i*(i+1))/2;
+    }
+
+  buf->l = l;
+
+  for (i=0; i<=l; i ++)
+    {
+      for (j=0; j<=i; j ++)
+        {
+          for (k=0; k<=l; k++)
+            {
+              /* g_printerr ("%u %u %u %ld\n", i, j, k, &buf->direct1[i][j][k] - buf->buffer); */
+              buf->direct1[i][j][k] = buf->generator (i, j, k, buf);
+            }
+        }
+    }
+}
+
+static inline gdouble *aran_translate_bufferd_get_unsafe (AranTranslateBufferd *buf,
+                                                          guint l, guint m, guint n)
+{
+  return &(buf->direct1[l][m][n]);
+}
+
+static AranTranslateBufferd *_precomputed_translate_vertical_buffer = NULL;
+
+static gdouble _precomputed_translate_vertical_generator (guint l, guint m, guint n, AranTranslateBufferd * buf)
+{
+  gdouble normaliz = _betal_over_betan (l, n);
+
+  gdouble factor = aran_spherical_seriesd_alpha (l, m) *
+    aran_spherical_seriesd_alpha (n, m);
+
+  return normaliz * factor /
+    aran_spherical_seriesd_alpha (l + n, 0);
+}
+
+static void _atexit2 ()
+{
+  aran_translate_bufferd_free (_precomputed_translate_vertical_buffer);
+  _precomputed_translate_vertical_buffer = NULL;
+}
+
+static void _precomputed_translate_vertical_require (guint deg)
+{
+  aran_spherical_seriesd_beta_require (deg);
+  aran_spherical_seriesd_alpha_require (deg+deg);
+  _betal_over_betan_require (deg);
+
+  if (_precomputed_translate_vertical_buffer == NULL)
+    {
+      _precomputed_translate_vertical_buffer = aran_translate_bufferd_new (_precomputed_translate_vertical_generator, deg);
+
+      g_atexit (_atexit2);
+    }
+  else
+    {
+      aran_translate_bufferd_require (_precomputed_translate_vertical_buffer, deg);
+    }
+}
+
+static inline gdouble _precomputed_translate_vertical (guint l, guint m, guint n)
+{
+  return *aran_translate_bufferd_get_unsafe (_precomputed_translate_vertical_buffer, l, m, n);
+}
+
+/* functions */
 
 static void aran_local_translate_vertical (const AranSphericalSeriesd * src,
                                            AranSphericalSeriesd * dst,
@@ -48,6 +316,7 @@ static void aran_local_translate_vertical (const AranSphericalSeriesd * src,
 
   aran_spherical_seriesd_beta_require (d);
   aran_spherical_seriesd_alpha_require (d);
+  _betal_over_betan_require (d);
 
   pow = 1.;
   for (l = 0; l <= src->posdeg; l++)
@@ -64,8 +333,9 @@ static void aran_local_translate_vertical (const AranSphericalSeriesd * src,
 
           for (n = l; n <= src->posdeg; n++)
             {
-              gdouble normaliz = aran_spherical_seriesd_beta (l) /
-                aran_spherical_seriesd_beta (n);
+              gdouble normaliz = _betal_over_betan (l, n);
+              /* gdouble normaliz = aran_spherical_seriesd_beta (l) / */
+              /*   aran_spherical_seriesd_beta (n); */
               gdouble factor;
 	      gdouble h;
 
@@ -113,6 +383,7 @@ static void aran_local_translate (const AranSphericalSeriesd * src,
 
   aran_spherical_seriesd_beta_require (d);
   aran_spherical_seriesd_alpha_require (d);
+  _betal_over_betan_require (d);
 
   aran_spherical_harmonic_evaluate_multiple_internal (src->posdeg, cost, sint,
                                                       expp, harmonics);
@@ -133,8 +404,9 @@ static void aran_local_translate (const AranSphericalSeriesd * src,
           for (n = l; n <= src->posdeg; n++)
             {
               gdouble normaliz = aran_spherical_seriesd_beta (n - l) *
-                aran_spherical_seriesd_beta (l) /
-                aran_spherical_seriesd_beta (n);
+                _betal_over_betan (l, n);
+                /* aran_spherical_seriesd_beta (l) / */
+                /* aran_spherical_seriesd_beta (n); */
               gcomplex128 sum = 0.;
 
               srcterm = _spherical_seriesd_get_pos_term (src, n, 0);
@@ -189,6 +461,7 @@ aran_multipole_translate_vertical (const AranSphericalSeriesd * src,
 
   aran_spherical_seriesd_alpha_require (d);
   aran_spherical_seriesd_beta_require (d);
+  _betal_over_betan_require (d+1);
 
 
   pow = 1.;
@@ -202,8 +475,9 @@ aran_multipole_translate_vertical (const AranSphericalSeriesd * src,
 
           for (n = m; n <= MIN (l, src->negdeg - 1); n++)
             {
-              gdouble normaliz = aran_spherical_seriesd_beta (l) /
-                aran_spherical_seriesd_beta (n);
+              gdouble normaliz = _betal_over_betan (l, n);
+              /* gdouble normaliz = aran_spherical_seriesd_beta (l) / */
+              /*   aran_spherical_seriesd_beta (n); */
               gdouble factor;
 	      gdouble h;
               srcterm = _spherical_seriesd_get_neg_term (src, n, 0);
@@ -250,6 +524,7 @@ static void aran_multipole_translate (const AranSphericalSeriesd * src,
 
   aran_spherical_seriesd_alpha_require (d);
   aran_spherical_seriesd_beta_require (d);
+  _betal_over_betan_require (d);
 
   aran_spherical_harmonic_evaluate_multiple_internal (dst->negdeg - 1, cost,
                                                       sint, expp, harmonics);
@@ -266,8 +541,10 @@ static void aran_multipole_translate (const AranSphericalSeriesd * src,
           for (n = 0; n <= MIN (l, src->negdeg - 1); n++)
             {
               gdouble normaliz = aran_spherical_seriesd_beta (l - n) *
-                aran_spherical_seriesd_beta (l) /
-                aran_spherical_seriesd_beta (n);
+                _betal_over_betan (l, n);
+              /* gdouble normaliz = aran_spherical_seriesd_beta (l - n) * */
+              /*   aran_spherical_seriesd_beta (l) / */
+              /*   aran_spherical_seriesd_beta (n); */
               gcomplex128 sum = 0.;
 
               srcterm = _spherical_seriesd_get_neg_term (src, n, 0);
@@ -330,10 +607,11 @@ aran_spherical_seriesd_multipole_to_local_vertical
   gdouble rpow[d + 1];
   gdouble pow, inv_r;
   gcomplex128 *srcterm, *dstterm;
-  gdouble sign;
 
   aran_spherical_seriesd_alpha_require (d);
   aran_spherical_seriesd_beta_require (d);
+  _betal_over_betan_require (MAX(dst->posdeg, src->negdeg));
+  _precomputed_translate_vertical_require(MAX(dst->posdeg, src->negdeg));
 
   inv_r = 1. / r;
   pow = 1.;
@@ -343,7 +621,7 @@ aran_spherical_seriesd_multipole_to_local_vertical
       pow *= inv_r;
     }
 
-  sign = 1.;
+  /* sign = 1.; */
   for (l = 0; l <= dst->posdeg; l++)
     {
       for (m = 0; m <= l; m++)
@@ -352,34 +630,32 @@ aran_spherical_seriesd_multipole_to_local_vertical
 
           for (n = m; n < src->negdeg; n++)
             {
-              gdouble normaliz = aran_spherical_seriesd_beta (l) /
-                aran_spherical_seriesd_beta (n);
               gcomplex128 sum;
-              gdouble factor;
-              gcomplex128 h;
-
-              srcterm = _spherical_seriesd_get_neg_term (src, n, 0);
+              gdouble translate_factor;
+              gdouble h;
 
               /* o == -m */
-              factor = aran_spherical_seriesd_alpha (l, m) *
-                aran_spherical_seriesd_alpha (n, m);
-
               /* h= Y_(l+n)^(m+o) */
-
               /*
-               * in this case, h=Y_(l+n)^0, which simplifies with "normaliz"
-               * removing beta(l+n)
+               * in this case, h=Y_(l+n)^0, which simplifies with beta(l+n)
                * and then becomes h = P_(l+n)^0 = (cost)^(l+n)
                */
               h = ((l+n)%2 == 0)? 1. : cost;
 
-              sum = h * _sph_sym (srcterm[m], m) * factor /
-                aran_spherical_seriesd_alpha (l + n, 0);
+              /* combination of (-1)^l and Y_n^(-m)*/
+              h = ((l+m)%2 == 0)? h : -h;
 
-              *dstterm += conj (sum) * sign * normaliz * rpow[l + n + 1];
+              sum = *_spherical_seriesd_get_neg_term (src, n, m);
+
+              /* translate_factor = beta(l)/beta(n) * alpha(l,m) * alpha(n,m) /
+               * alpha (l + n, 0);
+               */
+              translate_factor = _precomputed_translate_vertical (l, m, n);
+
+              *dstterm += sum * (h * rpow[l + n + 1] * translate_factor);
             }
         }
-      sign = -sign;
+      /* sign = -sign; */
     }
 }
 
@@ -412,6 +688,7 @@ static void aran_multipole_to_local (const AranSphericalSeriesd * src,
 
   aran_spherical_seriesd_alpha_require (d);
   aran_spherical_seriesd_beta_require (d);
+  _betal_over_betan_require (MAX(dst->posdeg, src->negdeg));
 
   aran_spherical_harmonic_evaluate_multiple_internal (d, cost, sint, expp,
                                                       harmonics);
@@ -434,8 +711,9 @@ static void aran_multipole_to_local (const AranSphericalSeriesd * src,
           for (n = 0; n < src->negdeg; n++)
             {
               gdouble normaliz = aran_spherical_seriesd_beta (l + n) *
-                aran_spherical_seriesd_beta (l) /
-                aran_spherical_seriesd_beta (n);
+                _betal_over_betan (l, n);
+                /* aran_spherical_seriesd_beta (l) / */
+                /* aran_spherical_seriesd_beta (n); */
               gcomplex128 sum = 0.;
 
               srcterm = _spherical_seriesd_get_neg_term (src, n, 0);

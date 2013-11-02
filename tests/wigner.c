@@ -139,7 +139,7 @@ static gint check (gdouble beta)
   gint m2;
   gint faults = 0;
 
-  aw = aran_wigner_new (beta, L);
+  aw = aran_wigner_new (0., beta, 0., L);
 
   for (l = 0; l <= L; l++)
     {
