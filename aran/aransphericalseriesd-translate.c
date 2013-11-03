@@ -593,6 +593,19 @@ aran_spherical_seriesd_translate_vertical (const AranSphericalSeriesd * src,
     }
 }
 
+/*
+ * Compute M2L translation in a vertical direction, positive or negative,
+ * depending on the value of cost (+1. or -1.)
+ *
+ * Formula:
+ * \check{Y}_l^m (\vec{r_0'}) =
+ * (-1)^l \sum_{n=m}^{\infty}
+ * \frac{1}{|\vec{r_0'}-\vec{r_0}|^{l+n+1}}
+ * \frac{\beta_l \beta_{l+n}}{\beta_n}
+ * \frac{\alpha_l^m \alpha_n^{-m}}{\alpha_{l+n}^{0}}
+ * \overline{Y_{l+n}^{0}(\theta, \phi_{\vec{r_0'}-\vec{r_0}})}
+ * \overline{\hat{Y}_{n}^{-m}(\vec{r_0})}
+ */
 void
 aran_spherical_seriesd_multipole_to_local_vertical
 (const AranSphericalSeriesd * src,
@@ -606,7 +619,7 @@ aran_spherical_seriesd_multipole_to_local_vertical
   gint d = dst->posdeg + src->negdeg;
   gdouble rpow[d + 1];
   gdouble pow, inv_r;
-  gcomplex128 *srcterm, *dstterm;
+  gcomplex128 *dstterm;
 
   aran_spherical_seriesd_alpha_require (d);
   aran_spherical_seriesd_beta_require (d);
@@ -618,44 +631,47 @@ aran_spherical_seriesd_multipole_to_local_vertical
   for (l = 0; l <= d; l++)
     {
       rpow[l] = pow;
+
+      /* o == -m */
+      /* h= Y_(l+n)^(m+o) */
+      /*
+       * in this case, h=Y_(l+n)^0, which simplifies with beta(l+n)
+       * and then becomes h = P_(l+n)^0 = (cost)^(l+n)
+       * we integrate (cost)^(l+n) within rpow[l+n+1]
+       */
+      if (l%2 == 0) rpow[l] *= cost;
+
       pow *= inv_r;
     }
 
-  /* sign = 1.; */
   for (l = 0; l <= dst->posdeg; l++)
     {
       for (m = 0; m <= l; m++)
         {
+          gcomplex128 sum = 0.;
+
           dstterm = _spherical_seriesd_get_pos_term (dst, l, m);
 
           for (n = m; n < src->negdeg; n++)
             {
-              gcomplex128 sum;
+              gcomplex128 srcterm;
               gdouble translate_factor;
-              gdouble h;
 
-              /* o == -m */
-              /* h= Y_(l+n)^(m+o) */
-              /*
-               * in this case, h=Y_(l+n)^0, which simplifies with beta(l+n)
-               * and then becomes h = P_(l+n)^0 = (cost)^(l+n)
-               */
-              h = ((l+n)%2 == 0)? 1. : cost;
-
-              /* combination of (-1)^l and Y_n^(-m)*/
-              h = ((l+m)%2 == 0)? h : -h;
-
-              sum = *_spherical_seriesd_get_neg_term (src, n, m);
+              srcterm = *_spherical_seriesd_get_neg_term (src, n, m);
 
               /* translate_factor = beta(l)/beta(n) * alpha(l,m) * alpha(n,m) /
                * alpha (l + n, 0);
                */
               translate_factor = _precomputed_translate_vertical (l, m, n);
 
-              *dstterm += sum * (h * rpow[l + n + 1] * translate_factor);
+              sum += srcterm * (rpow[l + n + 1] * translate_factor);
             }
+
+          /* combination of (-1)^l and Y_n^(-m)*/
+          sum = ((l+m)%2 == 0)? sum : -sum;
+
+          *dstterm += sum;
         }
-      /* sign = -sign; */
     }
 }
 
