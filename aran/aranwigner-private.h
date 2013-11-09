@@ -33,4 +33,8 @@ struct _AranWigner
   gcomplex128 ***l_terms;
 };
 
+#define ARAN_WIGNER_TERM(aw,l,mprime,m) (  \
+  (aw)->l_terms[(l)][(mprime)] + (l) + (m) \
+)
+
 #endif /* __ARAN_WIGNER_PRIVATE_H__ */

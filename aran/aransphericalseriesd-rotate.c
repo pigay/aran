@@ -23,6 +23,7 @@
 #include "aransphericalharmonic.h"
 
 #include "aranwignerrepo.h"
+#include "aranwigner-private.h"
 
 /* #include <vsg/vsgd-inline.h> */
 
@@ -55,7 +56,7 @@ static void _buffer_rotate (AranWigner * aw, guint deg,
           for (m = -l; m < 0; m++)
             {
               gcomplex128 wigner_term = PHASE (mprime + m) *
-                *aran_wigner_term (aw, l, mprime, m);
+                *ARAN_WIGNER_TERM (aw, l, mprime, m);
 
               sum += wigner_term *
                 src_l_neg[-m];
@@ -67,7 +68,7 @@ static void _buffer_rotate (AranWigner * aw, guint deg,
 
           for (m = 0; m <= l; m++)
             {
-              gcomplex128 wigner_term = *aran_wigner_term (aw, l, m, mprime);
+              gcomplex128 wigner_term = *ARAN_WIGNER_TERM (aw, l, m, mprime);
 
               sum += wigner_term * src_l[m];
               /* m>=0

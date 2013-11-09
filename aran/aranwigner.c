@@ -97,7 +97,7 @@ static gboolean aran_wigner_require_d (AranWigner * aw, guint l)
   sb2 = sin (aw->beta * 0.5);
   tb2 = sb2 / cb2;
 
-  aw->l_terms[0][0][0] = 1.;
+  aw->l_terms[0][0][0] = 1.; /* d_0^{0,0} */
 
   if (l == 0)
     return TRUE;
@@ -144,10 +144,10 @@ static gboolean aran_wigner_require_d (AranWigner * aw, guint l)
 
       /* last two diagonal terms */
       aw->l_terms[i][i][i + i] = d1_1_1 *
-        aw->l_terms[i - 1][i - 1][(i - 1) + (i - 1)];
+        aw->l_terms[i - 1][i - 1][(i - 1) + (i - 1)]; /* d_i^{i,i} */
 
       aw->l_terms[i][i - 1][i + i - 1] = (i * d1_0_0 - i + 1.) *
-        aw->l_terms[i - 1][i - 1][(i - 1) + (i - 1)];
+        aw->l_terms[i - 1][i - 1][(i - 1) + (i - 1)]; /* d_i^{i-1,i-1} */
 
       /* last column terms */
       for (k = i; k >= 1 - i; k--)
@@ -255,14 +255,15 @@ void aran_wigner_require (AranWigner * aw, guint lmax)
  * @mprime: a #guint. Condition @mprime <= @l must hold.
  * @m: a #gint. Condition -@l <= @m <= @l must hold.
  *
- * Provides access to the corresponding term in @aw.
+ * Provides access to the @aw term corresponding to Wigner coefficient d_l^{m,m'}.
  *
  * Returns: address of the term.
  */
 gcomplex128 *aran_wigner_term (AranWigner * aw, guint l, guint mprime, gint m)
 {
   g_return_val_if_fail (aw != NULL, NULL);
-  return aw->l_terms[l][mprime] + l + m;
+  return ARAN_WIGNER_TERM (aw, l, mprime, m);
+  /* return aw->l_terms[l][mprime] + l + m; */
 }
 
 /**
