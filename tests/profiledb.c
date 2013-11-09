@@ -120,7 +120,7 @@ int main (int argc, char **argv)
     g_printerr ("Failed to load profile db \"%s\" with group \"%s\"\n",
                 _filename, _group);
 
-  /* check some operators' rpofiles existence */
+  /* check some operators' profiles existence */
   CHECK_OPERATOR_PROFILE (aran_development2d_m2m);
   CHECK_OPERATOR_PROFILE (aran_development2d_m2l);
   CHECK_OPERATOR_PROFILE (aran_development2d_l2l);
@@ -129,11 +129,11 @@ int main (int argc, char **argv)
   CHECK_OPERATOR_PROFILE (aran_development3d_m2l);
   CHECK_OPERATOR_PROFILE (aran_development3d_l2l);
 
-  /* try to evaluate a bad symbol, check if respnse is correct */
+  /* try to evaluate a bad symbol, check if response is correct */
   {
     gdouble x = aran_profile_db_address_eval (&ret, 1.);
 
-    if (x == x)
+    if (isnan(x))
       g_printerr ("Error evaluating bad profile symbol (%g should be NaN)\n",
                   x);
     else if (_verbose)
