@@ -1473,7 +1473,7 @@ int main (int argc, char **argv)
       g_printerr ("%d : fill elapsed=%f seconds\n", rk,
                   g_timer_elapsed (timer, NULL));
 
-      g_printerr ("%d : tree depth = %d\n", rk,
+      g_printerr ("%d : tree depth count = %d\n", rk,
                   aran_solver3d_depth (solver));
 
       g_printerr ("%d : particle count=%d\n", rk,
