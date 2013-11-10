@@ -155,7 +155,8 @@ static gint buffer_diff (gint L, gcomplex128 *ref, gcomplex128 *res)
 
           if (cabs (err) > epsilon || !finite (cabs (err)))
             {
-              g_printerr ("AranSphericalSeriesd error (%g,%g) != (%g,%g)\n",
+              g_printerr ("AranSphericalSeriesd error [%d,%d] (%g,%g) != (%g,%g)\n",
+                          l, m,
                           creal (ref[i]), cimag (ref[i]),
                           creal (res[i]), cimag (res[i]));
               faults ++;
@@ -249,16 +250,16 @@ int main (int argc, char **argv)
 
   parse_args (argc, argv);
 
-  for (i=0; i<N; i ++)
+  for (i=0; i<L; i ++)
     {
       gdouble theta = i*G_PI/N;
 
-      for (j=0; j<N; j ++)
+      for (j=0; j<1; j ++)
         {
           gdouble phi = j*2.*G_PI/N;
 
           ret += check (phi, theta, 0.);
-          ret += check (phi, theta, phi);
+          /* ret += check (0., theta, phi); */
         }
     }
   return ret;

@@ -56,6 +56,18 @@ static void parse_args (int argc, char **argv)
           else
             g_printerr ("Invalid error limit value (-err %s)\n", arg);
         }
+      if (g_ascii_strcasecmp (arg, "-pr") == 0)
+        {
+          guint tmp = 0;
+          iarg++;
+
+          arg = (iarg < argc) ? argv[iarg] : NULL;
+
+          if (sscanf (arg, "%u", &tmp) == 1)
+            L = tmp;
+          else
+            g_printerr ("Invalid precision order value (-pr %s)\n", arg);
+        }
       else if (g_ascii_strcasecmp (arg, "--version") == 0)
         {
           g_printerr ("%s version %s\n", argv[0], PACKAGE_VERSION);
@@ -135,20 +147,20 @@ static gdouble wigner (guint l, gint m1, gint m2, gdouble beta)
 static gint check (gdouble beta)
 {
   AranWigner *aw;
-  gint l, m1;
-  gint m2;
+  gint l, mprime;
+  gint m;
   gint faults = 0;
 
   aw = aran_wigner_new (0., beta, 0., L);
 
   for (l = 0; l <= L; l++)
     {
-      for (m1 = 0; m1 <= l; m1++)
+      for (mprime = 0; mprime <= l; mprime++)
         {
-          for (m2 = -l; m2 <= l; m2++)
+          for (m = -l; m <= l; m++)
             {
-              gdouble res = *aran_wigner_term (aw, l, m1, m2);
-              gdouble ref = wigner (l, m1, m2, beta);
+              gdouble res = creal(*aran_wigner_term (aw, l, mprime, m));
+              gdouble ref = wigner (l, m, mprime, beta);
               gdouble err;
 
               err = fabs (res - ref);
@@ -158,9 +170,9 @@ static gint check (gdouble beta)
               if (err >= epsilon || !finite (err))
                 {
                   faults ++;
-                  g_printerr ("Error wigner (l=%d, m1=%d, m2=%d, beta=%g) "\
-                              "%g != %g, err=%g\n",
-                              l, m1, m2, beta, res, ref, err);
+                  g_printerr ("Error wigner (l=%d, m=%d, mprime=%d, beta=%g) "\
+                              "res=%g != ref=%g, err=%g\n",
+                              l, m, mprime, beta, res, ref, err);
                 }
             }
         }

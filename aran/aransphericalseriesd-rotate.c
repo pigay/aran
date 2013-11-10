@@ -55,24 +55,22 @@ static void _buffer_rotate (AranWigner * aw, guint deg,
 
           for (m = -l; m < 0; m++)
             {
-              gcomplex128 wigner_term = PHASE (mprime + m) *
+              gcomplex128 wigner_term =
                 *ARAN_WIGNER_TERM (aw, l, mprime, m);
 
-              sum += wigner_term *
-                src_l_neg[-m];
-
+              sum += wigner_term * src_l_neg[-m];
               /* m<0
-               * RY_l^{m'} += (-1)^{m+m'} d_l^{m',m}(\beta) e^{+|m| \alpha} e^{-m'\gamma} Y_l^{-m}
+               * RY_l^{m'} += D_l^{m,m'} (-1)^m\overline{Y}_l^{-m}
                */
             }
 
           for (m = 0; m <= l; m++)
             {
-              gcomplex128 wigner_term = *ARAN_WIGNER_TERM (aw, l, m, mprime);
+              gcomplex128 wigner_term = *ARAN_WIGNER_TERM (aw, l, mprime, m);
 
               sum += wigner_term * src_l[m];
               /* m>=0
-               * RY_l^{m'} += d_l^{m,m'}(\beta) e^{-m\alpha} e^{-m'\gamma} Y_l^{m}
+               * RY_l^{m'} += D_l^{m,m'} Y_l^{m}
                */
             }
 

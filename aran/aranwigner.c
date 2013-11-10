@@ -80,16 +80,17 @@ static void aran_wigner_realloc (AranWigner * aw, guint l)
     }
 }
 
-static gboolean aran_wigner_require_d (AranWigner * aw, guint l)
+static gboolean aran_wigner_require_d (AranWigner * aw, guint lmax)
 {
-  gint i, j, k;
+  gint l, mp, m;
   gdouble cb, sb, cb2, sb2, tb2;
   gcomplex128 d1_0_0, d1_1_1;
+  gcomplex128 d1_1_m1;
 
-  if (((gint) l) <= aw->lmax)
+  if (((gint) lmax) <= aw->lmax)
     return FALSE;
 
-  aran_wigner_realloc (aw, l);
+  aran_wigner_realloc (aw, lmax);
 
   cb = cos (aw->beta);
   sb = sin (aw->beta);
@@ -99,80 +100,144 @@ static gboolean aran_wigner_require_d (AranWigner * aw, guint l)
 
   aw->l_terms[0][0][0] = 1.; /* d_0^{0,0} */
 
-  if (l == 0)
+  if (lmax == 0)
     return TRUE;
 
-  aw->l_terms[1][0][1 + 0] = cb;                        /* d_1^{0,0} */
-  aw->l_terms[1][1][1 - 1] = sb2 * sb2;                 /* d_1^{1,-1} */
-  aw->l_terms[1][1][1 + 0] = -sb / sqrt (2.);           /* d_1^{1,0} */
-  aw->l_terms[1][1][1 + 1] = cb2 * cb2;                 /* d_1^{1,1} */
-  aw->l_terms[1][0][1 + 1] = -aw->l_terms[1][1][1 + 0]; /* d_1^{0,1} */
-  aw->l_terms[1][0][1 - 1] = aw->l_terms[1][1][1 + 0];  /* d_1^{0,-1} */
+  aw->l_terms[1][0][1 + 0] = cb;                         /* d_1^{0,0} */
+  aw->l_terms[1][1][1 - 1] = sb2 * sb2;                  /* d_1^{-1,1} */
+  aw->l_terms[1][1][1 + 0] = sb / sqrt (2.);             /* d_1^{0,1} */
+  aw->l_terms[1][1][1 + 1] = cb2 * cb2;                  /* d_1^{1,1} */
+  aw->l_terms[1][0][1 - 1] = aw->l_terms[1][1][1 + 0];   /* d_1^{0,-1} */
+  aw->l_terms[1][0][1 + 1] = - aw->l_terms[1][1][1 + 0]; /* d_1^{0,1} */
 
-  if (((gint) l) <= 1)
+  if (((gint) lmax) <= 1)
     return TRUE;
 
   d1_0_0 = aw->l_terms[1][0][1 + 0];
   d1_1_1 = aw->l_terms[1][1][1 + 1];
+  d1_1_m1 = aw->l_terms[1][1][1 - 1];
 
   /* l >= 2 */
-  for (i = 2; i <= l; i++)
+  for (l = 2; l <= lmax; l++)
     {
-      gdouble two_i_m_1 = i + i - 1.;
-      gdouble sq_i = i * i;
-      gdouble sq_i_m_1 = (i - 1.) * (i - 1.);
+      gdouble two_l_m_1 = l + l - 1.;
+      gdouble sq_l = l * l;
+      gdouble sq_l_m_1 = (l - 1.) * (l - 1.);
 
-      /* j > 0, -j <= k <= j */
-      for (j = 0; j <= i - 2; j++)
+      /* block 1 */
+      for (mp = 0; mp <= l - 2; mp++)
         {
-          gdouble sq_j = j * j;
+          gdouble sq_mp = mp * mp;
 
-          for (k = -j; k <= j; k++)
+          for (m = -mp; m <= mp; m++)
             {
-              gdouble sq_k = k * k;
+              gdouble sq_m = m * m;
               gdouble a =
-                (i * two_i_m_1) / sqrt ((sq_i - sq_j) * (sq_i - sq_k));
-              gcomplex128 b = (d1_0_0 - ((j * k) / (i * (i - 1.))));
-              gdouble c = sqrt ((sq_i_m_1 - sq_j) * (sq_i_m_1 - sq_k)) /
-                ((i - 1.) * two_i_m_1);
+                (l * two_l_m_1) / sqrt ((sq_l - sq_mp) * (sq_l - sq_m));
+              gcomplex128 b = (d1_0_0 - ((mp * m) / (l * (l - 1.))));
+              gdouble c = sqrt ((sq_l_m_1 - sq_mp) * (sq_l_m_1 - sq_m)) /
+                ((l - 1.) * two_l_m_1);
 
-              aw->l_terms[i][j][i + k] =
-                a * (b * aw->l_terms[i - 1][j][(i - 1) + k] -
-                     c * aw->l_terms[i - 2][j][(i - 2) + k]);
+              /* d_l^{m,m'} = \frac{l(2l-1)}{\sqrt{(l^2-m^2)(l^2-(m')^2}}
+               * \left\{ (d_1^{00}-\frac{mm'}{l(l-1)})d_{l-1}^{mm'} -
+               * \frac{\sqrt{[(l-1)^2-m^2][(m-1)^2-(m')^2]}}{(l-1)(2l-1)}d_{l-2}^{mm'} \right\}
+               */
+              aw->l_terms[l][mp][l + m] =
+                a * (b * aw->l_terms[l - 1][mp][(l - 1) + m] -
+                     c * aw->l_terms[l - 2][mp][(l - 2) + m]);
             }
         }
 
+      /* block 2 */
       /* last two diagonal terms */
-      aw->l_terms[i][i][i + i] = d1_1_1 *
-        aw->l_terms[i - 1][i - 1][(i - 1) + (i - 1)]; /* d_i^{i,i} */
+      /* d_l^{l,l}  = ld_1^{1,1} d_{l-1}^{l-1,l-1} */
+      aw->l_terms[l][l][l + l] = d1_1_1 *
+        aw->l_terms[l - 1][l - 1][(l - 1) + (l - 1)];
 
-      aw->l_terms[i][i - 1][i + i - 1] = (i * d1_0_0 - i + 1.) *
-        aw->l_terms[i - 1][i - 1][(i - 1) + (i - 1)]; /* d_i^{i-1,i-1} */
+      /* d_l^{l-1,l-1}  = (ld_1^{0,0} - l + 1)  d_{l-1}^{l-1,l-1} */
+      aw->l_terms[l][l - 1][l + l - 1] = (l * d1_0_0 - l + 1.) *
+        aw->l_terms[l - 1][l - 1][(l - 1) + (l - 1)];
 
+      /* block 3 */
+      /* d_l^{l,-l} = d_1^{1,-1} d_{l-1}^{l-1,-l+1} */
+      aw->l_terms[l][l][l - l] = d1_1_m1 *
+        aw->l_terms[l - 1][l - 1][(l - 1) - (l - 1)];
+
+      /* d_l^{l-1,-l+1} = (ld_1^{0,0} + l - 1)  d_{l-1}^{l-1,-l+1} */
+      aw->l_terms[l][l - 1][l - (l - 1)] = (l * d1_0_0 + l - 1.) *
+        aw->l_terms[l - 1][l - 1][(l - 1) - (l - 1)];
+
+      /* block 4 */
       /* last column terms */
-      for (k = i; k >= 1 - i; k--)
+      for (mp = l; mp >= 1; mp--)
         {
-          aw->l_terms[i][i][i + k - 1] = -sqrt ((i + k) / (i - k + 1.)) * tb2 *
-            aw->l_terms[i][i][i + k];
+          /* 1\le m' \le l : d_l^{l,m'-1} = -\sqrt{\frac{(l+m')}{(l-m'+1)}} \tan\frac{\beta}{2}
+           * d_l^{l,m'}
+           */
+          aw->l_terms[l][mp-1][l + l] = -sqrt ((l + mp) / (l - mp + 1.)) * tb2 *
+            aw->l_terms[l][mp][l + l]; /* d_l^{l,mp-1} */
         }
 
+      /* block 5 */
       /* penultimate column */
-      for (k = i - 1; k >= 2 - i; k--)
+      for (mp = l - 1; mp >= 1; mp--)
         {
-	  gdouble a = sqrt (((gdouble)i+k)/(((gdouble)i+i)*(i-k+1.)));
+	  gdouble a = sqrt (((gdouble)l+mp)/(((gdouble)l+l)*(l-mp+1.)));
 
-          aw->l_terms[i][i - 1][i + k - 1] = (i*cb-k+1.) * a *
-	    aw->l_terms[i][i][i + k] / d1_1_1;
+          /* 1\le m' \lt l : d_l^{l,m'-1} = (l\cos\frac{\beta}{2}-m'+1)\sqrt{\frac{(l+m')}{2l(l-m'+1)}}
+           * \frac{d_l^{l,m'}}{d_1^{1,1}}
+           */
+          aw->l_terms[l][mp - 1][l + l - 1] = (l*cb-mp+1.) * a *
+	    aw->l_terms[l][mp][l + l] / d1_1_1;
         }
 
-      /* extra diagonal terms (|k| > j) */
-      for (k = 1; k <= i; k++)
+      /* block 6 */
+      /* last rows */
+      for (mp = l - 1; mp <= l; mp++)
         {
-          for (j = 0; j < k; j++)
+          for (m = 0; m < mp; m++)
             {
-              aw->l_terms[i][j][i + k] = PHASE (j + k) *
-                aw->l_terms[i][k][i + j];
-              aw->l_terms[i][j][i - k] = aw->l_terms[i][k][i - j];
+              /* l-1\le m'\le l , 0\le m < m' :
+               * d_l^{m,m'} = (-1)^{m+m'} d_l^{m',m}
+               */
+              aw->l_terms[l][mp][l + m] = PHASE (mp + m) *
+                aw->l_terms[l][m][l + mp];
+            }
+        }
+
+      /* block 7 */
+      for (m = 0; m < l; m++)
+        {
+          /* 0\le m < l :
+           * d_l^{-m-1,l} = \sqrt{\frac{l-m}{l+m+1}} \tan{\frac{\beta}{2}} d_l^{-m,l}
+           */
+          aw->l_terms[l][l][l - m - 1] =  sqrt ((l - m) / (l + m + 1.)) * tb2 *
+            aw->l_terms[l][l][l - m];
+        }
+
+      /* block 8 */
+      for (m = 0; m < l; m++)
+        {
+          gdouble a = sqrt (((gdouble)l-m)/(((gdouble)l+l)*(l+m+1.)));
+
+          /* 0\le m < l :
+           * d_l^{-m-1,l-1} = (l\cos{\beta}+m+1) \sqrt{\frac{l-m}{2l(l+m+1)}} \frac{d_l^{-m,l}}{\cos^2\frac{\beta}{2}}
+           */
+          aw->l_terms[l][l-1][l - m - 1] =  (l*cb+m+1.) * a *
+            aw->l_terms[l][l][l - m] / d1_1_1;
+        }
+
+      /* block 10 */
+      for (mp = 0; mp <= l; mp++)
+        {
+          for (m = mp+1; m <= l; m++)
+            {
+              /* 0\le m' \le l , m'+1 \le m \le l : d_l^{m,m'} = (-1)^{m+m'}d_l^{m',m}
+               */
+              aw->l_terms[l][mp][l + m] = PHASE (m + mp) * aw->l_terms[l][m][l + mp];
+              /* 0\le m' \le l , m'+1 \le m \le l : d_l^{-m,m'} = d_l^{-m',m}
+               */
+              aw->l_terms[l][mp][l - m] = aw->l_terms[l][m][l - mp];
             }
         }
     }
@@ -210,13 +275,14 @@ void aran_wigner_require (AranWigner * aw, guint lmax)
         {
           for (mprime = 0; mprime <= l; mprime++)
             {
-              for (m = -l; m < 0; m++)
+              for (m = l; m >= 1; m--)
                 {
-                  aw->l_terms[l][mprime][l + m] *= /* PHASE (mprime + m) * */ conj(expma[ABS(m)]);
+                  aw->l_terms[l][mprime][l - m] *= conj(expma[m]); /* d_l^{-m,m'} <- e^(im\alpha} d_l^{-m,m'} */
                 }
-
               for (m = 0; m <= l; m++)
-                aw->l_terms[l][m][l + mprime] *= expma[m];
+                {
+                  aw->l_terms[l][mprime][l + m] *= expma[m];       /* d_l^{m,m'} <- e^(-im\alpha} d_l^{m,m'} */
+                }
             }
         }
     }
@@ -237,10 +303,8 @@ void aran_wigner_require (AranWigner * aw, guint lmax)
         {
           for (mprime = 0; mprime <= l; mprime++)
             {
-              for (m = -l; m < 0; m++)
-                aw->l_terms[l][mprime][l + m] *= expmg[mprime];
-              for (m = 0; m <= l; m++)
-                aw->l_terms[l][m][l + mprime] *= expmg[mprime];
+              for (m = -l; m <= l; m++)
+                aw->l_terms[l][mprime][l + m] *= expmg[mprime]; /* D_l^{m,m'} = e^(-im\alpha} d_l^{m,m'} e^{-im'\gamma} */
             }
         }
     }
@@ -345,12 +409,12 @@ void aran_wigner_write (AranWigner * aw, FILE * file)
 
   for (i = 0; i <= aw->lmax; i++)
     {
-      for (j = 0; j <= i; j++)
+      for (k = -i; k <= i; k++)
         {
-          for (k = -i; k <= i; k++)
+          for (j = 0; j <= i; j++)
             {
               gcomplex128 term = *aran_wigner_term (aw, i, j, k);
-              g_fprintf (file, "[%d,%d,%d]=%g+i%g ", i, j, k,
+              g_fprintf (file, "[%d,%d,%d]=%g+i%g ", i, k, j,
                          creal(term), cimag(term));
             }
         }
