@@ -915,9 +915,15 @@ static void _unbalanced_fill (AranSolver3d *solver)
 #endif /* VSG_HAVE_MPI */
 }
 
+/*
+ * Plummer distribution generation method from article:
+ * A Comparison of Numerical Methods for the Study of Star Cluster Dynamics
+ * S.J. Aarseth, M. Henon, R. Wielen
+ * Astron. & Astrophys. 37, 183 - 187 (1974)
+ */
 static void _plummer_fill (AranSolver3d *solver)
 {
-  gdouble rmax = 300.;
+  gdouble rmax = 39.; /* computed to contain 0.999 of the  total mass contained in whole space (infinite radius)  */
   guint64 i, real_np = 0;
   PointAccum lb, ub;
   PointAccum *point;
