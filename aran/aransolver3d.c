@@ -317,7 +317,7 @@ static void near_func (const VsgPRTree3dNodeInfo *one_info,
                        const VsgPRTree3dNodeInfo *other_info,
                        AranSolver3d *solver)
 {
-  if (one_info == other_info)
+  if (vsg_prtree_key3d_equals (&one_info->id, &other_info->id))
     near_func_reflexive (one_info, other_info, solver);
   else
     near_func_default (one_info, other_info, solver);
