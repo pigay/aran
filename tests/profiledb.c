@@ -133,7 +133,7 @@ int main (int argc, char **argv)
   {
     gdouble x = aran_profile_db_address_eval (&ret, 1.);
 
-    if (isnan(x))
+    if (!isnan(x))
       g_printerr ("Error evaluating bad profile symbol (%g should be NaN)\n",
                   x);
     else if (_verbose)
