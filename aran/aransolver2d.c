@@ -318,7 +318,7 @@ static void near_func (const VsgPRTree2dNodeInfo *one_info,
                        const VsgPRTree2dNodeInfo *other_info,
                        AranSolver2d *solver)
 {
-  if (vsg_prtree_key3d_equals (&one_info->id, &other_info->id))
+  if (vsg_prtree_key2d_equals (&one_info->id, &other_info->id))
     near_func_reflexive (one_info, other_info, solver);
   else
     near_func_default (one_info, other_info, solver);
@@ -350,8 +350,8 @@ static void far_func (const VsgPRTree2dNodeInfo *one_info,
 
       solver->m2l_counter ++;
 
-      if (VSG_PRTREE3D_NODE_INFO_IS_PRIVATE_REMOTE (one_info) ||
-          VSG_PRTREE3D_NODE_INFO_IS_PRIVATE_REMOTE (other_info))
+      if (VSG_PRTREE2D_NODE_INFO_IS_PRIVATE_REMOTE (one_info) ||
+          VSG_PRTREE2D_NODE_INFO_IS_PRIVATE_REMOTE (other_info))
         solver->m2l_remote_counter += 2;
     }
 }
@@ -384,7 +384,7 @@ static void semifar_func (const VsgPRTree2dNodeInfo *one_info,
 
   while (list)
     {
-      VsgPoint3 point = (VsgPoint3) list->data;
+      VsgPoint2 point = (VsgPoint2) list->data;
 
       solver->p2l (point, info, dev);
       solver->m2p (info, dev, point);
